@@ -3,21 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chemophile Part 1</title>
+<title>Chemophile</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Chemophile Part 1 (for 11th Class): NCERT Class 11 Chemistry ki Hinglish visual booklet series by Mohd Adeel Khan (Adeel Sir). Saare chapters, topics aur sample pages.">
+<meta name="description" content="Chemophile by Adeel Sir: Class 11 aur 12 Chemistry ki Hinglish visual booklets. NCERT aur CBSE 2026-27 syllabus, diagrams, solved examples, exam answers aur 40 marks ka test har chapter mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Kalam:wght@400;700&display=swap">
 <style>
-/* Layout: a night-sky cover band like the booklets, then a paper "contents page" for every chapter, the way the book itself lists topics. */
+/* Layout: a sales page dressed like the booklets themselves. Night-sky cover bands frame paper sections; real cut-outs from the pages do the selling; chapters sit on a shelf by class; an order bar follows the student once they start a pack. */
 :root {
   --night: #1f1c5a;
   --night-2: #2c2577;
+  --night-3: #15134a;
   --night-fg: #f3f2ff;
-  --night-muted: #b9b6e8;
+  --night-muted: #bcb9ea;
   --sun: #ffd24a;
   --sun-ink: #2a2100;
+  --rose: #ffb3c9;
 
   --paper: #f6f6fb;
   --surface: #ffffff;
@@ -26,6 +28,8 @@
   --line: #dddcee;
   --accent: #3b2fb8;
   --mark: #fff1b8;
+  --good: #158a4e;
+  --wa: #1f9d55;
 
   --t1: #0f9488; --t2: #e0a800; --t3: #7b3fe4; --t4: #1f9d55;
   --t5: #2f6bed; --t6: #ea6a1b; --t7: #c42dc4; --t8: #e03c3c;
@@ -45,32 +49,22 @@
   --step-0: 1rem;
   --step-1: 1.2rem;
   --step-2: 1.5rem;
-  --step-3: clamp(1.8rem, 1.3rem + 2vw, 2.4rem);
-  --step-4: clamp(2.8rem, 1.8rem + 5vw, 5rem);
+  --step-3: clamp(1.8rem, 1.3rem + 2vw, 2.5rem);
+  --step-4: clamp(2.5rem, 1.6rem + 4.4vw, 4.6rem);
   --radius: 14px;
   --wrap: 1120px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #11102b;
-    --surface: #1a1940;
-    --fg: #ecebff;
-    --muted: #a9a7d4;
-    --line: #2f2d63;
-    --accent: #b7b0ff;
-    --mark: #4a3d00;
+    --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
+    --line: #2f2d63; --accent: #b7b0ff; --mark: rgba(255,210,74,.3); --good: #4ade80;
     --rev-bg: #ffd24a; --rev-fg: #1b1a45;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #11102b;
-  --surface: #1a1940;
-  --fg: #ecebff;
-  --muted: #a9a7d4;
-  --line: #2f2d63;
-  --accent: #b7b0ff;
-  --mark: #4a3d00;
+  --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
+  --line: #2f2d63; --accent: #b7b0ff; --mark: rgba(255,210,74,.3); --good: #4ade80;
   --rev-bg: #ffd24a; --rev-fg: #1b1a45;
   color-scheme: dark;
 }
@@ -80,44 +74,24 @@
 html { scroll-behavior: smooth; scroll-padding-top: 76px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
 body {
-  margin: 0;
-  background: var(--paper);
-  color: var(--fg);
-  font-family: var(--font-body);
-  font-size: var(--step-0);
-  line-height: 1.6;
+  margin: 0; background: var(--paper); color: var(--fg);
+  font-family: var(--font-body); font-size: var(--step-0); line-height: 1.6;
   -webkit-text-size-adjust: 100%;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+body.has-pack { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--accent); }
-h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
 :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; border-radius: 6px; }
 
 .wrap {
-  max-width: var(--wrap);
-  margin-inline: auto;
+  max-width: var(--wrap); margin-inline: auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-
-/* ---------- header ---------- */
-.site-head {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
-  background: var(--night); color: var(--night-fg);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-.site-head .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
-.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; color: var(--sun); text-decoration: none; line-height: 1; }
-.brand small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .7rem; color: var(--night-muted); letter-spacing: .04em; }
-.site-nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
-.site-nav a { color: var(--night-fg); text-decoration: none; font-weight: 500; font-size: .92rem; padding: 6px 10px; border-radius: 999px; }
-.site-nav a:hover { background: rgba(255,255,255,.1); }
-.site-nav a.cta { background: var(--sun); color: var(--sun-ink); font-weight: 700; }
-@media (max-width: 640px) { .site-nav a:not(.cta) { display: none; } }
-
-/* ---------- hero ---------- */
-.hero {
+.night {
   background:
     radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.7) 50%, transparent 51%),
     radial-gradient(1px 1px at 32% 68%, rgba(255,255,255,.5) 50%, transparent 51%),
@@ -128,88 +102,169 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: bal
     radial-gradient(60% 80% at 75% 50%, var(--night-2), transparent 70%),
     var(--night);
   color: var(--night-fg);
-  overflow: hidden;
 }
-.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; align-items: center; padding-block: 48px 56px; }
-.pills { display: flex; flex-wrap: wrap; gap: 8px; }
-.pill { border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 2px 12px; font-size: var(--step--1); color: var(--night-muted); }
-.hero h1 { font-size: var(--step-4); color: var(--sun); font-weight: 800; margin-top: 18px; text-shadow: 0 3px 0 rgba(0,0,0,.25); }
-.part-badge { display: inline-block; background: #fff; color: var(--night); font-weight: 700; border-radius: 999px; padding: 4px 16px; margin-top: 6px; }
-.hero .lede { font-size: var(--step-1); max-width: 34ch; margin: 22px 0 0; }
-.hero .hand { font-family: var(--font-hand); color: #ffb3c9; font-size: 1.15rem; margin: 6px 0 0; }
-.spectrum { height: 10px; border-radius: 3px; margin: 18px 0 6px; max-width: 520px;
-  background: linear-gradient(90deg, #2b0a3d, #3a1d8f 12%, #1f5fd1 30%, #1aa58a 45%, #b6c21a 58%, #f0a21a 70%, #d23a1a 85%, #4a0a0a); position: relative; }
-.spectrum i { position: absolute; top: -3px; width: 3px; height: 16px; border-radius: 2px; }
-.spectrum-note { font-size: .74rem; color: var(--night-muted); max-width: 520px; text-align: right; }
-.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.stat { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px 14px; font-size: .92rem; }
-.stat b { color: var(--sun); font-variant-numeric: tabular-nums; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-.btn { display: inline-flex; align-items: center; gap: 8px; font: 700 1rem var(--font-body); text-decoration: none; padding: 10px 20px; border-radius: 999px; border: 2px solid transparent; cursor: pointer; }
-.btn-sun { background: var(--sun); color: var(--sun-ink); }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 1rem var(--font-body); text-decoration: none; padding: 12px 22px; border-radius: 999px; border: 2px solid transparent; cursor: pointer; line-height: 1.2; text-align: center; }
+.btn-sun { background: var(--sun); color: var(--sun-ink); box-shadow: 0 4px 0 #c79a12; }
+.btn-sun:active { transform: translateY(2px); box-shadow: 0 2px 0 #c79a12; }
 .btn-ghost { border-color: rgba(255,255,255,.5); color: var(--night-fg); background: transparent; }
+.btn-line { border-color: var(--line); color: var(--fg); background: var(--surface); padding: 8px 16px; font-size: .92rem; }
+.btn-wa { background: var(--wa); color: #fff; }
+.btn-small { padding: 8px 14px; font-size: .9rem; }
 .btn:hover { filter: brightness(1.06); }
 
-.cover-fan { position: relative; height: 430px; }
-.cover-fan img { position: absolute; width: 58%; border-radius: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.45); top: 50%; left: 50%; transition: transform .35s ease; }
-.cover-fan img:nth-child(1) { transform: translate(-95%, -50%) rotate(-9deg); }
-.cover-fan img:nth-child(2) { transform: translate(-5%, -52%) rotate(8deg); }
+/* ---------- header ---------- */
+.site-head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--night); color: var(--night-fg); border-bottom: 1px solid rgba(255,255,255,.08); }
+.site-head .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; color: var(--sun); text-decoration: none; line-height: 1; }
+.brand small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .7rem; color: var(--night-muted); letter-spacing: .04em; }
+.site-nav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+.site-nav a { color: var(--night-fg); text-decoration: none; font-weight: 500; font-size: .92rem; padding: 6px 10px; border-radius: 999px; }
+.site-nav a:hover { background: rgba(255,255,255,.1); }
+.site-nav .btn { color: var(--sun-ink); padding: 8px 16px; font-size: .92rem; box-shadow: none; }
+@media (max-width: 700px) { .site-nav a:not(.btn) { display: none; } }
+
+/* ---------- hero ---------- */
+.hero { overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 32px; align-items: center; padding-block: 44px 56px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 2px 12px; font-size: var(--step--1); color: var(--night-muted); }
+.pill.new { background: var(--sun); color: var(--sun-ink); border-color: var(--sun); font-weight: 700; }
+.hero h1 { isolation: isolate; font-size: var(--step-4); font-weight: 800; margin-top: 16px; letter-spacing: -.01em; }
+.hero h1 .y { color: var(--sun); position: relative; white-space: nowrap; }
+.hero h1 .y::after { content: ""; position: absolute; left: 0; right: 0; bottom: .2em; height: .12em; background: var(--rose); border-radius: 99px; transform: rotate(-1.5deg); opacity: .85; z-index: -1; }
+.hero .lede { font-size: var(--step-1); max-width: 36ch; margin-top: 18px; color: var(--night-fg); }
+.hero .hand { font-family: var(--font-hand); color: var(--rose); font-size: 1.15rem; margin-top: 8px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.trust { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 22px; font-size: .9rem; color: var(--night-muted); list-style: none; padding: 0; }
+.trust li::before { content: "✓"; color: var(--sun); font-weight: 800; margin-right: 6px; }
+
+.cover-fan { position: relative; height: 440px; }
+.cover-fan img { position: absolute; width: 56%; border-radius: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.45); top: 50%; left: 50%; transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.cover-fan img:nth-child(1) { transform: translate(-98%, -50%) rotate(-10deg); }
+.cover-fan img:nth-child(2) { transform: translate(-2%, -52%) rotate(9deg); }
 .cover-fan img:nth-child(3) { transform: translate(-50%, -48%) rotate(-1deg); z-index: 2; }
-.cover-fan:hover img:nth-child(1) { transform: translate(-108%, -50%) rotate(-12deg); }
-.cover-fan:hover img:nth-child(2) { transform: translate(8%, -52%) rotate(11deg); }
+.cover-fan:hover img:nth-child(1) { transform: translate(-110%, -50%) rotate(-13deg); }
+.cover-fan:hover img:nth-child(2) { transform: translate(10%, -52%) rotate(12deg); }
+.cover-fan .sticker { position: absolute; z-index: 3; right: 4%; top: 6%; width: 104px; height: 104px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; text-align: center; font: 800 1rem/1.05 var(--font-display); transform: rotate(10deg); box-shadow: 0 8px 20px rgba(0,0,0,.35); border: 3px dashed var(--sun-ink); outline: 4px solid var(--sun); }
 @media (max-width: 820px) {
-  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 32px 40px; }
-  .cover-fan { height: 340px; max-width: 420px; width: 100%; margin-inline: auto; }
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 30px 40px; }
+  .cover-fan { height: 330px; max-width: 420px; width: 100%; margin-inline: auto; }
   .cover-fan img { width: 46%; }
+  .cover-fan .sticker { width: 84px; height: 84px; font-size: .85rem; }
 }
 
-/* ---------- sections ---------- */
-section.block { padding-block: 56px; }
-.eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.sec-title { font-size: var(--step-3); margin-top: 4px; display: inline-block; padding-bottom: 2px; background: linear-gradient(transparent 62%, var(--mark) 62%); }
-.sec-intro { max-width: 62ch; color: var(--muted); margin: 12px 0 0; }
+.numbers { border-top: 1px solid rgba(255,255,255,.1); background: var(--night-3); }
+.numbers .wrap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding-block: 20px; }
+.numbers div { text-align: center; }
+.numbers b { display: block; font: 800 1.9rem/1 var(--font-display); color: var(--sun); font-variant-numeric: tabular-nums; }
+.numbers span { font-size: .82rem; color: var(--night-muted); }
+@media (max-width: 760px) { .numbers .wrap { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; } }
 
-/* how to read */
-.legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px 24px; margin-top: 28px; }
-.legend-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; }
-.legend-row p { margin: 0; font-size: .92rem; color: var(--muted); }
-.box { border-radius: 10px; padding: 7px 10px; font-size: .86rem; font-weight: 600; text-align: center; line-height: 1.25; }
-.box-example { background: var(--chip-yellow); color: var(--chip-brown); font-family: var(--font-hand); font-weight: 700; font-size: .98rem; }
+/* ---------- sections ---------- */
+section.block { padding-block: 64px; }
+.eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.night .eyebrow { color: var(--night-muted); }
+.sec-title { font-size: var(--step-3); margin-top: 4px; }
+.sec-title .hl { background: linear-gradient(transparent 62%, var(--mark) 62%); padding-inline: 2px; }
+.night .sec-title .hl { background: none; color: var(--sun); }
+.sec-intro { max-width: 62ch; color: var(--muted); margin-top: 12px; }
+.night .sec-intro { color: var(--night-muted); }
+
+/* pain → fix */
+.pain { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
+.pain div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.pain q { display: block; font: 700 1.05rem/1.35 var(--font-hand); color: var(--chip-red); quotes: none; }
+.pain p { margin-top: 10px; font-size: .92rem; color: var(--muted); }
+.pain p b { color: var(--fg); }
+@media (max-width: 900px) { .pain { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .pain { grid-template-columns: minmax(0, 1fr); } }
+
+/* showcase of real cut-outs */
+.show { display: grid; gap: 56px; margin-top: 40px; }
+.show-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 36px; align-items: center; }
+.show-row:nth-child(even) .show-img { order: -1; }
+.show-row h3 { font-size: var(--step-2); }
+.show-row p { margin-top: 10px; color: var(--muted); max-width: 46ch; }
+.show-row .k { font: 700 .82rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.show-img { position: relative; }
+.show-img img { border-radius: 12px; box-shadow: 0 14px 34px rgba(20,18,70,.18); background: #fff; }
+.show-img .tape { position: absolute; top: -10px; left: 50%; width: 90px; height: 22px; background: rgba(255,210,74,.75); transform: translateX(-50%) rotate(-3deg); border-radius: 2px; }
+.show-img.narrow img { max-width: min(100%, 520px); margin-inline: auto; }
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .show-row { grid-template-columns: minmax(0, 1fr); gap: 18px; } .show-row:nth-child(even) .show-img { order: 0; } .duo { grid-template-columns: minmax(0, 1fr); } }
+
+/* compare */
+.compare-wrap { overflow-x: auto; margin-top: 28px; }
+.compare { width: 100%; min-width: 560px; border-collapse: separate; border-spacing: 0; font-size: .95rem; }
+.compare th, .compare td { padding: 12px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,.12); }
+.compare thead th { font-family: var(--font-display); font-size: 1.1rem; }
+.compare thead th:last-child { color: var(--sun); }
+.compare td:first-child { font-weight: 600; color: var(--night-fg); width: 22%; }
+.compare td:nth-child(2) { color: var(--night-muted); }
+.compare td:last-child { color: var(--night-fg); background: rgba(255,210,74,.08); }
+.compare td:last-child::before { content: "✓ "; color: var(--sun); font-weight: 800; }
+
+/* box legend */
+.legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px 24px; margin-top: 26px; }
+.legend-row { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: center; }
+.legend-row p { font-size: .9rem; color: var(--muted); }
+.box { border-radius: 10px; padding: 7px 10px; font-size: .84rem; font-weight: 600; text-align: center; line-height: 1.25; }
+.box-example { background: var(--chip-yellow); color: var(--chip-brown); font-family: var(--font-hand); font-weight: 700; font-size: .96rem; }
 .box-galti { background: var(--chip-pink); color: var(--chip-red); border: 1.5px dashed var(--chip-red); }
 .box-solved { background: var(--chip-mint); color: var(--chip-green); border-bottom: 3px solid var(--chip-green); }
 .box-socho { background: var(--chip-white); color: var(--chip-navy); border: 1.5px solid var(--chip-navy); }
 .box-ghar { background: var(--chip-mint); color: var(--chip-green); }
 .box-exam { background: var(--chip-blue); color: #fff; }
 .box-jee { background: var(--chip-navy); color: var(--sun); }
-.box-tip { background: var(--chip-white); color: var(--chip-brown); border: 1.5px solid var(--chip-navy); font-family: var(--font-hand); font-weight: 700; font-size: .98rem; }
+.box-tip { background: var(--chip-white); color: var(--chip-brown); border: 1.5px solid var(--chip-navy); font-family: var(--font-hand); font-weight: 700; font-size: .96rem; }
 .box-baari { background: var(--chip-white); color: var(--chip-navy); border: 1.5px solid var(--chip-navy); box-shadow: 4px 4px 0 var(--chip-navy); }
 .box-scan { background: var(--chip-white); color: var(--chip-navy); border: 1.5px dashed var(--chip-navy); }
+.end-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; padding: 0; list-style: none; }
+.end-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 500; }
 
-.flow { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: step; }
-.flow li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; counter-increment: step; }
-.flow li::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 700; font-size: .9rem; background: var(--c); margin-bottom: 8px; }
-.flow b { display: block; font-family: var(--font-display); font-size: 1.1rem; }
-.flow span { font-size: .88rem; color: var(--muted); }
-@media (max-width: 820px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 460px) { .flow { grid-template-columns: minmax(0, 1fr); } }
-.howto-sample { margin-top: 20px; font-size: .92rem; }
-.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+/* chapters shelf */
+.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); margin-top: 24px; }
+.tabs button { font: 700 1rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 20px; border-radius: 999px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
+.tabs small { font-weight: 500; font-size: .78rem; margin-left: 4px; opacity: .8; }
+.shelf-note { margin-top: 14px; font-size: .92rem; color: var(--muted); }
+.shelf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 20px; margin-top: 24px; }
+@media (max-width: 960px) { .shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px; } }
+.card { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.cover-btn { padding: 0; border: 0; background: none; cursor: pointer; position: relative; border-radius: 8px; display: block; width: 100%; }
+.cover-btn img { border-radius: 6px; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; width: 100%; }
+.cover-btn:hover img, .cover-btn:hover .soon-cover { transform: translateY(-4px) rotate(-1deg); }
+.card .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.06rem; line-height: 1.2; }
+.card .meta { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.price-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.price { font-size: .8rem; border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; background: var(--surface); font-variant-numeric: tabular-nums; }
+.price b { font-family: var(--font-display); font-size: 1rem; }
+.price.tbd b { font-family: var(--font-body); font-size: .8rem; color: var(--muted); font-weight: 500; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.add-btn { font: 700 .86rem var(--font-body); border-radius: 999px; padding: 7px 12px; cursor: pointer; border: 2px solid var(--fg); background: var(--surface); color: var(--fg); }
+.add-btn[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: #fff; }
+.more-btn { font: 600 .86rem var(--font-body); border: 0; background: none; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 7px 4px; }
 
-/* chapter shelf */
-.shelf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-top: 28px; }
-@media (max-width: 900px) { .shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 620px) { .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
-.book { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; }
-.book img { border-radius: 6px; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; aspect-ratio: 595 / 842; width: 100%; object-fit: cover; }
-.book:hover img { transform: translateY(-4px) rotate(-1deg); }
-.book .ch { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.book .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; line-height: 1.2; }
-.book .meta { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.soon-cover { aspect-ratio: 595 / 842; border-radius: 6px; padding: 9% 9% 7%; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; text-align: left; }
+.soon-cover .w { font: 800 clamp(1rem, 3.4vw, 1.5rem)/1 var(--font-display); color: var(--sun); }
+.soon-cover .p { align-self: flex-start; background: #fff; color: var(--night); font: 700 .58rem var(--font-body); border-radius: 99px; padding: 1px 7px; }
+.soon-cover .f { flex: 1; display: grid; place-items: center; font: 400 clamp(.9rem, 2.6vw, 1.25rem)/1.2 var(--font-hand); color: rgba(255,255,255,.55); text-align: center; padding-block: 8px; }
+.soon-cover .c { align-self: flex-start; background: var(--sun); color: var(--sun-ink); font: 700 .6rem var(--font-body); border-radius: 4px; padding: 1px 6px; }
+.soon-cover .t { font: 800 clamp(.95rem, 2.8vw, 1.2rem)/1.1 var(--font-display); color: #fff; }
+.soon-cover .rib { position: absolute; top: 14px; right: -34px; transform: rotate(35deg); background: var(--rose); color: #5a0d24; font: 800 .7rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 3px 40px; }
+.soon-cover .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--t1) 0 20%, var(--t2) 20% 40%, var(--t3) 40% 60%, var(--t5) 60% 80%, var(--t8) 80%); }
+.soon-tag { color: var(--muted); font-size: .82rem; }
+.notify { font: 600 .86rem var(--font-body); color: var(--wa); text-decoration: none; }
+.notify:hover { text-decoration: underline; }
 
 /* search */
-.search { margin-top: 32px; position: relative; max-width: 640px; }
+.search { margin-top: 36px; position: relative; max-width: 640px; }
 .search label { font-weight: 600; display: block; margin-bottom: 6px; }
-.search input { width: 100%; font: 1rem var(--font-body); padding: 12px 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+.search input { width: 100%; font: 1rem var(--font-body); padding: 12px 18px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
 .search input:focus { border-color: var(--accent); outline: none; }
 .results { margin-top: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); max-height: 360px; overflow: auto; }
 .results button { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 16px; font: inherit; color: var(--fg); cursor: pointer; }
@@ -219,65 +274,105 @@ section.block { padding-block: 56px; }
 .results mark { background: var(--mark); color: inherit; border-radius: 3px; }
 .results .empty { padding: 12px 16px; color: var(--muted); }
 
-/* chapter contents pages */
-.chapter { padding-block: 40px; border-top: 1px solid var(--line); }
-.ch-head { background: var(--night); color: var(--night-fg); border-radius: var(--radius); padding: 22px; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 22px; align-items: center; }
-.ch-head img { border-radius: 6px; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
-.ch-head .kicker { font-size: .85rem; color: var(--night-muted); }
-.ch-head h3 { color: var(--sun); font-size: var(--step-2); margin-top: 2px; }
-.ch-head .tag { font-family: var(--font-hand); color: #ffb3c9; margin: 4px 0 0; }
-.ch-head .stats { margin-top: 12px; }
-.ch-head .stat { font-size: .82rem; padding: 2px 10px; }
-@media (max-width: 560px) { .ch-head { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; padding: 16px; } }
+/* pack builder */
+.pack { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 24px; margin-top: 28px; align-items: start; }
+@media (max-width: 860px) { .pack { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; color: var(--fg); }
+.panel h3 { font-size: 1.25rem; }
+.fmt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.fmt label { border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; font-weight: 700; display: grid; gap: 2px; }
+.fmt label small { font-weight: 400; font-size: .76rem; color: var(--muted); }
+.fmt input { position: absolute; opacity: 0; pointer-events: none; }
+.fmt label:has(input:checked) { border-color: var(--accent); background: var(--paper); }
+.fmt label:has(input:focus-visible) { outline: 3px solid var(--sun); }
+.pick-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 22px; }
+.pick-list { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 2px; }
+.pick-list label { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+.pick-list label:hover { background: var(--paper); }
+.pick-list input { width: 18px; height: 18px; accent-color: var(--good); margin: 0; }
+.pick-list .pp { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.summary dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; margin: 14px 0; font-variant-numeric: tabular-nums; }
+.summary dt { color: var(--muted); }
+.summary dd { margin: 0; font-weight: 600; text-align: right; }
+.summary .total dt, .summary .total dd { font: 800 1.3rem var(--font-display); color: var(--fg); }
+.summary .btn { width: 100%; margin-top: 8px; }
+.summary .fine { font-size: .82rem; color: var(--muted); margin-top: 10px; }
 
-.topics { list-style: none; padding: 0; margin: 18px 0 0; }
-.topic { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; padding: 14px 4px; border-bottom: 1px solid var(--line); border-radius: 8px; transition: background-color .6s ease; }
-.topic.flash { background: var(--mark); }
-.num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; background: var(--c); box-shadow: 3px 3px 0 var(--rev-bg); }
-.topic.rev .num { background: var(--rev-bg); color: var(--rev-fg); box-shadow: none; }
-.topic h4 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; line-height: 1.25; }
-.sec { font-family: var(--font-body); font-size: .78rem; font-weight: 500; color: var(--muted); white-space: nowrap; margin-left: 6px; }
-.subs { margin: 4px 0 0; font-size: .9rem; color: var(--muted); }
-.subs span { white-space: normal; }
-.subs b { color: var(--fg); font-variant-numeric: tabular-nums; }
-.subs i { font-style: normal; padding-inline: 4px; opacity: .6; }
-.topic .side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.topic .start { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; line-height: 1; }
-.track { font-size: .78rem; color: var(--muted); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; white-space: nowrap; }
-.track input { accent-color: var(--t4); width: 16px; height: 16px; margin: 0; }
+/* order bar */
+.order-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--night); color: var(--night-fg); box-shadow: 0 -8px 24px rgba(0,0,0,.25);
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.order-bar .in { max-width: var(--wrap); margin-inline: auto; display: flex; align-items: center; gap: 12px; }
+.order-bar .txt { flex: 1; min-width: 0; font-size: .92rem; }
+.order-bar .txt b { color: var(--sun); }
+.order-bar .btn { box-shadow: none; padding: 10px 18px; }
 
-.samples { margin-top: 22px; }
-.samples h4 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 10px; }
-.sample-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
-.sample-row button { flex: 0 0 auto; width: 120px; background: none; border: 0; padding: 0; cursor: zoom-in; text-align: left; color: var(--muted); font: .78rem/1.3 var(--font-body); }
-.sample-row img { border-radius: 6px; border: 1px solid var(--line); margin-bottom: 6px; aspect-ratio: 595 / 842; object-fit: cover; width: 100%; }
-.progress { font-size: .85rem; color: var(--muted); margin-top: 10px; font-variant-numeric: tabular-nums; }
+/* FAQ */
+.faq { margin-top: 24px; display: grid; gap: 10px; max-width: 760px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+.faq summary { cursor: pointer; font-weight: 700; font-family: var(--font-display); font-size: 1.08rem; }
+.faq p { margin-top: 8px; color: var(--muted); }
 
 /* author */
 .author { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 28px; }
 @media (max-width: 760px) { .author { grid-template-columns: minmax(0, 1fr); } }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
 .sir { display: flex; gap: 16px; align-items: center; }
-.seal { flex: 0 0 auto; width: 74px; height: 74px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; text-align: center; font-family: var(--font-display); font-weight: 800; line-height: 1; border: 3px dashed var(--sun-ink); box-shadow: 0 0 0 4px var(--sun); }
+.seal { flex: 0 0 auto; width: 74px; height: 74px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; text-align: center; font: 800 1rem/1 var(--font-display); border: 3px dashed var(--sun-ink); box-shadow: 0 0 0 4px var(--sun); }
 .sir h3 { font-size: var(--step-2); }
-.sir p { margin: 0; color: var(--muted); }
-.card p { max-width: 60ch; }
+.sir p { color: var(--muted); }
+.panel p + p, .panel .sir + p { margin-top: 12px; }
 .phone { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0; }
-.phone output { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; user-select: all; font-variant-numeric: tabular-nums; }
-.btn-line { border-color: var(--line); color: var(--fg); background: var(--surface); padding: 6px 14px; font-size: .9rem; }
-.btn-wa { background: #1f9d55; color: #fff; }
-.copied { font-size: .85rem; color: var(--t4); }
+.phone output { font: 800 1.7rem var(--font-display); letter-spacing: .02em; user-select: all; font-variant-numeric: tabular-nums; }
+.copied { font-size: .85rem; color: var(--good); }
 .sponsor { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
 .sponsor b { color: var(--fg); }
 
+/* final CTA */
+.final { text-align: center; }
+.final .wrap { padding-block: 56px; display: grid; justify-items: center; gap: 14px; }
+.final h2 { font-size: var(--step-3); max-width: 22ch; }
+.final h2 span { color: var(--sun); }
+.final p { color: var(--night-muted); max-width: 52ch; }
+
 /* footer */
-.site-foot { background: var(--night); color: var(--night-muted); font-size: .85rem; }
+.site-foot { background: var(--night-3); color: var(--night-muted); font-size: .85rem; }
 .site-foot .wrap { padding-block: 28px; display: grid; gap: 6px; }
 .site-foot b { color: var(--night-fg); }
 .rainbow { height: 8px; background: linear-gradient(90deg, var(--t1) 0 11%, var(--t2) 11% 22%, var(--t3) 22% 33%, var(--t4) 33% 44%, var(--t5) 44% 55%, var(--t6) 55% 66%, var(--t7) 66% 77%, var(--t8) 77% 88%, var(--sun) 88%); }
 
+/* chapter sheet */
+.sheet { position: fixed; inset: 0; z-index: 40; background: rgba(10,9,35,.6); display: flex; justify-content: flex-end; }
+.sheet-body { background: var(--paper); color: var(--fg); width: min(760px, 100%); height: 100%; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+.sheet-top { display: flex; justify-content: flex-end; position: sticky; top: 0; z-index: 2; }
+.close-btn { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; font: 600 .92rem var(--font-body); cursor: pointer; }
+.ch-head { border-radius: var(--radius); padding: 20px; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 20px; align-items: center; margin-top: 8px; }
+.ch-head img { border-radius: 6px; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+.ch-head .kicker { font-size: .82rem; color: var(--night-muted); }
+.ch-head h3 { color: var(--sun); font-size: var(--step-2); margin-top: 2px; }
+.ch-head .tag { font-family: var(--font-hand); color: var(--rose); margin-top: 4px; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.stat { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.06); border-radius: 999px; padding: 2px 10px; font-size: .8rem; }
+.stat b { color: var(--sun); font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .ch-head { grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 16px; } }
+.sheet-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+.sheet h4.sub { font-size: 1.15rem; margin-top: 26px; }
+.sample-row { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0 8px; }
+.sample-row button { flex: 0 0 auto; width: 112px; background: none; border: 0; padding: 0; cursor: zoom-in; text-align: left; color: var(--muted); font: .76rem/1.3 var(--font-body); }
+.sample-row img { border-radius: 6px; border: 1px solid var(--line); margin-bottom: 6px; width: 100%; }
+.topics { list-style: none; padding: 0; margin: 8px 0 0; }
+.topic { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--line); border-radius: 8px; transition: background-color .6s ease; }
+.topic.flash { background: var(--mark); }
+.num { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 800 1.1rem var(--font-display); background: var(--c); box-shadow: 3px 3px 0 var(--rev-bg); }
+.topic.rev .num { background: var(--rev-bg); color: var(--rev-fg); box-shadow: none; }
+.topic h5 { margin: 0; font: 700 1.1rem/1.25 var(--font-display); }
+.sec { font-family: var(--font-body); font-size: .76rem; font-weight: 500; color: var(--muted); margin-left: 6px; }
+.subs { margin-top: 4px; font-size: .88rem; color: var(--muted); }
+.subs b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.subs i { font-style: normal; padding-inline: 4px; opacity: .6; }
+.topic .start { font: 800 1.25rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+
 /* viewer */
-.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(10,9,35,.92); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: var(--night-fg); }
+.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(10,9,35,.94); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: var(--night-fg); }
 .viewer-bar { display: flex; align-items: center; gap: 10px; }
 .viewer-bar span { flex: 1; min-width: 0; font-size: .92rem; }
 .viewer-stage { display: grid; place-items: center; min-height: 0; padding-block: 10px; }
@@ -285,125 +380,236 @@ section.block { padding-block: 56px; }
 .viewer-nav { display: flex; justify-content: center; gap: 12px; }
 .icon-btn { background: rgba(255,255,255,.12); color: var(--night-fg); border: 0; border-radius: 999px; padding: 8px 18px; font: 600 .95rem var(--font-body); cursor: pointer; }
 .icon-btn:hover { background: rgba(255,255,255,.22); }
-.note { font-size: .82rem; color: var(--muted); margin-top: 14px; }
 </style>
 </head>
 <body>
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="#top">Chemophile<small>Part 1 · Class 11</small></a>
+    <a class="brand" href="#top">Chemophile<small>by Adeel Sir · Class 11 &amp; 12</small></a>
     <nav class="site-nav" aria-label="Main">
-      <a href="#kaise-padhein">Kaise padhein</a>
+      <a href="#andar">Andar kya hai</a>
       <a href="#chapters">Chapters</a>
-      <a href="#adeel-sir">Adeel Sir</a>
-      <a class="cta" href="#contact">Book chahiye?</a>
+      <a href="#faq">Sawaal</a>
+      <a class="btn btn-sun" href="#pack">Order karo</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
-  <section class="hero">
+  <section class="hero night">
     <div class="wrap">
       <div>
-        <div class="pills"><span class="pill">Class 11 Chemistry</span><span class="pill">NCERT syllabus 2026-27 par based</span></div>
-        <h1>Chemophile</h1>
-        <span class="part-badge">Part 1 (for 11th Class)</span>
-        <p class="lede">Class 11 Chemistry ke saare chapters, Hinglish mein, visuals ke saath. Har topic ek story ki tarah: pehle example, phir diagram, phir concept, phir exam wala answer.</p>
-        <p class="hand">Chemistry ab ratni nahi padegi, samajh aayegi.</p>
-        <div class="spectrum" aria-hidden="true">
-          <i style="left:6%;background:#8b5cf6"></i><i style="left:10%;background:#6366f1"></i><i style="left:25%;background:#22d3ee"></i><i style="left:74%;background:#ef4444"></i>
-        </div>
-        <div class="spectrum-note">hydrogen ki visible (Balmer) lines: 410, 434, 486, 656 nm</div>
-        <div class="stats" id="hero-stats"></div>
+        <div class="pills"><span class="pill new">Class 11 ab available</span><span class="pill">Class 12 coming soon</span><span class="pill">CBSE 2026-27</span></div>
+        <h1>Chemistry ka darr <span class="y">khatam.</span></h1>
+        <p class="lede">Adeel Sir ki Chemophile booklets: Class 11 aur 12 Chemistry, Hinglish mein. Har concept pehle roz ki zindagi ke example se, phir diagram se, phir exam wale answer tak.</p>
+        <p class="hand">Ratna nahi padega. Samajh aayega, aur yaad bhi rahega.</p>
         <div class="hero-actions">
-          <a class="btn btn-sun" href="#chapters">Chapters dekho</a>
-          <a class="btn btn-ghost" href="#contact">Adeel Sir se book lo</a>
+          <button class="btn btn-sun" type="button" data-open="ch2-5">Free sample page padho</button>
+          <a class="btn btn-ghost" href="#pack">Apna pack banao</a>
         </div>
+        <ul class="trust">
+          <li>NCERT section-wise</li>
+          <li>Board answers English mein</li>
+          <li>JEE/NEET extra boxes</li>
+          <li>PDF aur Paperback dono</li>
+        </ul>
       </div>
-      <div class="cover-fan" aria-hidden="true">
+      <div class="cover-fan">
         <img src="assets/thumbs/ch6-1.webp" alt="" width="360" height="509">
         <img src="assets/thumbs/ch9-1.webp" alt="" width="360" height="509">
-        <img src="assets/thumbs/ch2-1.webp" alt="" width="360" height="509">
+        <img src="assets/thumbs/ch2-1.webp" alt="Chemophile Chapter 2: Structure of Atom ka cover" width="360" height="509">
+        <div class="sticker" aria-hidden="true">Hinglish<br>mein!</div>
+      </div>
+    </div>
+    <div class="numbers">
+      <div class="wrap" id="numbers"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="eyebrow">Kya yeh tumhari kahani hai?</div>
+      <h2 class="sec-title">Chemistry mushkil nahi, <span class="hl">samjhane ka tareeka</span> mushkil tha</h2>
+      <div class="pain">
+        <div><q>NCERT 3 baar padha, phir bhi samajh nahi aaya.</q><p>Chemophile mein har topic <b>Adeel Sir ke example</b> se shuru hota hai: comb, balloon, TV, cold drink. Pehle samajh, phir definition.</p></div>
+        <div><q>Concept aata hai, par exam mein likhna nahi aata.</q><p>Har topic ke saath <b>"Exam mein aise likho"</b> box: board ke liye English answer, ruled lines par, ready.</p></div>
+        <div><q>Numericals dekh ke hi darr lagta hai.</q><p>Class 11 ke 8 chapters mein <b>239 solved examples</b> step-by-step, phir "Ab tumhari baari" mein khud try.</p></div>
+        <div><q>Padha sab, par marks phir bhi cut gaye.</q><p><b>"Galti mat karna"</b> box woh galtiyan pehle hi bata deta hai jo sabse zyada marks katwati hain.</p></div>
       </div>
     </div>
   </section>
 
-  <section class="block" id="kaise-padhein">
+  <section class="block" id="andar" style="padding-top: 8px">
+    <div class="wrap">
+      <div class="eyebrow">Book ke asli pages se</div>
+      <h2 class="sec-title">Andar se dekho, <span class="hl">phir decide karo</span></h2>
+      <p class="sec-intro">Neeche jo dikh raha hai woh Chemophile ke asli pages se liya gaya hai. Koi bhi book aisi nahi dikhti.</p>
+      <div class="show">
+        <div class="show-row">
+          <div><div class="k">Step 1 · Samjho</div><h3>Har concept ek roz ki zindagi ke example se</h3><p>Charge kya hai? Adeel Sir pehle comb aur paper ke tukdon ki baat karte hain. Concept dimaag mein baith jaata hai, ratna nahi padta.</p></div>
+          <div class="show-img"><span class="tape"></span><img src="assets/feature/example.webp" alt="Book se: Adeel Sir ka example box, comb aur paper ke tukde" width="900" height="171" loading="lazy"></div>
+        </div>
+        <div class="show-row">
+          <div><div class="k">Step 2 · Dekho</div><h3>Har page par diagram, saaf labels ke saath</h3><p>Sirf Class 11 mein 458 figures aur diagrams. Cathode ray tube ho ya chemical equilibrium, sab kuch aankhon ke saamne.</p></div>
+          <div class="show-img"><span class="tape"></span><img src="assets/feature/diagram.webp" alt="Book se: glass discharge tube ka labelled diagram" width="900" height="348" loading="lazy"></div>
+        </div>
+        <div class="show-row">
+          <div><div class="k">Step 3 · Likho</div><h3>Board exam ka answer, English mein ready</h3><p>Samjho Hinglish mein, likho English mein. Har topic ke saath woh answer jo examiner dekhna chahta hai.</p></div>
+          <div class="show-img narrow"><span class="tape"></span><img src="assets/feature/exam.webp" alt="Book se: Exam mein aise likho box, English answer ruled lines par" width="507" height="410" loading="lazy"></div>
+        </div>
+        <div class="show-row">
+          <div><div class="k">Step 4 · Bacho</div><h3>Galtiyan exam se pehle pakdo</h3><p>"Galti mat karna" aur "Ruko aur socho" boxes tumhe wahin rokte hain jahan zyada tar students phisalte hain.</p></div>
+          <div class="show-img duo"><img src="assets/feature/galti.webp" alt="Book se: Galti mat karna box" width="466" height="247" loading="lazy"><img src="assets/feature/socho.webp" alt="Book se: Ruko aur socho box" width="442" height="161" loading="lazy"></div>
+        </div>
+        <div class="show-row">
+          <div><div class="k">Har topic ki shuruaat</div><h3>Ghar ki cheezon se chemistry</h3><p>LPG, sirka, cheeni, mombatti, cold drink: har topic ek bade visual se khulta hai jo dikhata hai ki yeh chemistry tumhare aas-paas kahan hai.</p></div>
+          <div class="show-img"><span class="tape"></span><img src="assets/feature/visual8.webp" alt="Book se: Organic compounds hamare ghar ki har cheez mein, illustration" width="900" height="337" loading="lazy"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block night">
+    <div class="wrap">
+      <div class="eyebrow">Fark khud dekho</div>
+      <h2 class="sec-title">Ratta wali padhai vs <span class="hl">Chemophile</span></h2>
+      <div class="compare-wrap">
+        <table class="compare">
+          <thead><tr><th scope="col"></th><th scope="col">Ratta wali padhai</th><th scope="col">Chemophile</th></tr></thead>
+          <tbody>
+            <tr><td>Concept</td><td>Seedha definition yaad karo</td><td>Pehle roz ki zindagi ka example, phir visual, phir concept</td></tr>
+            <tr><td>Language</td><td>Bhaari English, har line par dictionary</td><td>Hinglish mein samjhaya, English mein exam answer</td></tr>
+            <tr><td>Diagram</td><td>Kabhi-kabhi, chhote aur dhundhle</td><td>Har page par, rang aur labels ke saath</td></tr>
+            <tr><td>Exam answer</td><td>Khud banao, galat format ka darr</td><td>"Exam mein aise likho" box, ready answer</td></tr>
+            <tr><td>Practice</td><td>Answers peeche dhoondo</td><td>Har topic ke end mein quick check, har chapter ke end mein 40 marks ka test</td></tr>
+            <tr><td>JEE/NEET</td><td>Alag se dhoondna padta hai</td><td>JEE/NEET extra boxes saath mein, aur PhET simulations ke QR</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
     <div class="wrap">
       <div class="eyebrow">Har booklet ke andar</div>
-      <h2 class="sec-title">Is booklet ko kaise padhein</h2>
-      <p class="sec-intro">Har page par alag-alag boxes hain. Har box ka ek kaam hai. Pencil saath rakho: booklet mein likhna, tick karna aur colour karna sab allowed hai.</p>
+      <h2 class="sec-title">Har box ka <span class="hl">ek kaam</span></h2>
       <div class="legend">
-        <div class="legend-row"><div class="box box-example">Adeel Sir ka example</div><p>Har concept ek everyday life example se start hota hai.</p></div>
-        <div class="legend-row"><div class="box box-exam">Exam mein aise likho</div><p>Board exam ke liye English answer, ruled lines par.</p></div>
-        <div class="legend-row"><div class="box box-galti">Galti mat karna</div><p>Common mistakes jo sabse zyada marks cut karwati hain.</p></div>
-        <div class="legend-row"><div class="box box-jee">JEE/NEET extra</div><p>Advanced concepts, competitive exams ke liye.</p></div>
+        <div class="legend-row"><div class="box box-example">Adeel Sir ka example</div><p>Har concept roz ki zindagi ke example se.</p></div>
+        <div class="legend-row"><div class="box box-exam">Exam mein aise likho</div><p>Board ke liye English answer.</p></div>
+        <div class="legend-row"><div class="box box-galti">Galti mat karna</div><p>Marks katwane wali common galtiyan.</p></div>
+        <div class="legend-row"><div class="box box-jee">JEE/NEET extra</div><p>Competitive exams ke advanced concepts.</p></div>
         <div class="legend-row"><div class="box box-solved">Adeel Sir ka solved example</div><p>Step-by-step solved question.</p></div>
         <div class="legend-row"><div class="box box-tip">Adeel Sir ka tip</div><p>Yaad rakhne ki short trick.</p></div>
-        <div class="legend-row"><div class="box box-socho">Ruko aur socho</div><p>Aage padhne se pehle khud socho, phir tick karo.</p></div>
-        <div class="legend-row"><div class="box box-baari">Ab tumhari baari</div><p>Khud solve karo. Answers topic ke end mein ulte print hain.</p></div>
-        <div class="legend-row"><div class="box box-ghar">Ghar par karo</div><p>Ghar ki cheezon se ek chhoti activity.</p></div>
-        <div class="legend-row"><div class="box box-scan">Scan karo, khud try karo</div><p>QR scan karke PhET ka free simulation phone par chalao.</p></div>
+        <div class="legend-row"><div class="box box-socho">Ruko aur socho</div><p>Aage padhne se pehle khud socho.</p></div>
+        <div class="legend-row"><div class="box box-baari">Ab tumhari baari</div><p>Khud solve karo, answers ulte print.</p></div>
+        <div class="legend-row"><div class="box box-ghar">Ghar par karo</div><p>Ghar ki cheezon se chhoti activity.</p></div>
+        <div class="legend-row"><div class="box box-scan">Scan karo, khud try karo</div><p>QR se PhET simulation phone par.</p></div>
       </div>
-
-      <ol class="flow" aria-label="Har topic ka flow">
-        <li style="--c: var(--t1)"><b>Pehla page</b><span>Goals padho; topic ke baad tick karna.</span></li>
-        <li style="--c: var(--t2)"><b>Samjho</b><span>Adeel Sir ka example, phir visual, phir concept.</span></li>
-        <li style="--c: var(--t3)"><b>Likho</b><span>Exam wala answer copy mein likho.</span></li>
-        <li style="--c: var(--t6)"><b>Khud karo</b><span>Solved example dekho, phir 'Ab tumhari baari'.</span></li>
-        <li style="--c: var(--t8)"><b>Check karo</b><span>Recap + quick check. Answers page ulta karke.</span></li>
-      </ol>
-      <p class="howto-sample">Har chapter ke end mein: formula sheet, fact sheet, top 12 mistakes, 40 marks ka final test aur tumhara certificate. <button class="linkish" type="button" data-open="ch2-2">Book ka "kaise padhein" page dekho</button></p>
+      <h3 style="font-size: 1.2rem; margin-top: 36px">Har chapter ke end mein bonus</h3>
+      <ul class="end-list">
+        <li>Formula sheet</li><li>Fact sheet: poora chapter ek page par</li><li>Top 12 mistakes</li><li>Exam ke favourite questions</li><li>16 MCQs + Part B aur C</li><li>40 marks ka test + scorecard</li><li>Answer key</li><li>Tumhara certificate</li>
+      </ul>
     </div>
   </section>
 
-  <section class="block" id="chapters" style="padding-bottom: 8px">
+  <section class="block" id="chapters" style="padding-top: 16px">
     <div class="wrap">
-      <div class="eyebrow">Part 1 ke chapters</div>
-      <h2 class="sec-title">Saare chapters, ek jagah</h2>
-      <p class="sec-intro">Kisi bhi cover par tap karo aur us chapter ke saare topics, NCERT section numbers aur page numbers dekho. Har chapter ke kuch sample pages bhi andar se dekh sakte ho.</p>
-      <div class="shelf" id="shelf"></div>
+      <div class="eyebrow">CBSE 2026-27 syllabus ke saare chapters</div>
+      <h2 class="sec-title">Apna <span class="hl">chapter chuno</span></h2>
+      <div class="tabs" role="tablist" aria-label="Class">
+        <button type="button" role="tab" id="tab-11" aria-controls="shelf" aria-selected="true" data-cls="11">Class 11 <small id="tab-11-n"></small></button>
+        <button type="button" role="tab" id="tab-12" aria-controls="shelf" aria-selected="false" data-cls="12">Class 12 <small id="tab-12-n"></small></button>
+      </div>
+      <p class="shelf-note" id="shelf-note"></p>
+      <div class="shelf" id="shelf" role="tabpanel"></div>
 
       <div class="search">
-        <label for="topic-search">Koi topic dhoondo</label>
+        <label for="topic-search">Koi topic dhoondo, pata karo kis chapter mein hai</label>
         <input id="topic-search" type="search" placeholder="Jaise: Hund, pH, Markovnikov, Hess" autocomplete="off">
         <div class="results" id="results" hidden></div>
       </div>
     </div>
   </section>
 
-  <div class="wrap" id="chapter-list"></div>
+  <section class="block night" id="pack">
+    <div class="wrap">
+      <div class="eyebrow">Order</div>
+      <h2 class="sec-title">Apna <span class="hl">pack banao</span></h2>
+      <p class="sec-intro">Format chuno, chapters tick karo, aur WhatsApp par order bhejo. Adeel Sir payment aur delivery ki details wahin bata denge.</p>
+      <div class="pack">
+        <div class="panel">
+          <h3>1. Format chuno</h3>
+          <div class="fmt" role="radiogroup" aria-label="Format">
+            <label><input type="radio" name="fmt" id="fmt-pdf" value="pdf" checked>PDF<small>Phone ya tablet par</small></label>
+            <label><input type="radio" name="fmt" id="fmt-paperback" value="paperback">Paperback<small>Printed booklet</small></label>
+            <label><input type="radio" name="fmt" id="fmt-both" value="both">Dono<small>PDF + Paperback</small></label>
+          </div>
+          <div class="pick-head">
+            <h3>2. Chapters chuno</h3>
+            <button class="btn btn-line btn-small" type="button" id="pick-all">Saare chapters</button>
+          </div>
+          <ul class="pick-list" id="pick-list"></ul>
+        </div>
+        <div class="panel summary" aria-live="polite">
+          <h3>3. Order bhejo</h3>
+          <dl id="summary"></dl>
+          <a class="btn btn-wa" id="order-btn" href="#" target="_blank" rel="noopener">WhatsApp par order bhejo</a>
+          <p class="fine" id="summary-note"></p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section class="block" id="adeel-sir">
+  <section class="block" id="faq">
+    <div class="wrap">
+      <div class="eyebrow">Sawaal jo sab poochte hain</div>
+      <h2 class="sec-title"><span class="hl">Sawaal</span> aur jawaab</h2>
+      <div class="faq">
+        <details><summary>Kya yeh NCERT aur CBSE syllabus ke according hai?</summary><p>Haan. Har chapter NCERT ke section numbers ke saath chalta hai, aur chapters CBSE 2026-27 syllabus ke hisaab se hain. Textbook se cross-check karna aasaan hai.</p></details>
+        <details><summary>Kya yeh JEE aur NEET ke liye bhi kaam ki hai?</summary><p>Booklet ka main focus board exam aur concept clarity hai. Saath mein har chapter mein "JEE/NEET extra" boxes hain jo advanced concepts cover karte hain.</p></details>
+        <details><summary>Hinglish mein padh ke English exam kaise likhunga?</summary><p>Samjhaya Hinglish mein gaya hai, lekin har topic ke saath "Exam mein aise likho" box mein board ke liye poora English answer diya hai.</p></details>
+        <details><summary>PDF aur Paperback mein kya fark hai?</summary><p>Content dono mein same hai. PDF phone ya tablet par padhne ke liye hai. Paperback printed booklet hai jismein tum likh sakte ho, tick kar sakte ho aur colour kar sakte ho.</p></details>
+        <details><summary>Order kaise karun?</summary><p>Upar "Apna pack banao" mein format aur chapters chuno, phir "WhatsApp par order bhejo" dabao. Payment aur delivery ki details Adeel Sir WhatsApp par batayenge.</p></details>
+        <details><summary>Jo chapters "Coming soon" hain, woh kab aayenge?</summary><p>Naye chapters ek-ek karke aa rahe hain. Chapter ke neeche "Aate hi batana" dabao, WhatsApp par message chala jayega aur chapter aate hi tumhe pata chal jayega.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="adeel-sir" style="padding-top: 8px">
     <div class="wrap">
       <div class="eyebrow">Author</div>
-      <h2 class="sec-title">Adeel Sir ke baare mein</h2>
+      <h2 class="sec-title">Adeel Sir <span class="hl">ke baare mein</span></h2>
       <div class="author">
-        <div class="card">
+        <div class="panel">
           <div class="sir">
             <div class="seal">Adeel<br>Sir</div>
-            <div>
-              <h3>Mohd Adeel Khan</h3>
-              <p>MSc BEd (JMI)</p>
-            </div>
+            <div><h3>Mohd Adeel Khan</h3><p>MSc BEd (JMI)</p></div>
           </div>
-          <p>Chemophile series Adeel Sir ne Class 11 ke students ke liye likhi hai. Har chapter NCERT ke section numbers ke saath chalta hai, taaki textbook se cross-check karna aasaan rahe. Language Hinglish hai, examples ghar aur roz ki zindagi se hain, aur har topic ke saath board exam ke liye English mein likha hua answer bhi hai.</p>
-          <p>Har booklet mein JEE/NEET extra boxes, PhET simulations ke QR codes aur 40 marks ka chapter test hai.</p>
+          <p>Chemophile series Adeel Sir ne Class 11 aur 12 ke students ke liye likhi hai. Har chapter NCERT ke section numbers ke saath chalta hai. Language Hinglish hai, examples ghar aur roz ki zindagi se hain, aur har topic ke saath board exam ke liye English mein likha hua answer bhi hai.</p>
         </div>
-        <div class="card" id="contact">
-          <h3 style="font-size: var(--step-2)">Book chahiye?</h3>
-          <p>Chemophile Part 1 ki booklets ke liye seedha Adeel Sir se baat karo.</p>
+        <div class="panel" id="contact">
+          <h3 style="font-size: var(--step-2)">Seedha baat karo</h3>
+          <p>Book, price ya order ke baare mein koi bhi sawaal ho to call ya WhatsApp karo.</p>
           <div class="phone">
             <output id="phone-num">9953821875</output>
             <button class="btn btn-line" type="button" id="copy-phone">Number copy karo</button>
             <span class="copied" id="copy-msg" role="status"></span>
           </div>
-          <div class="hero-actions" style="margin-top: 0">
-            <a class="btn btn-wa" href="https://wa.me/919953821875?text=Hello%20Adeel%20Sir%2C%20mujhe%20Chemophile%20Part%201%20(Class%2011)%20ke%20baare%20mein%20jaankari%20chahiye." target="_blank" rel="noopener">WhatsApp par message karo</a>
-          </div>
+          <a class="btn btn-wa" id="wa-hello" href="#" target="_blank" rel="noopener">WhatsApp par message karo</a>
           <div class="sponsor">Book sponsored by <b>Olife Gold Olive Oil</b></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final night">
+    <div class="wrap">
+      <h2>Agla chapter <span>ratna nahi</span>, samajhna hai?</h2>
+      <p>Pehle free sample pages dekho. Pasand aaye to apna pack banao aur aaj hi shuru karo.</p>
+      <div class="hero-actions" style="justify-content: center; margin-top: 6px">
+        <a class="btn btn-sun" href="#pack">Apna pack banao</a>
+        <a class="btn btn-ghost" href="#chapters">Chapters dekho</a>
       </div>
     </div>
   </section>
@@ -412,11 +618,22 @@ section.block { padding-block: 56px; }
 <footer class="site-foot">
   <div class="rainbow"></div>
   <div class="wrap">
-    <div><b>Chemophile Part 1 (for 11th Class)</b> · Mohd Adeel Khan, MSc BEd (JMI)</div>
+    <div><b>Chemophile</b> · Class 11 &amp; 12 Chemistry · Mohd Adeel Khan, MSc BEd (JMI)</div>
     <div>© 2026 Mohd Adeel Khan. All rights reserved. Booklets ka text, figures, questions aur examples author ka original work hai. Bina permission copy, scan, print, upload ya share karna prohibited hai.</div>
-    <div>NCERT Class 11 Chemistry syllabus par based. Yeh NCERT ka publication nahi hai. QR codes PhET Interactive Simulations (University of Colorado Boulder) ke free simulations kholte hain.</div>
+    <div>NCERT aur CBSE syllabus par based. Yeh NCERT ka publication nahi hai. QR codes PhET Interactive Simulations (University of Colorado Boulder) ke free simulations kholte hain.</div>
   </div>
 </footer>
+
+<div class="order-bar" id="order-bar" hidden>
+  <div class="in">
+    <div class="txt" id="order-bar-txt"></div>
+    <a class="btn btn-sun" href="#pack">Pack dekho</a>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-body" id="sheet-body"></div>
+</div>
 
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="viewer-cap">
   <div class="viewer-bar">
@@ -431,7 +648,39 @@ section.block { padding-block: 56px; }
 </div>
 
 <script>
-// Topic subtopics are "name page · name page", exactly as on each booklet's contents page.
+// ===== Settings Adeel Sir can change =====
+const PHONE = "9953821875";
+const WHATSAPP = "919953821875";
+// Rupees per chapter. Leave null until the price is decided; the page then shows "jaldi".
+// Key = "class-chapter", e.g. "11-2" is Class 11 Chapter 2.
+const PRICES = {
+  "11-2": { pdf: null, paperback: null },
+  "11-3": { pdf: null, paperback: null },
+  "11-4": { pdf: null, paperback: null },
+  "11-5": { pdf: null, paperback: null },
+  "11-6": { pdf: null, paperback: null },
+  "11-7": { pdf: null, paperback: null },
+  "11-8": { pdf: null, paperback: null },
+  "11-9": { pdf: null, paperback: null }
+};
+
+// Chapters still being written, as per the CBSE 2026-27 syllabus. Move a chapter into CHAPTERS when it is ready.
+const UPCOMING = [
+  { cls: 11, n: 1, title: "Some Basic Concepts of Chemistry", tag: "Mole concept, stoichiometry aur concentration terms", f: "n = m / M" },
+  { cls: 12, n: 1, title: "Solutions", tag: "Concentration, Raoult's law aur colligative properties", f: "ΔT<sub>b</sub> = K<sub>b</sub> · m" },
+  { cls: 12, n: 2, title: "Electrochemistry", tag: "Cells, Nernst equation aur conductance", f: "E = E° − (0.059/n) log Q" },
+  { cls: 12, n: 3, title: "Chemical Kinetics", tag: "Rate law, order aur Arrhenius equation", f: "k = A e<sup>−Ea/RT</sup>" },
+  { cls: 12, n: 4, title: "The d- and f-Block Elements", tag: "Transition elements, lanthanoids aur actinoids", f: "Cr: [Ar] 3d<sup>5</sup> 4s<sup>1</sup>" },
+  { cls: 12, n: 5, title: "Coordination Compounds", tag: "Werner theory, naming, VBT aur CFT", f: "[Co(NH<sub>3</sub>)<sub>6</sub>]<sup>3+</sup>" },
+  { cls: 12, n: 6, title: "Haloalkanes and Haloarenes", tag: "S<sub>N</sub>1, S<sub>N</sub>2 aur haloarenes ki reactions", f: "R–X + OH<sup>−</sup> → R–OH" },
+  { cls: 12, n: 7, title: "Alcohols, Phenols and Ethers", tag: "Banane ke tareeke, reactions aur acidity", f: "R–OH · Ar–OH · R–O–R" },
+  { cls: 12, n: 8, title: "Aldehydes, Ketones and Carboxylic Acids", tag: "Nucleophilic addition aur named reactions", f: "&gt;C=O" },
+  { cls: 12, n: 9, title: "Amines", tag: "Basicity, diazonium salts aur pehchaan ke tests", f: "R–NH<sub>2</sub>" },
+  { cls: 12, n: 10, title: "Biomolecules", tag: "Carbohydrates, proteins, vitamins aur nucleic acids", f: "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>" }
+];
+const PART = { 11: "Part 1 (for 11th Class)", 12: "Part 2 (for 12th Class)" };
+
+// Available Class 11 chapters. Topic sub-lists are "name page · name page", as on each booklet's contents page.
 const CHAPTERS = [
   { n: 2, title: "Structure of Atom", tag: "Atom ki complete story: Hinglish mein, visuals ke saath",
     pages: 81, fig: 88, solved: 27, practice: "130+", qr: "5 QR simulations",
@@ -541,120 +790,236 @@ const CHAPTERS = [
       ["Revision", "Complete chapter", 79, "Conversions map: ek nazar mein 80 · Reagent sheet + rules 81 · Fact sheet: poora chapter ek page par 82 · Top 12 mistakes + exam ke favourite questions 83 · Final test, Part A: 16 MCQs 84 · Final test, Part B aur C + scorecard 85 · Answer key + tumhara certificate 86"]
     ] }
 ];
+CHAPTERS.forEach(c => { c.cls = 11; });
 
 const SAMPLE_PAGES = [[1, "Cover"], [3, "Is chapter mein kya hai"], [4, "Topic 1 ka pehla page"], [5, "Page 5"], [6, "Page 6"]];
 const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
 
 const $ = (s, el = document) => el.querySelector(s);
-const plain = html => html.replace(/<[^>]+>/g, "");
-const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const plain = html => html.replace(/<[^>]+>/g, "").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const key = c => `${c.cls}-${c.n}`;
+const nameOf = c => c.short || c.title;
+const rupee = v => "₹" + Number(v).toLocaleString("en-IN");
+const wa = text => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 const parseSubs = str => str.split(" · ").map(s => {
   const m = s.match(/^(.*)\s(\d+)$/);
   return m ? { name: m[1], page: +m[2] } : { name: s, page: null };
 });
-
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const done = store.get("chemophile-done") || {};
 
-// hero totals, summed from the chapter data so they stay correct
-(function heroStats() {
-  const sum = key => CHAPTERS.reduce((a, c) => a + (typeof c[key] === "number" ? c[key] : parseInt(c[key], 10)), 0);
-  const topics = CHAPTERS.reduce((a, c) => a + c.topics.length, 0);
-  const qr = CHAPTERS.reduce((a, c) => a + parseInt(c.qr, 10), 0);
+// ---------- numbers strip ----------
+(function numbers() {
+  const sum = f => CHAPTERS.reduce((a, c) => a + parseInt(c[f], 10), 0);
   const items = [
-    [CHAPTERS.length, "chapters"], [sum("pages"), "pages"], [topics, "topics"],
-    [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
-    [sum("practice") + "+", "practice questions"], [qr, "QR simulations"]
+    [CHAPTERS.length, "chapters ready"], [sum("pages"), "pages"], [sum("fig"), "figures aur diagrams"],
+    [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [UPCOMING.length, "chapters aa rahe hain"]
   ];
-  $("#hero-stats").innerHTML = items.map(([v, l]) => `<span class="stat"><b>${v}</b> ${l}</span>`).join("");
+  $("#numbers").innerHTML = items.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
 })();
 
-// shelf of covers
-$("#shelf").innerHTML = CHAPTERS.map(c => `
-  <a class="book" href="#ch${c.n}">
-    <img src="assets/thumbs/ch${c.n}-1.webp" alt="Chapter ${c.n}: ${esc(c.title)} ka cover" width="360" height="509" loading="lazy">
-    <div>
-      <div class="ch">Chapter ${c.n}</div>
-      <div class="nm">${esc(c.short || c.title)}</div>
-      <div class="meta">${c.topics.length} topics · ${c.pages} pages</div>
-    </div>
-  </a>`).join("");
-
-// chapter contents pages
-$("#chapter-list").innerHTML = CHAPTERS.map(c => {
-  const topics = c.topics.map(([name, sec, start, subs], i) => {
-    const isRev = i === c.topics.length - 1;
-    const id = `ch${c.n}-t${i + 1}`;
-    const subHtml = parseSubs(subs).map(s => `<span>${s.name}${s.page ? `&nbsp;<b>${s.page}</b>` : ""}</span>`).join("<i>·</i>");
-    return `
-      <li class="topic${isRev ? " rev" : ""}" id="${id}" style="--c: var(${TOPIC_COLORS[i % TOPIC_COLORS.length]})">
-        <div class="num">${i + 1}</div>
-        <div style="min-width:0">
-          <h4>${name}<span class="sec">${sec}</span></h4>
-          <p class="subs">${subHtml}</p>
-        </div>
-        <div class="side">
-          <span class="start" title="Page number">${start}</span>
-          <label class="track"><input type="checkbox" id="done-${id}" data-id="${id}"${done[id] ? " checked" : ""}> Padh liya</label>
-        </div>
-      </li>`;
-  }).join("");
-  const samples = SAMPLE_PAGES.map(([p, label]) => `
-    <button type="button" data-open="ch${c.n}-${p}">
-      <img src="assets/thumbs/ch${c.n}-${p}.webp" alt="" width="360" height="509" loading="lazy">${label}
-    </button>`).join("");
-  return `
-    <section class="chapter" id="ch${c.n}" aria-labelledby="ch${c.n}-title">
-      <div class="ch-head">
-        <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509" loading="lazy">
-        <div style="min-width:0">
-          <div class="kicker">Chemophile Part 1 (for 11th Class) · Chapter ${c.n}</div>
-          <h3 id="ch${c.n}-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
-          <p class="tag">${esc(c.tag)}</p>
-          <div class="stats">
-            <span class="stat"><b>${c.topics.length}</b> topics</span>
-            <span class="stat"><b>${c.pages}</b> pages</span>
-            <span class="stat"><b>${c.fig}</b> figures</span>
-            <span class="stat"><b>${c.solved}</b> solved examples</span>
-            <span class="stat"><b>${c.practice}</b> practice questions</span>
-            <span class="stat">${esc(c.qr)}</span>
-          </div>
-        </div>
-      </div>
-      <ol class="topics">${topics}</ol>
-      <div class="progress" id="progress-ch${c.n}"></div>
-      <div class="samples">
-        <h4>Andar se dekho: sample pages</h4>
-        <div class="sample-row">${samples}</div>
-      </div>
-    </section>`;
-}).join("");
-
-// study tracker ("Mera study tracker" from the booklets), kept only in this browser
-function updateProgress(c) {
-  const total = c.topics.length;
-  const n = c.topics.filter((_, i) => done[`ch${c.n}-t${i + 1}`]).length;
-  $(`#progress-ch${c.n}`).textContent = n ? `Mera study tracker: ${n} / ${total} topics padh liye` : "";
+// ---------- pack state ----------
+const pack = new Set((store.get("chemophile-pack") || []).filter(k => CHAPTERS.some(c => key(c) === k)));
+let fmt = store.get("chemophile-fmt") || "pdf";
+const fmtLabel = { pdf: "PDF", paperback: "Paperback", both: "PDF + Paperback" };
+function priceFor(c, f) {
+  const p = PRICES[key(c)] || {};
+  if (f === "both") return p.pdf != null && p.paperback != null ? p.pdf + p.paperback : null;
+  return p[f] != null ? p[f] : null;
 }
-CHAPTERS.forEach(updateProgress);
-document.addEventListener("change", e => {
-  const id = e.target.dataset && e.target.dataset.id;
-  if (!id) return;
-  if (e.target.checked) done[id] = 1; else delete done[id];
-  store.set("chemophile-done", done);
-  updateProgress(CHAPTERS.find(c => id.startsWith(`ch${c.n}-`)));
+function priceChips(c) {
+  const p = PRICES[key(c)] || {};
+  const chip = (label, v) => v != null
+    ? `<span class="price">${label} <b>${rupee(v)}</b></span>`
+    : `<span class="price tbd">${label} <b>price jaldi</b></span>`;
+  return `<div class="price-row">${chip("PDF", p.pdf)}${chip("Paperback", p.paperback)}</div>`;
+}
+
+// ---------- shelf ----------
+let cls = 11;
+function soonCover(u) {
+  return `<div class="soon-cover night">
+      <span class="w">Chemophile</span><span class="p">${PART[u.cls]}</span>
+      <span class="f"><span>${u.f}</span></span>
+      <span class="c">Chapter ${u.n}</span><span class="t">${esc(u.title)}</span>
+      <span class="rib">Coming soon</span><span class="bar"></span>
+    </div>`;
+}
+function renderShelf() {
+  const ready = CHAPTERS.filter(c => c.cls === cls);
+  const soon = UPCOMING.filter(u => u.cls === cls);
+  const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => (a.c || a.u).n - (b.c || b.u).n);
+  $("#shelf").innerHTML = items.map(({ c, u }) => {
+    if (c) {
+      const k = key(c), on = pack.has(k);
+      return `<div class="card">
+        <button class="cover-btn" type="button" data-sheet="${k}" aria-label="Chapter ${c.n}: ${esc(c.title)} ke topics dekho">
+          <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509" loading="lazy">
+        </button>
+        <div><div class="ch">Chapter ${c.n}</div><div class="nm">${esc(nameOf(c))}</div>
+        <div class="meta">${c.topics.length} topics · ${c.pages} pages · ${c.solved} solved</div></div>
+        ${priceChips(c)}
+        <div class="card-actions">
+          <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ Pack mein" : "+ Pack mein daalo"}</button>
+          <button class="more-btn" type="button" data-sheet="${k}">Topics dekho</button>
+        </div>
+      </div>`;
+    }
+    const msg = `Hello Adeel Sir, Chemophile Class ${u.cls} Chapter ${u.n} (${plain(u.title)}) aate hi mujhe batana.`;
+    return `<div class="card">
+      ${soonCover(u)}
+      <div><div class="ch">Chapter ${u.n}</div><div class="nm">${esc(u.title)}</div>
+      <div class="soon-tag">${u.tag}</div></div>
+      <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Aate hi batana →</a>
+    </div>`;
+  }).join("");
+  $("#shelf-note").textContent = cls === 11
+    ? `Chemophile ${PART[11]}: ${ready.length} chapters ready, ${soon.length} coming soon.`
+    : `Chemophile ${PART[12]}: saare ${soon.length} chapters aa rahe hain. Jo chapter chahiye, uske neeche "Aate hi batana" dabao.`;
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
+}
+$("#tab-11-n").textContent = `${CHAPTERS.length} ready`;
+$("#tab-12-n").textContent = "coming soon";
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-cls]");
+  if (!b) return;
+  cls = +b.dataset.cls;
+  renderShelf();
 });
 
-// topic search across every chapter
+// ---------- pack builder ----------
+function renderPick() {
+  $("#pick-list").innerHTML = CHAPTERS.map(c => {
+    const k = key(c), v = priceFor(c, fmt);
+    return `<li><label><input type="checkbox" id="pick-${k}" data-pick="${k}"${pack.has(k) ? " checked" : ""}>
+      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${v != null ? rupee(v) : "price jaldi"}</span></label></li>`;
+  }).join("");
+  $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Sab hatao" : "Saare chapters";
+}
+function renderSummary() {
+  const chosen = CHAPTERS.filter(c => pack.has(key(c)));
+  const prices = chosen.map(c => priceFor(c, fmt));
+  const known = prices.length && prices.every(v => v != null);
+  const total = known ? prices.reduce((a, b) => a + b, 0) : null;
+  $("#summary").innerHTML = `
+    <dt>Format</dt><dd>${fmtLabel[fmt]}</dd>
+    <dt>Chapters</dt><dd>${chosen.length}</dd>
+    <div class="total" style="display:contents"><dt>Total</dt><dd>${!chosen.length ? "–" : known ? rupee(total) : "Sir batayenge"}</dd></div>`;
+  $("#summary-note").textContent = !chosen.length
+    ? "Kam se kam ek chapter tick karo."
+    : known ? "Final price aur delivery Adeel Sir WhatsApp par confirm karenge."
+    : "Abhi kuch chapters ka price fix nahi hua hai. Order bhejo, Adeel Sir price aur delivery WhatsApp par batayenge.";
+  const lines = chosen.map(c => `- Class 11, Chapter ${c.n}: ${plain(c.title)}`);
+  const msg = `Hello Adeel Sir, mujhe Chemophile order karna hai.\nFormat: ${fmtLabel[fmt]}\n${lines.join("\n")}\n${known ? `Total: ${rupee(total)}\n` : ""}\nNaam:\nClass:\nCity:`;
+  const btn = $("#order-btn");
+  btn.href = chosen.length ? wa(msg) : "#pack";
+  btn.setAttribute("aria-disabled", String(!chosen.length));
+  btn.style.opacity = chosen.length ? "" : ".55";
+  const bar = $("#order-bar");
+  bar.hidden = !chosen.length;
+  document.body.classList.toggle("has-pack", !!chosen.length);
+  $("#order-bar-txt").innerHTML = `<b>${chosen.length}</b> chapter${chosen.length > 1 ? "s" : ""} · ${fmtLabel[fmt]}${known ? ` · <b>${rupee(total)}</b>` : ""}`;
+  store.set("chemophile-pack", [...pack]);
+  store.set("chemophile-fmt", fmt);
+}
+function toggle(k, on) {
+  if (on === undefined) on = !pack.has(k);
+  on ? pack.add(k) : pack.delete(k);
+  renderShelf(); renderPick(); renderSummary();
+  const sb = document.querySelector(`#sheet [data-add="${k}"]`);
+  if (sb) { sb.setAttribute("aria-pressed", String(on)); sb.textContent = on ? "✓ Pack mein hai" : "+ Pack mein daalo"; }
+}
+document.querySelectorAll('input[name="fmt"]').forEach(r => {
+  r.checked = r.value === fmt;
+  r.addEventListener("change", () => { fmt = r.value; renderPick(); renderSummary(); });
+});
+$("#pick-list").addEventListener("change", e => { if (e.target.dataset.pick) toggle(e.target.dataset.pick, e.target.checked); });
+$("#pick-all").addEventListener("click", () => {
+  const all = pack.size === CHAPTERS.length;
+  CHAPTERS.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
+  renderShelf(); renderPick(); renderSummary();
+});
+$("#order-btn").addEventListener("click", e => { if (!pack.size) { e.preventDefault(); location.hash = "pack"; } });
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-add]");
+  if (a) toggle(a.dataset.add);
+});
+
+// ---------- chapter sheet ----------
+const sheet = $("#sheet"), sheetBody = $("#sheet-body");
+let sheetReturn = null;
+function openSheet(k, topicId) {
+  const c = CHAPTERS.find(x => key(x) === k);
+  if (!c) return;
+  sheetReturn = document.activeElement;
+  const on = pack.has(k);
+  const topics = c.topics.map(([name, sec, start, subs], i) => {
+    const isRev = i === c.topics.length - 1;
+    const subHtml = parseSubs(subs).map(s => `<span>${s.name}${s.page ? `&nbsp;<b>${s.page}</b>` : ""}</span>`).join("<i>·</i>");
+    return `<li class="topic${isRev ? " rev" : ""}" id="t-${k}-${i + 1}" style="--c: var(${TOPIC_COLORS[i % TOPIC_COLORS.length]})">
+      <div class="num">${i + 1}</div>
+      <div style="min-width:0"><h5>${name}<span class="sec">${sec}</span></h5><p class="subs">${subHtml}</p></div>
+      <span class="start" title="Page number">${start}</span>
+    </li>`;
+  }).join("");
+  const samples = SAMPLE_PAGES.map(([p, label]) => `<button type="button" data-open="ch${c.n}-${p}">
+      <img src="assets/thumbs/ch${c.n}-${p}.webp" alt="" width="360" height="509" loading="lazy">${label}</button>`).join("");
+  sheetBody.innerHTML = `
+    <div class="sheet-top"><button class="close-btn" type="button" id="sheet-close">Band karo ✕</button></div>
+    <div class="ch-head night">
+      <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509">
+      <div style="min-width:0">
+        <div class="kicker">Chemophile ${PART[11]} · Chapter ${c.n}</div>
+        <h3 id="sheet-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
+        <p class="tag">${esc(c.tag)}</p>
+        <div class="stats">
+          <span class="stat"><b>${c.topics.length}</b> topics</span><span class="stat"><b>${c.pages}</b> pages</span>
+          <span class="stat"><b>${c.fig}</b> figures</span><span class="stat"><b>${c.solved}</b> solved examples</span>
+          <span class="stat"><b>${c.practice}</b> practice questions</span><span class="stat">${esc(c.qr)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-buy">${priceChips(c)}
+      <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ Pack mein hai" : "+ Pack mein daalo"}</button>
+    </div>
+    <h4 class="sub">Free sample pages</h4>
+    <div class="sample-row">${samples}</div>
+    <h4 class="sub">Is chapter mein kya hai</h4>
+    <ol class="topics">${topics}</ol>`;
+  sheet.hidden = false;
+  document.body.style.overflow = "hidden";
+  $("#sheet-close").addEventListener("click", closeSheet);
+  if (topicId) {
+    const el = document.getElementById(topicId);
+    requestAnimationFrame(() => { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1800); });
+  } else {
+    sheetBody.scrollTop = 0;
+    $("#sheet-close").focus();
+  }
+}
+function closeSheet() {
+  sheet.hidden = true;
+  document.body.style.overflow = "";
+  if (sheetReturn) sheetReturn.focus();
+}
+sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-sheet]");
+  if (s) openSheet(s.dataset.sheet);
+});
+
+// ---------- topic search ----------
 const INDEX = [];
 CHAPTERS.forEach(c => c.topics.forEach(([name, sec, start, subs], i) => {
-  const where = `Ch ${c.n} · ${c.short || c.title} · Topic ${i + 1}`;
-  INDEX.push({ id: `ch${c.n}-t${i + 1}`, text: plain(name), where: `${where} · ${sec}`, page: start });
-  parseSubs(subs).forEach(s => INDEX.push({ id: `ch${c.n}-t${i + 1}`, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
+  const where = `Class 11 · Ch ${c.n} ${nameOf(c)} · Topic ${i + 1}`;
+  const ref = { k: key(c), t: `t-${key(c)}-${i + 1}` };
+  INDEX.push({ ...ref, text: plain(name), where: `${where} · ${sec}`, page: start });
+  parseSubs(subs).forEach(s => INDEX.push({ ...ref, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
 }));
+UPCOMING.forEach(u => INDEX.push({ soon: true, text: u.title, where: `Class ${u.cls} · Chapter ${u.n} · Coming soon`, page: null }));
 const results = $("#results");
 $("#topic-search").addEventListener("input", e => {
   const q = e.target.value.trim().toLowerCase();
@@ -664,42 +1029,40 @@ $("#topic-search").addEventListener("input", e => {
   if (!hits.length) { results.innerHTML = `<div class="empty">"${esc(q)}" se koi topic nahi mila. Koi aur word try karo.</div>`; return; }
   const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
   results.innerHTML = hits.map(h => `
-    <button type="button" data-go="${h.id}">
+    <button type="button"${h.soon ? ` data-soon="1"` : ` data-k="${h.k}" data-t="${h.t}"`}>
       <span><span>${esc(h.text).replace(re, m => `<mark>${m}</mark>`)}</span><span class="where">${esc(h.where)}</span></span>
       <span class="pg">${h.page ? "p. " + h.page : ""}</span>
     </button>`).join("");
 });
 results.addEventListener("click", e => {
-  const b = e.target.closest("[data-go]");
+  const b = e.target.closest("button");
   if (!b) return;
-  const el = document.getElementById(b.dataset.go);
-  el.scrollIntoView({ block: "center" });
-  el.classList.add("flash");
-  setTimeout(() => el.classList.remove("flash"), 1600);
+  if (b.dataset.soon) { cls = 12; renderShelf(); $("#chapters").scrollIntoView(); return; }
+  openSheet(b.dataset.k, b.dataset.t);
 });
 
-// sample page viewer
-const PAGES = [["ch2-2", "Is booklet ko kaise padhein (Chapter 2, page 2)"]];
-CHAPTERS.forEach(c => SAMPLE_PAGES.forEach(([p, label]) => PAGES.push([`ch${c.n}-${p}`, `Chapter ${c.n}: ${c.short || c.title} · ${label}`])));
+// ---------- sample page viewer ----------
+const PAGES = [["ch2-2", "Is booklet ko kaise padhein"]];
+CHAPTERS.forEach(c => SAMPLE_PAGES.forEach(([p, label]) => PAGES.push([`ch${c.n}-${p}`, `Chapter ${c.n}: ${nameOf(c)} · ${label}`])));
 const viewer = $("#viewer"), vImg = $("#viewer-img"), vCap = $("#viewer-cap");
 let current = 0, lastFocus = null;
 function show(i) {
   current = (i + PAGES.length) % PAGES.length;
-  const [key, cap] = PAGES[current];
-  vImg.src = `assets/pages/${key}.webp`;
+  const [k, cap] = PAGES[current];
+  vImg.src = `assets/pages/${k}.webp`;
   vImg.alt = cap;
   vCap.textContent = cap;
 }
-function openViewer(key) {
+function openViewer(k) {
   lastFocus = document.activeElement;
-  show(PAGES.findIndex(p => p[0] === key));
+  show(Math.max(0, PAGES.findIndex(p => p[0] === k)));
   viewer.hidden = false;
   document.body.style.overflow = "hidden";
   $("#viewer-close").focus();
 }
 function closeViewer() {
   viewer.hidden = true;
-  document.body.style.overflow = "";
+  if (sheet.hidden) document.body.style.overflow = "";
   if (lastFocus) lastFocus.focus();
 }
 document.addEventListener("click", e => {
@@ -711,10 +1074,11 @@ $("#viewer-prev").addEventListener("click", () => show(current - 1));
 $("#viewer-next").addEventListener("click", () => show(current + 1));
 viewer.addEventListener("click", e => { if (e.target === viewer || e.target.classList.contains("viewer-stage")) closeViewer(); });
 document.addEventListener("keydown", e => {
-  if (viewer.hidden) return;
-  if (e.key === "Escape") closeViewer();
-  if (e.key === "ArrowLeft") show(current - 1);
-  if (e.key === "ArrowRight") show(current + 1);
+  if (!viewer.hidden) {
+    if (e.key === "Escape") closeViewer();
+    if (e.key === "ArrowLeft") show(current - 1);
+    if (e.key === "ArrowRight") show(current + 1);
+  } else if (!sheet.hidden && e.key === "Escape") closeSheet();
 });
 let touchX = null;
 viewer.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
@@ -725,7 +1089,8 @@ viewer.addEventListener("touchend", e => {
   touchX = null;
 });
 
-// copy phone number
+// ---------- contact ----------
+$("#wa-hello").href = wa("Hello Adeel Sir, mujhe Chemophile booklets ke baare mein jaankari chahiye.");
 $("#copy-phone").addEventListener("click", () => {
   const msg = $("#copy-msg");
   const fallback = () => {
@@ -734,9 +1099,14 @@ $("#copy-phone").addEventListener("click", () => {
     msg.textContent = "Number select ho gaya, ab copy kar lo.";
   };
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText("9953821875").then(() => { msg.textContent = "Copy ho gaya!"; }, fallback);
+    navigator.clipboard.writeText(PHONE).then(() => { msg.textContent = "Copy ho gaya!"; }, fallback);
   } else fallback();
 });
+
+// ---------- start ----------
+renderShelf(); renderPick(); renderSummary();
+const m = location.hash.match(/^#ch(1[12])-(\d+)$/);
+if (m) openSheet(`${m[1]}-${m[2]}`);
 </script>
 </body>
 </html>
