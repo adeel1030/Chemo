@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chemophile Part 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Chemophile Part 1 (for 11th Class): NCERT Class 11 Chemistry ki Hinglish visual booklet series by Mohd Adeel Khan (Adeel Sir). Saare chapters, topics aur sample pages.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: a night-sky cover band like the booklets, then a paper "contents page" for every chapter, the way the book itself lists topics. */
+:root {
+  --night: #1f1c5a;
+  --night-2: #2c2577;
+  --night-fg: #f3f2ff;
+  --night-muted: #b9b6e8;
+  --sun: #ffd24a;
+  --sun-ink: #2a2100;
+
+  --paper: #f6f6fb;
+  --surface: #ffffff;
+  --fg: #1b1a45;
+  --muted: #5d5b80;
+  --line: #dddcee;
+  --accent: #3b2fb8;
+  --mark: #fff1b8;
+
+  --t1: #0f9488; --t2: #e0a800; --t3: #7b3fe4; --t4: #1f9d55;
+  --t5: #2f6bed; --t6: #ea6a1b; --t7: #c42dc4; --t8: #e03c3c;
+  --t9: #0e8fb0; --t10: #5e8e1f;
+  --rev-bg: #1b1a45; --rev-fg: #ffffff;
+
+  --chip-yellow: #fff4cf; --chip-brown: #8a5a00;
+  --chip-pink: #ffeef3; --chip-red: #d6304f;
+  --chip-mint: #e3f7ef; --chip-green: #137a52;
+  --chip-blue: #2f6bed; --chip-white: #ffffff; --chip-navy: #1b1a45;
+
+  --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Fira Sans", "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-hand: "Kalam", "Comic Sans MS", cursive;
+
+  --step--1: 0.84rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.8rem, 1.3rem + 2vw, 2.4rem);
+  --step-4: clamp(2.8rem, 1.8rem + 5vw, 5rem);
+  --radius: 14px;
+  --wrap: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11102b;
+    --surface: #1a1940;
+    --fg: #ecebff;
+    --muted: #a9a7d4;
+    --line: #2f2d63;
+    --accent: #b7b0ff;
+    --mark: #4a3d00;
+    --rev-bg: #ffd24a; --rev-fg: #1b1a45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11102b;
+  --surface: #1a1940;
+  --fg: #ecebff;
+  --muted: #a9a7d4;
+  --line: #2f2d63;
+  --accent: #b7b0ff;
+  --mark: #4a3d00;
+  --rev-bg: #ffd24a; --rev-fg: #1b1a45;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; text-wrap: balance; margin: 0; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; border-radius: 6px; }
+
+.wrap {
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- header ---------- */
+.site-head {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--night); color: var(--night-fg);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.site-head .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; color: var(--sun); text-decoration: none; line-height: 1; }
+.brand small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .7rem; color: var(--night-muted); letter-spacing: .04em; }
+.site-nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.site-nav a { color: var(--night-fg); text-decoration: none; font-weight: 500; font-size: .92rem; padding: 6px 10px; border-radius: 999px; }
+.site-nav a:hover { background: rgba(255,255,255,.1); }
+.site-nav a.cta { background: var(--sun); color: var(--sun-ink); font-weight: 700; }
+@media (max-width: 640px) { .site-nav a:not(.cta) { display: none; } }
+
+/* ---------- hero ---------- */
+.hero {
+  background:
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 32% 68%, rgba(255,255,255,.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 58% 18%, rgba(255,255,255,.6) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 82%, rgba(255,255,255,.55) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 30%, rgba(255,255,255,.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 44% 40%, rgba(255,255,255,.4) 50%, transparent 51%),
+    radial-gradient(60% 80% at 75% 50%, var(--night-2), transparent 70%),
+    var(--night);
+  color: var(--night-fg);
+  overflow: hidden;
+}
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; align-items: center; padding-block: 48px 56px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 2px 12px; font-size: var(--step--1); color: var(--night-muted); }
+.hero h1 { font-size: var(--step-4); color: var(--sun); font-weight: 800; margin-top: 18px; text-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.part-badge { display: inline-block; background: #fff; color: var(--night); font-weight: 700; border-radius: 999px; padding: 4px 16px; margin-top: 6px; }
+.hero .lede { font-size: var(--step-1); max-width: 34ch; margin: 22px 0 0; }
+.hero .hand { font-family: var(--font-hand); color: #ffb3c9; font-size: 1.15rem; margin: 6px 0 0; }
+.spectrum { height: 10px; border-radius: 3px; margin: 18px 0 6px; max-width: 520px;
+  background: linear-gradient(90deg, #2b0a3d, #3a1d8f 12%, #1f5fd1 30%, #1aa58a 45%, #b6c21a 58%, #f0a21a 70%, #d23a1a 85%, #4a0a0a); position: relative; }
+.spectrum i { position: absolute; top: -3px; width: 3px; height: 16px; border-radius: 2px; }
+.spectrum-note { font-size: .74rem; color: var(--night-muted); max-width: 520px; text-align: right; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.stat { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px 14px; font-size: .92rem; }
+.stat b { color: var(--sun); font-variant-numeric: tabular-nums; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 700 1rem var(--font-body); text-decoration: none; padding: 10px 20px; border-radius: 999px; border: 2px solid transparent; cursor: pointer; }
+.btn-sun { background: var(--sun); color: var(--sun-ink); }
+.btn-ghost { border-color: rgba(255,255,255,.5); color: var(--night-fg); background: transparent; }
+.btn:hover { filter: brightness(1.06); }
+
+.cover-fan { position: relative; height: 430px; }
+.cover-fan img { position: absolute; width: 58%; border-radius: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.45); top: 50%; left: 50%; transition: transform .35s ease; }
+.cover-fan img:nth-child(1) { transform: translate(-95%, -50%) rotate(-9deg); }
+.cover-fan img:nth-child(2) { transform: translate(-5%, -52%) rotate(8deg); }
+.cover-fan img:nth-child(3) { transform: translate(-50%, -48%) rotate(-1deg); z-index: 2; }
+.cover-fan:hover img:nth-child(1) { transform: translate(-108%, -50%) rotate(-12deg); }
+.cover-fan:hover img:nth-child(2) { transform: translate(8%, -52%) rotate(11deg); }
+@media (max-width: 820px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 32px 40px; }
+  .cover-fan { height: 340px; max-width: 420px; width: 100%; margin-inline: auto; }
+  .cover-fan img { width: 46%; }
+}
+
+/* ---------- sections ---------- */
+section.block { padding-block: 56px; }
+.eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sec-title { font-size: var(--step-3); margin-top: 4px; display: inline-block; padding-bottom: 2px; background: linear-gradient(transparent 62%, var(--mark) 62%); }
+.sec-intro { max-width: 62ch; color: var(--muted); margin: 12px 0 0; }
+
+/* how to read */
+.legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px 24px; margin-top: 28px; }
+.legend-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; }
+.legend-row p { margin: 0; font-size: .92rem; color: var(--muted); }
+.box { border-radius: 10px; padding: 7px 10px; font-size: .86rem; font-weight: 600; text-align: center; line-height: 1.25; }
+.box-example { background: var(--chip-yellow); color: var(--chip-brown); font-family: var(--font-hand); font-weight: 700; font-size: .98rem; }
+.box-galti { background: var(--chip-pink); color: var(--chip-red); border: 1.5px dashed var(--chip-red); }
+.box-solved { background: var(--chip-mint); color: var(--chip-green); border-bottom: 3px solid var(--chip-green); }
+.box-socho { background: var(--chip-white); color: var(--chip-navy); border: 1.5px solid var(--chip-navy); }
+.box-ghar { background: var(--chip-mint); color: var(--chip-green); }
+.box-exam { background: var(--chip-blue); color: #fff; }
+.box-jee { background: var(--chip-navy); color: var(--sun); }
+.box-tip { background: var(--chip-white); color: var(--chip-brown); border: 1.5px solid var(--chip-navy); font-family: var(--font-hand); font-weight: 700; font-size: .98rem; }
+.box-baari { background: var(--chip-white); color: var(--chip-navy); border: 1.5px solid var(--chip-navy); box-shadow: 4px 4px 0 var(--chip-navy); }
+.box-scan { background: var(--chip-white); color: var(--chip-navy); border: 1.5px dashed var(--chip-navy); }
+
+.flow { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: step; }
+.flow li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; counter-increment: step; }
+.flow li::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 700; font-size: .9rem; background: var(--c); margin-bottom: 8px; }
+.flow b { display: block; font-family: var(--font-display); font-size: 1.1rem; }
+.flow span { font-size: .88rem; color: var(--muted); }
+@media (max-width: 820px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .flow { grid-template-columns: minmax(0, 1fr); } }
+.howto-sample { margin-top: 20px; font-size: .92rem; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+
+/* chapter shelf */
+.shelf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-top: 28px; }
+@media (max-width: 900px) { .shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+.book { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; }
+.book img { border-radius: 6px; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; aspect-ratio: 595 / 842; width: 100%; object-fit: cover; }
+.book:hover img { transform: translateY(-4px) rotate(-1deg); }
+.book .ch { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.book .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; line-height: 1.2; }
+.book .meta { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* search */
+.search { margin-top: 32px; position: relative; max-width: 640px; }
+.search label { font-weight: 600; display: block; margin-bottom: 6px; }
+.search input { width: 100%; font: 1rem var(--font-body); padding: 12px 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+.search input:focus { border-color: var(--accent); outline: none; }
+.results { margin-top: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); max-height: 360px; overflow: auto; }
+.results button { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 16px; font: inherit; color: var(--fg); cursor: pointer; }
+.results button:hover { background: var(--paper); }
+.results .where { font-size: .8rem; color: var(--muted); display: block; }
+.results .pg { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .85rem; align-self: center; }
+.results mark { background: var(--mark); color: inherit; border-radius: 3px; }
+.results .empty { padding: 12px 16px; color: var(--muted); }
+
+/* chapter contents pages */
+.chapter { padding-block: 40px; border-top: 1px solid var(--line); }
+.ch-head { background: var(--night); color: var(--night-fg); border-radius: var(--radius); padding: 22px; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 22px; align-items: center; }
+.ch-head img { border-radius: 6px; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+.ch-head .kicker { font-size: .85rem; color: var(--night-muted); }
+.ch-head h3 { color: var(--sun); font-size: var(--step-2); margin-top: 2px; }
+.ch-head .tag { font-family: var(--font-hand); color: #ffb3c9; margin: 4px 0 0; }
+.ch-head .stats { margin-top: 12px; }
+.ch-head .stat { font-size: .82rem; padding: 2px 10px; }
+@media (max-width: 560px) { .ch-head { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; padding: 16px; } }
+
+.topics { list-style: none; padding: 0; margin: 18px 0 0; }
+.topic { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; padding: 14px 4px; border-bottom: 1px solid var(--line); border-radius: 8px; transition: background-color .6s ease; }
+.topic.flash { background: var(--mark); }
+.num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; background: var(--c); box-shadow: 3px 3px 0 var(--rev-bg); }
+.topic.rev .num { background: var(--rev-bg); color: var(--rev-fg); box-shadow: none; }
+.topic h4 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; line-height: 1.25; }
+.sec { font-family: var(--font-body); font-size: .78rem; font-weight: 500; color: var(--muted); white-space: nowrap; margin-left: 6px; }
+.subs { margin: 4px 0 0; font-size: .9rem; color: var(--muted); }
+.subs span { white-space: normal; }
+.subs b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.subs i { font-style: normal; padding-inline: 4px; opacity: .6; }
+.topic .side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.topic .start { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums; line-height: 1; }
+.track { font-size: .78rem; color: var(--muted); display: inline-flex; gap: 4px; align-items: center; cursor: pointer; white-space: nowrap; }
+.track input { accent-color: var(--t4); width: 16px; height: 16px; margin: 0; }
+
+.samples { margin-top: 22px; }
+.samples h4 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 10px; }
+.sample-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.sample-row button { flex: 0 0 auto; width: 120px; background: none; border: 0; padding: 0; cursor: zoom-in; text-align: left; color: var(--muted); font: .78rem/1.3 var(--font-body); }
+.sample-row img { border-radius: 6px; border: 1px solid var(--line); margin-bottom: 6px; aspect-ratio: 595 / 842; object-fit: cover; width: 100%; }
+.progress { font-size: .85rem; color: var(--muted); margin-top: 10px; font-variant-numeric: tabular-nums; }
+
+/* author */
+.author { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 28px; }
+@media (max-width: 760px) { .author { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+.sir { display: flex; gap: 16px; align-items: center; }
+.seal { flex: 0 0 auto; width: 74px; height: 74px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; text-align: center; font-family: var(--font-display); font-weight: 800; line-height: 1; border: 3px dashed var(--sun-ink); box-shadow: 0 0 0 4px var(--sun); }
+.sir h3 { font-size: var(--step-2); }
+.sir p { margin: 0; color: var(--muted); }
+.card p { max-width: 60ch; }
+.phone { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0; }
+.phone output { font-family: var(--font-display); font-size: 1.7rem; font-weight: 800; letter-spacing: .02em; user-select: all; font-variant-numeric: tabular-nums; }
+.btn-line { border-color: var(--line); color: var(--fg); background: var(--surface); padding: 6px 14px; font-size: .9rem; }
+.btn-wa { background: #1f9d55; color: #fff; }
+.copied { font-size: .85rem; color: var(--t4); }
+.sponsor { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+.sponsor b { color: var(--fg); }
+
+/* footer */
+.site-foot { background: var(--night); color: var(--night-muted); font-size: .85rem; }
+.site-foot .wrap { padding-block: 28px; display: grid; gap: 6px; }
+.site-foot b { color: var(--night-fg); }
+.rainbow { height: 8px; background: linear-gradient(90deg, var(--t1) 0 11%, var(--t2) 11% 22%, var(--t3) 22% 33%, var(--t4) 33% 44%, var(--t5) 44% 55%, var(--t6) 55% 66%, var(--t7) 66% 77%, var(--t8) 77% 88%, var(--sun) 88%); }
+
+/* viewer */
+.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(10,9,35,.92); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: var(--night-fg); }
+.viewer-bar { display: flex; align-items: center; gap: 10px; }
+.viewer-bar span { flex: 1; min-width: 0; font-size: .92rem; }
+.viewer-stage { display: grid; place-items: center; min-height: 0; padding-block: 10px; }
+.viewer-stage img { max-height: 100%; max-width: min(100%, 760px); width: auto; object-fit: contain; border-radius: 6px; background: #fff; }
+.viewer-nav { display: flex; justify-content: center; gap: 12px; }
+.icon-btn { background: rgba(255,255,255,.12); color: var(--night-fg); border: 0; border-radius: 999px; padding: 8px 18px; font: 600 .95rem var(--font-body); cursor: pointer; }
+.icon-btn:hover { background: rgba(255,255,255,.22); }
+.note { font-size: .82rem; color: var(--muted); margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#top">Chemophile<small>Part 1 · Class 11</small></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#kaise-padhein">Kaise padhein</a>
+      <a href="#chapters">Chapters</a>
+      <a href="#adeel-sir">Adeel Sir</a>
+      <a class="cta" href="#contact">Book chahiye?</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="pills"><span class="pill">Class 11 Chemistry</span><span class="pill">NCERT syllabus 2026-27 par based</span></div>
+        <h1>Chemophile</h1>
+        <span class="part-badge">Part 1 (for 11th Class)</span>
+        <p class="lede">Class 11 Chemistry ke saare chapters, Hinglish mein, visuals ke saath. Har topic ek story ki tarah: pehle example, phir diagram, phir concept, phir exam wala answer.</p>
+        <p class="hand">Chemistry ab ratni nahi padegi, samajh aayegi.</p>
+        <div class="spectrum" aria-hidden="true">
+          <i style="left:6%;background:#8b5cf6"></i><i style="left:10%;background:#6366f1"></i><i style="left:25%;background:#22d3ee"></i><i style="left:74%;background:#ef4444"></i>
+        </div>
+        <div class="spectrum-note">hydrogen ki visible (Balmer) lines: 410, 434, 486, 656 nm</div>
+        <div class="stats" id="hero-stats"></div>
+        <div class="hero-actions">
+          <a class="btn btn-sun" href="#chapters">Chapters dekho</a>
+          <a class="btn btn-ghost" href="#contact">Adeel Sir se book lo</a>
+        </div>
+      </div>
+      <div class="cover-fan" aria-hidden="true">
+        <img src="assets/thumbs/ch6-1.webp" alt="" width="360" height="509">
+        <img src="assets/thumbs/ch9-1.webp" alt="" width="360" height="509">
+        <img src="assets/thumbs/ch2-1.webp" alt="" width="360" height="509">
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="kaise-padhein">
+    <div class="wrap">
+      <div class="eyebrow">Har booklet ke andar</div>
+      <h2 class="sec-title">Is booklet ko kaise padhein</h2>
+      <p class="sec-intro">Har page par alag-alag boxes hain. Har box ka ek kaam hai. Pencil saath rakho: booklet mein likhna, tick karna aur colour karna sab allowed hai.</p>
+      <div class="legend">
+        <div class="legend-row"><div class="box box-example">Adeel Sir ka example</div><p>Har concept ek everyday life example se start hota hai.</p></div>
+        <div class="legend-row"><div class="box box-exam">Exam mein aise likho</div><p>Board exam ke liye English answer, ruled lines par.</p></div>
+        <div class="legend-row"><div class="box box-galti">Galti mat karna</div><p>Common mistakes jo sabse zyada marks cut karwati hain.</p></div>
+        <div class="legend-row"><div class="box box-jee">JEE/NEET extra</div><p>Advanced concepts, competitive exams ke liye.</p></div>
+        <div class="legend-row"><div class="box box-solved">Adeel Sir ka solved example</div><p>Step-by-step solved question.</p></div>
+        <div class="legend-row"><div class="box box-tip">Adeel Sir ka tip</div><p>Yaad rakhne ki short trick.</p></div>
+        <div class="legend-row"><div class="box box-socho">Ruko aur socho</div><p>Aage padhne se pehle khud socho, phir tick karo.</p></div>
+        <div class="legend-row"><div class="box box-baari">Ab tumhari baari</div><p>Khud solve karo. Answers topic ke end mein ulte print hain.</p></div>
+        <div class="legend-row"><div class="box box-ghar">Ghar par karo</div><p>Ghar ki cheezon se ek chhoti activity.</p></div>
+        <div class="legend-row"><div class="box box-scan">Scan karo, khud try karo</div><p>QR scan karke PhET ka free simulation phone par chalao.</p></div>
+      </div>
+
+      <ol class="flow" aria-label="Har topic ka flow">
+        <li style="--c: var(--t1)"><b>Pehla page</b><span>Goals padho; topic ke baad tick karna.</span></li>
+        <li style="--c: var(--t2)"><b>Samjho</b><span>Adeel Sir ka example, phir visual, phir concept.</span></li>
+        <li style="--c: var(--t3)"><b>Likho</b><span>Exam wala answer copy mein likho.</span></li>
+        <li style="--c: var(--t6)"><b>Khud karo</b><span>Solved example dekho, phir 'Ab tumhari baari'.</span></li>
+        <li style="--c: var(--t8)"><b>Check karo</b><span>Recap + quick check. Answers page ulta karke.</span></li>
+      </ol>
+      <p class="howto-sample">Har chapter ke end mein: formula sheet, fact sheet, top 12 mistakes, 40 marks ka final test aur tumhara certificate. <button class="linkish" type="button" data-open="ch2-2">Book ka "kaise padhein" page dekho</button></p>
+    </div>
+  </section>
+
+  <section class="block" id="chapters" style="padding-bottom: 8px">
+    <div class="wrap">
+      <div class="eyebrow">Part 1 ke chapters</div>
+      <h2 class="sec-title">Saare chapters, ek jagah</h2>
+      <p class="sec-intro">Kisi bhi cover par tap karo aur us chapter ke saare topics, NCERT section numbers aur page numbers dekho. Har chapter ke kuch sample pages bhi andar se dekh sakte ho.</p>
+      <div class="shelf" id="shelf"></div>
+
+      <div class="search">
+        <label for="topic-search">Koi topic dhoondo</label>
+        <input id="topic-search" type="search" placeholder="Jaise: Hund, pH, Markovnikov, Hess" autocomplete="off">
+        <div class="results" id="results" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap" id="chapter-list"></div>
+
+  <section class="block" id="adeel-sir">
+    <div class="wrap">
+      <div class="eyebrow">Author</div>
+      <h2 class="sec-title">Adeel Sir ke baare mein</h2>
+      <div class="author">
+        <div class="card">
+          <div class="sir">
+            <div class="seal">Adeel<br>Sir</div>
+            <div>
+              <h3>Mohd Adeel Khan</h3>
+              <p>MSc BEd (JMI)</p>
+            </div>
+          </div>
+          <p>Chemophile series Adeel Sir ne Class 11 ke students ke liye likhi hai. Har chapter NCERT ke section numbers ke saath chalta hai, taaki textbook se cross-check karna aasaan rahe. Language Hinglish hai, examples ghar aur roz ki zindagi se hain, aur har topic ke saath board exam ke liye English mein likha hua answer bhi hai.</p>
+          <p>Har booklet mein JEE/NEET extra boxes, PhET simulations ke QR codes aur 40 marks ka chapter test hai.</p>
+        </div>
+        <div class="card" id="contact">
+          <h3 style="font-size: var(--step-2)">Book chahiye?</h3>
+          <p>Chemophile Part 1 ki booklets ke liye seedha Adeel Sir se baat karo.</p>
+          <div class="phone">
+            <output id="phone-num">9953821875</output>
+            <button class="btn btn-line" type="button" id="copy-phone">Number copy karo</button>
+            <span class="copied" id="copy-msg" role="status"></span>
+          </div>
+          <div class="hero-actions" style="margin-top: 0">
+            <a class="btn btn-wa" href="https://wa.me/919953821875?text=Hello%20Adeel%20Sir%2C%20mujhe%20Chemophile%20Part%201%20(Class%2011)%20ke%20baare%20mein%20jaankari%20chahiye." target="_blank" rel="noopener">WhatsApp par message karo</a>
+          </div>
+          <div class="sponsor">Book sponsored by <b>Olife Gold Olive Oil</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="rainbow"></div>
+  <div class="wrap">
+    <div><b>Chemophile Part 1 (for 11th Class)</b> · Mohd Adeel Khan, MSc BEd (JMI)</div>
+    <div>© 2026 Mohd Adeel Khan. All rights reserved. Booklets ka text, figures, questions aur examples author ka original work hai. Bina permission copy, scan, print, upload ya share karna prohibited hai.</div>
+    <div>NCERT Class 11 Chemistry syllabus par based. Yeh NCERT ka publication nahi hai. QR codes PhET Interactive Simulations (University of Colorado Boulder) ke free simulations kholte hain.</div>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="viewer-cap">
+  <div class="viewer-bar">
+    <span id="viewer-cap"></span>
+    <button class="icon-btn" type="button" id="viewer-close">Band karo ✕</button>
+  </div>
+  <div class="viewer-stage"><img id="viewer-img" alt=""></div>
+  <div class="viewer-nav">
+    <button class="icon-btn" type="button" id="viewer-prev">‹ Pichla</button>
+    <button class="icon-btn" type="button" id="viewer-next">Agla ›</button>
+  </div>
+</div>
+
+<script>
+// Topic subtopics are "name page · name page", exactly as on each booklet's contents page.
+const CHAPTERS = [
+  { n: 2, title: "Structure of Atom", tag: "Atom ki complete story: Hinglish mein, visuals ke saath",
+    pages: 81, fig: 88, solved: 27, practice: "130+", qr: "5 QR simulations",
+    topics: [
+      ["Atom ke andar kya hai?", "Section 2.1", 4, "Kya atom sach mein indivisible hai? 5 · Cathode rays: electron ki discovery 6 · Thomson ne e/m measure kiya 7 · Oil drop experiment: electron ka charge 8 · Proton aur neutron 9 · Ek nazar mein + quick check 10"],
+      ["Thomson se Rutherford tak", "Section 2.2", 11, "Thomson ka watermelon model 12 · Gold foil experiment: setup 13 · Observations aur conclusions 14 · Atom kitna empty hai? 15 · Rutherford ka nuclear model 16 · Atom ki ID: Z aur A 17 · Isotopes aur isobars 18 · Rutherford model ke drawbacks 19 · Ek nazar mein + quick check 20"],
+      ["Light ka double role", "Section 2.3.1, 2.3.2", 21, "Light ek wave hai 22 · Wavelength, frequency aur speed 23 · Electromagnetic spectrum 24 · c = νλ ke numericals 25 · Black-body radiation 26 · Planck ka quantum: energy ke packets 27 · Photoelectric effect: observations 28 · Einstein ka explanation: photon 29 · Photon ke numericals 30 · Dual behaviour + quick check 31"],
+      ["Atom ka fingerprint", "Section 2.3.3", 32, "White light aur continuous spectrum 33 · Emission aur absorption spectra 34 · Har element ka apna fingerprint 35 · Hydrogen ka spectrum: 5 series 36 · Rydberg formula ke numericals 37 · Ek nazar mein + quick check 38"],
+      ["Bohr model", "Section 2.4", 39, "Bohr ke 4 postulates 40 · Orbit ka radius aur energy 41 · Hydrogen jaise ions: He<sup>+</sup>, Li<sup>2+</sup> 42 · Hydrogen line spectrum ka explanation 43 · Transition ke numericals 44 · Bohr model ki limitations 45 · Ek nazar mein + quick check 46"],
+      ["Quantum ki taraf", "Section 2.5", 47, "de Broglie: electron bhi wave hai 48 · de Broglie ke numericals 49 · Heisenberg ka uncertainty principle 50 · Uncertainty numericals; Bohr model kyun fail hua 51 · Ek nazar mein + quick check 52"],
+      ["Orbitals aur quantum numbers", "Section 2.6.1, 2.6.2", 53, "Quantum mechanics: path nahi, probability 54 · Orbit aur orbital mein difference 55 · Electron ka address: n aur l 56 · Room aur bed: m<sub>l</sub> aur m<sub>s</sub> 57 · Quantum numbers ki practice 58 · s orbitals: spherical 59 · p orbitals: dumbbell 60 · d orbitals: cloverleaf 61 · Nodes ka hisaab 62 · Ek nazar mein + quick check 63"],
+      ["Electron filling", "Section 2.6.3 to 2.6.6", 64, "Orbitals ki energy: hydrogen vs multi-electron atoms 65 · Shielding aur effective nuclear charge 66 · (n + l) rule aur Aufbau principle 67 · Pauli aur Hund: filling ke rules 68 · Configuration likhna: H se Ar tak 69 · K se Zn tak; Cr aur Cu ka twist 70 · Configuration ki practice 71 · Ek nazar mein + quick check 72"],
+      ["Revision", "Complete chapter", 73, "Paanch models, ek table mein 74 · Formula sheet aur constants 75 · Kisne kya kiya 76 · Top 12 mistakes + exam ke favourite questions 77 · Final test, Part A: 16 MCQs 78 · Final test, Part B aur C + scorecard 79 · Answer key + tumhara certificate 80"]
+    ] },
+  { n: 3, title: "Classification of Elements and Periodicity in Properties", short: "Classification of Elements", tag: "Periodic table ki complete story: Hinglish mein, visuals ke saath",
+    pages: 58, fig: 39, solved: 15, practice: "100+", qr: "2 QR links",
+    topics: [
+      ["Classify kyun? Early attempts", "Section 3.1, 3.2", 4, "Classify kyun karna pada? 5 · Dobereiner ke triads aur Chancourtois 6 · Newlands ka law of octaves; Lothar Meyer 7 · Ek nazar mein + quick check 8"],
+      ["Mendeleev ki periodic table", "Section 3.2", 9, "Mendeleev ka periodic law 10 · Gaps aur predictions 11 · Merits aur limitations 12 · Ek nazar mein + quick check 13"],
+      ["Modern periodic table", "Section 3.3, 3.4", 14, "Moseley aur modern periodic law 15 · Long form periodic table 16 · Periods aur groups 17 · 100 se upar wale elements ke naam 18 · Ek nazar mein + quick check 19"],
+      ["Configuration aur s, p, d, f blocks", "Section 3.5, 3.6", 20, "Configuration se period aur group 21 · s, p, d aur f blocks 22 · Z se period, group aur block nikaalo 23 · Metals, non-metals aur metalloids 24 · Ek nazar mein + quick check 25"],
+      ["Atomic aur ionic radius", "Section 3.7.1 (a, b)", 26, "Radius kaise measure karte hain? 27 · Period aur group mein radius 28 · Cation aur anion ka size 29 · Isoelectronic species 30 · Ek nazar mein + quick check 31"],
+      ["Ionization enthalpy", "Section 3.7.1 (c)", 32, "Definition aur successive ionization 33 · Δ<sub>i</sub>H ka graph: peaks aur minima 34 · Period aur group mein trend; affecting factors 35 · Be > B aur N > O: do irregularities 36 · Ek nazar mein + quick check 37"],
+      ["Electron gain enthalpy aur electronegativity", "Section 3.7.1 (d, e)", 38, "Electron gain enthalpy: definition aur sign 39 · Δ<sub>eg</sub>H trend; Cl kyun F se aage 40 · Electronegativity 41 · Teeno mein difference + trends ka map 42 · Ek nazar mein + quick check 43"],
+      ["Chemical properties ke trends", "Section 3.7.2, 3.7.3", 44, "Valence ka periodic trend 45 · Formula predict karo; oxidation state 46 · Second period ka anomalous behaviour; diagonal relationship 47 · Reactivity aur oxides ka nature 48 · Ek nazar mein + quick check 49"],
+      ["Revision", "Complete chapter", 50, "Saare trends ek table mein 51 · Fact sheet: poora chapter ek page par 52 · Kisne kya kiya + element riddles 53 · Top 12 mistakes + exam ke favourite questions 54 · Final test, Part A: 16 MCQs 55 · Final test, Part B aur C + scorecard 56 · Answer key + tumhara certificate 57"]
+    ] },
+  { n: 4, title: "Chemical Bonding and Molecular Structure", short: "Chemical Bonding", tag: "Atoms dosti kyun karte hain? Hinglish mein, 3D visuals ke saath",
+    pages: 62, fig: 55, solved: 16, practice: "110+", qr: "2 QR simulations",
+    topics: [
+      ["Bond kyun banta hai? Lewis approach", "Section 4.1", 4, "Kössel-Lewis approach aur Lewis symbols 5 · Covalent bond: electrons ki sharing 6 · Lewis structure banane ke steps 7 · Formal charge 8 · Octet rule ki limitations 9 · Ek nazar mein + quick check 10"],
+      ["Ionic bond aur lattice enthalpy", "Section 4.2", 11, "Ionic bond kaise banta hai 12 · Ionic bond kab banta hai: energy ka hisaab 13 · Lattice enthalpy aur NaCl crystal 14 · Ek nazar mein + quick check 15"],
+      ["Bond parameters aur resonance", "Section 4.3.1 to 4.3.5", 16, "Bond length, covalent aur van der Waals radius 17 · Bond angle aur bond enthalpy 18 · Bond order aur uska relation 19 · Resonance: O<sub>3</sub> ka case 20 · CO<sub>3</sub><sup>2−</sup> aur CO<sub>2</sub> ki resonance 21 · Ek nazar mein + quick check 22"],
+      ["Polarity aur dipole moment", "Section 4.3.6", 23, "Polar bond aur dipole moment 24 · Shape aur net dipole: vector sum 25 · Ionic bond ka covalent character: Fajans' rules 26 · Ek nazar mein + quick check 27"],
+      ["VSEPR theory: molecules ki shape", "Section 4.4", 28, "VSEPR ke postulates aur repulsion order 29 · Shapes bina lone pair ke (AB<sub>2</sub> se AB<sub>6</sub>) 30 · Shapes jab lone pairs bhi hon 31 · Bond angle distortion aur lone pair ki position 32 · Shape predict karne ke steps + practice 33 · Ek nazar mein + quick check 34"],
+      ["Valence bond theory aur hybridisation", "Section 4.5, 4.6", 35, "VBT: H<sub>2</sub> molecule kaise banta hai 36 · Orbital overlap; σ aur π bonds 37 · Hybridisation kyun aur kya 38 · sp, sp<sup>2</sup>, sp<sup>3</sup>: BeCl<sub>2</sub>, BCl<sub>3</sub>, CH<sub>4</sub> 39 · NH<sub>3</sub>, H<sub>2</sub>O aur C<sub>2</sub>H<sub>6</sub> mein sp<sup>3</sup> 40 · C<sub>2</sub>H<sub>4</sub> (sp<sup>2</sup>) aur C<sub>2</sub>H<sub>2</sub> (sp): π bonds 41 · d orbitals ke saath: sp<sup>3</sup>d, sp<sup>3</sup>d<sup>2</sup> 42 · Ek nazar mein + quick check 43"],
+      ["Molecular orbital theory", "Section 4.7, 4.8", 44, "MOT ke features aur LCAO 45 · Combination ki conditions aur σ, π MOs 46 · Bond order, stability aur magnetism 47 · C<sub>2</sub>, N<sub>2</sub>, O<sub>2</sub>: configuration aur O<sub>2</sub> ka magnetism 48 · Ek nazar mein + quick check 49"],
+      ["Hydrogen bonding", "Section 4.9", 50, "Hydrogen bond kya hai aur kyun banta hai 51 · Intermolecular aur intramolecular H-bond 52 · Effects: boiling point aur barf ka tairna 53 · Ek nazar mein + quick check 54"],
+      ["Revision", "Complete chapter", 55, "Chaar theories + shapes ka master chart 56 · Fact sheet: poora chapter ek page par 57 · Top 12 mistakes + exam ke favourite questions 58 · Final test, Part A: 16 MCQs 59 · Final test, Part B aur C + scorecard 60 · Answer key + tumhara certificate 61"]
+    ] },
+  { n: 5, title: "Thermodynamics", extra: "+ Gas laws (bonus)", tag: "Energy ka hisaab-kitaab: heat, work aur spontaneity, Hinglish mein",
+    pages: 68, fig: 47, solved: 43, practice: "140+", qr: "2 QR simulations",
+    topics: [
+      ["Gases: pV = nRT (bonus)", "Bonus: gaseous state", 4, "Gas ke 4 variables aur units 5 · Boyle's law: p aur V 6 · Charles' aur Gay-Lussac's law 7 · Avogadro's law aur ideal gas equation 8 · pV = nRT ke uses: combined law, density 9 · Dalton's law of partial pressures 10 · Kinetic theory aur real gases (JEE) 11 · Ek nazar mein + quick check 12"],
+      ["Thermodynamics ki language", "Section 5.1.1 to 5.1.3", 13, "System, surroundings aur system ke types 14 · State of system aur state functions 15 · Thermodynamic processes 16 · Extensive aur intensive properties 17 · Ek nazar mein + quick check 18"],
+      ["Internal energy aur first law", "Section 5.1.4", 19, "Internal energy kya hai 20 · Work aur heat se ΔU: U state function kyun 21 · First law aur sign convention 22 · NCERT Problem 5.1 + sign practice 23 · Ek nazar mein + quick check 24"],
+      ["Work: pressure-volume work", "Section 5.2.1", 25, "w = −p<sub>ex</sub>ΔV: derivation aur sign 26 · Reversible aur irreversible process 27 · Free expansion, isothermal work: NCERT 5.2 to 5.4 28 · Kaun sa path zyada work deta hai? 29 · Ek nazar mein + quick check 30"],
+      ["Enthalpy, heat capacity aur calorimetry", "Section 5.2.2, 5.3", 31, "Enthalpy: H = U + pV aur ΔH = q<sub>p</sub> 32 · ΔH = ΔU + Δn<sub>g</sub>RT 33 · Heat capacity aur specific heat 34 · C<sub>p</sub>, C<sub>V</sub> aur C<sub>p</sub> − C<sub>V</sub> = R 35 · Bomb calorimeter se ΔU 36 · Coffee-cup calorimeter se ΔH 37 · Ek nazar mein + quick check 38"],
+      ["Reaction enthalpy aur Hess's law", "Section 5.4", 39, "Reaction enthalpy aur standard state 40 · Phase transformations: fusion, vaporisation, sublimation 41 · Standard enthalpy of formation 42 · Thermochemical equations 43 · Hess's law of constant heat summation 44 · Hess's law practice: benzene ka Δ<sub>f</sub>H 45 · Ek nazar mein + quick check 46"],
+      ["Enthalpy ke alag-alag types", "Section 5.5", 47, "Standard enthalpy of combustion 48 · Atomization aur bond enthalpy 49 · Bond enthalpies se Δ<sub>r</sub>H 50 · Lattice enthalpy: Born-Haber cycle 51 · Enthalpy of solution aur dilution 52 · Ek nazar mein + quick check 53"],
+      ["Spontaneity: entropy aur Gibbs energy", "Section 5.6, 5.7", 54, "Spontaneous process: kya ΔH kaafi hai? 55 · Entropy aur ΔS = q<sub>rev</sub>/T 56 · Second law, third law aur ΔS<sub>total</sub> 57 · Gibbs energy: ΔG = ΔH − TΔS 58 · Gibbs energy aur equilibrium: ΔG° aur K 59 · Ek nazar mein + quick check 60"],
+      ["Revision", "Complete chapter", 61, "Formula sheet + sign convention chart 62 · Fact sheet: poora chapter ek page par 63 · Top 12 mistakes + exam ke favourite questions 64 · Final test, Part A: 16 MCQs 65 · Final test, Part B aur C + scorecard 66 · Answer key + tumhara certificate 67"]
+    ] },
+  { n: 6, title: "Equilibrium", tag: "Aage bhi, peeche bhi, phir bhi balanced: K, pH aur Ksp, Hinglish mein",
+    pages: 73, fig: 42, solved: 36, practice: "130+", qr: "4 QR simulations",
+    topics: [
+      ["Physical equilibrium", "Section 6.1", 4, "Dynamic equilibrium ka matlab 5 · Solid ⇌ liquid: normal melting point 6 · Liquid ⇌ vapour: vapour pressure 7 · Solid ⇌ vapour aur saturated solution 8 · Gases in liquids: Henry's law + Table 6.1 9 · Ek nazar mein + quick check 10"],
+      ["Chemical equilibrium aur K<sub>c</sub> ka law", "Section 6.2, 6.3", 11, "Chemical equilibrium: rate graph aur D<sub>2</sub> proof 12 · Dono taraf se same equilibrium + student activity 13 · Law of chemical equilibrium: K<sub>c</sub> 14 · K<sub>c</sub> likhna + reverse/multiply rules 15 · Ek nazar mein + quick check 16"],
+      ["Homogeneous, heterogeneous aur K<sub>p</sub>", "Section 6.4, 6.5", 17, "Homogeneous equilibria + Problem 6.3 18 · K<sub>p</sub> aur K<sub>p</sub> = K<sub>c</sub>(RT)<sup>Δn</sup> 19 · K ki units + K<sub>c</sub> ↔ K<sub>p</sub> practice 20 · Heterogeneous equilibria + Problem 6.6 21 · Ek nazar mein + quick check 22"],
+      ["K ka use: Q, ICE table aur ΔG", "Section 6.6, 6.7", 23, "K se extent of reaction 24 · Reaction quotient Q: direction 25 · ICE table method + Problem 6.4 26 · ICE table: Problems 6.8 aur 6.9 27 · K, Q aur Gibbs energy: ΔG° = −RT ln K 28 · Ek nazar mein + quick check 29"],
+      ["Le Chatelier's principle", "Section 6.8", 30, "Principle + concentration ka effect 31 · Pressure aur inert gas ka effect 32 · Temperature: sirf yahi K badalta hai 33 · Catalyst + Haber aur contact process 34 · Le Chatelier master table + practice 35 · Ek nazar mein + quick check 36"],
+      ["Ionic equilibrium: acids aur bases", "Section 6.9, 6.10", 37, "Strong aur weak electrolytes 38 · Acids, bases aur Arrhenius concept 39 · Brønsted–Lowry: conjugate pairs 40 · Lewis acids aur bases 41 · Ek nazar mein + quick check 42"],
+      ["Water, pH, K<sub>a</sub> aur K<sub>b</sub>", "Section 6.11.1 to 6.11.7", 43, "Strong/weak acids aur K<sub>w</sub> 44 · pH scale + ghar ka indicator 45 · pH problems: 6.16, 6.17 + strong bases 46 · Weak acids: K<sub>a</sub>, pK<sub>a</sub> aur Table 6.6 47 · Weak acid problems: 6.18 to 6.20 48 · Weak bases: K<sub>b</sub> + Problem 6.21 49 · K<sub>a</sub> × K<sub>b</sub> = K<sub>w</sub> + Problem 6.23 50 · Polybasic acids + acid strength factors 51 · Ek nazar mein + quick check 52"],
+      ["Common ion, hydrolysis aur buffer", "Section 6.11.8, 6.11.9, 6.12", 53, "Common ion effect 54 · Salt hydrolysis: acidic, basic ya neutral 55 · Hydrolysis: pH calculation + Problem 6.25 56 · Buffer solutions: kya aur kaise 57 · Henderson equation + Problems 6.22, 6.24 58 · Ek nazar mein + quick check 59"],
+      ["Solubility product (K<sub>sp</sub>)", "Section 6.13", 60, "Solubility categories aur K<sub>sp</sub> expression 61 · K<sub>sp</sub> ↔ solubility: Problems 6.26, 6.27 62 · Precipitate kab banega: Q vs K<sub>sp</sub> 63 · Common ion + pH ka solubility par effect 64 · Ek nazar mein + quick check 65"],
+      ["Revision", "Complete chapter", 66, "Formula sheet + Le Chatelier chart 67 · Fact sheet: poora chapter ek page par 68 · Top 12 mistakes + exam ke favourite questions 69 · Final test, Part A: 16 MCQs 70 · Final test, Part B aur C + scorecard 71 · Answer key + tumhara certificate 72"]
+    ] },
+  { n: 7, title: "Redox Reactions", tag: "Electrons ka len-den: oxidation number, balancing aur cells, Hinglish mein",
+    pages: 52, fig: 38, solved: 18, practice: "90+", qr: "1 QR simulation",
+    topics: [
+      ["Redox ka classical idea", "Section 7.1", 4, "Oxidation: oxygen jodna, hydrogen hatana 5 · Reduction aur redox: dono saath 6 · Oxidising aur reducing agent + Problem 7.1 7 · Redox hamari zindagi mein + ghar ki activity 8 · Ek nazar mein + quick check 9"],
+      ["Electron transfer aur metal competition", "Section 7.2, 7.2.1", 10, "Electron transfer + Problem 7.2 11 · Zn strip in Cu<sup>2+</sup> solution (Fig. 7.1) 12 · Cu + Ag<sup>+</sup> (Fig. 7.2) aur Zn > Cu > Ag 13 · Ek nazar mein + quick check 14"],
+      ["Oxidation number", "Section 7.3", 15, "Partial transfer aur ON ki definition 16 · ON ke 6 rules 17 · ON calculate karna: solved + practice 18 · Highest ON aur Stock notation (Problem 7.3) 19 · ON se redox pehchaano (Problem 7.4) 20 · Fractional ON: average ka khel 21 · Ek nazar mein + quick check 22"],
+      ["Redox reactions ke types", "Section 7.3.1", 23, "Combination aur decomposition 24 · Metal displacement + activity series 25 · Hydrogen aur halogen displacement 26 · Disproportionation + Problem 7.5 27 · Problems 7.6, 7.7 + mixed practice 28 · Ek nazar mein + quick check 29"],
+      ["Redox equations balance karna", "Section 7.3.2", 30, "Balance kya-kya karna hai + medium 31 · ON method + Problem 7.8 (acidic) 32 · ON method: basic medium (Problem 7.9) + Cu + HNO<sub>3</sub> 33 · Half reaction method: 7 steps 34 · Half method in basic medium (Problem 7.10) 35 · Aur practice + QR simulation 36 · Ek nazar mein + quick check 37"],
+      ["Titrations aur electrode processes", "Section 7.3.3, 7.3.4, 7.4", 38, "Redox titrations: KMnO<sub>4</sub>, dichromate, iodometry 39 · ON ki limitations + ghar par iodine test 40 · Daniell cell (Fig. 7.3) aur salt bridge 41 · Electrode potential aur SHE 42 · Table 7.1: oxidising/reducing power + feasibility 43 · Ek nazar mein + quick check 44"],
+      ["Revision", "Complete chapter", 45, "Rules sheet + oxidants aur reductants 46 · Fact sheet: poora chapter ek page par 47 · Top 12 mistakes + exam ke favourite questions 48 · Final test, Part A: 16 MCQs 49 · Final test, Part B aur C + scorecard 50 · Answer key + tumhara certificate 51"]
+    ] },
+  { n: 8, title: "Organic Chemistry: Some Basic Principles and Techniques", short: "Organic Chemistry: Basic Principles", tag: "Structures, naming, mechanism aur lab techniques: Hinglish mein",
+    pages: 88, fig: 78, solved: 31, practice: "120+", qr: "2 QR simulations",
+    topics: [
+      ["Organic chemistry aur carbon ki tetravalence", "Section 8.1, 8.2", 4, "Organic chemistry aur vital force theory 5 · Tetravalence aur hybridisation: sp<sup>3</sup>, sp<sup>2</sup>, sp 6 · s-character ka asar + Problem 8.3 7 · σ aur π bonds + Problem 8.1 8 · Practice: Problem 8.2 + balloons wali activity 9"],
+      ["Structure likhne ke tarike", "Section 8.3", 11, "Complete aur condensed formula 12 · Bond-line formula: padhna aur banana 13 · Practice: Problems 8.4, 8.5 + formula badlo 14 · 3D: wedge-dash aur molecular models 15"],
+      ["Classification aur functional groups", "Section 8.4", 17, "Classification: chain, ring aur heterocyclic 18 · Aromatic aur heterocyclic compounds 19 · Functional groups: 15 groups ki table 20 · Functional groups hamari zindagi mein 21 · Homologous series 22"],
+      ["IUPAC naming: alkanes", "Section 8.5.1, 8.5.2", 24, "Common naam vs IUPAC + word roots 25 · Alkyl groups: iso, sec, tert, neo 26 · Rules 1-3: chain, numbering, alphabetical 27 · Rules 4-7: di/tri, tie, complex groups 28 · Problem 8.7 + naam banane ke 4 steps 29 · Cycloalkanes ke naam 30"],
+      ["IUPAC naming: functional groups aur benzene", "Section 8.5.3, 8.5.4", 32, "Suffix aur prefix: functional groups ke naam 33 · Priority order: principal functional group 34 · Problem 8.8: structure se naam 35 · Problem 8.9: naam se structure 36 · Benzene derivatives: o, m, p aur numbering 37 · Problem 8.10 + practice 38"],
+      ["Isomerism", "Section 8.6", 40, "Isomerism ke types + chain isomers 41 · Position, functional isomers aur metamerism 42 · Stereoisomerism: cis-trans aur optical 43 · Practice: isomers count karo + pehchaano 44"],
+      ["Reaction mechanism ki basics", "Section 8.7.1 to 8.7.3", 46, "Substrate, reagent aur mechanism 47 · Bond fission: homolytic vs heterolytic + Problem 8.11 48 · Carbocation, carbanion, free radical: stability 49 · Nucleophile aur electrophile + Problems 8.12, 8.13 50 · Curved arrows: electron movement 51"],
+      ["Electronic effects aur reaction types", "Section 8.7.4 to 8.7.10", 53, "Inductive effect + Problems 8.14, 8.15 54 · Inductive effect ka use: acidity aur stability 55 · Resonance structures + Problem 8.16 56 · Resonance structures ki stability + Problems 8.17, 8.18 57 · Resonance effect: +R aur −R 58 · Electromeric effect: +E aur −E 59 · Hyperconjugation + Problem 8.19 60 · Organic reactions ke chaar types 61"],
+      ["Purification ke methods", "Section 8.8", 63, "Sublimation aur crystallisation 64 · Distillation: simple 65 · Fractional aur reduced pressure distillation 66 · Steam distillation aur differential extraction 67 · Chromatography: column, TLC, paper 68 · Colourless spots, R<sub>f</sub> numerical + ghar par chromatography 69 · Kaunsa method kab? + NCERT exercises 70"],
+      ["Qualitative aur quantitative analysis", "Section 8.9, 8.10", 72, "C, H detection + Lassaigne fusion 73 · Lassaigne: N aur S ke tests 74 · Halogens aur phosphorus ke tests 75 · Liebig method: % C, % H + Problem 8.20 76 · Dumas method: % N + Problem 8.21 77 · Kjeldahl method + Problem 8.22 78 · Carius: halogen aur S + Problems 8.23, 8.24; P aur O 79"],
+      ["Revision", "Complete chapter", 81, "Rules sheet: har topic ka formula 82 · Fact sheet: poora chapter ek page par 83 · Top 12 mistakes + exam ke favourite questions 84 · Final test, Part A: 16 MCQs 85 · Final test, Part B aur C + scorecard 86 · Answer key + tumhara certificate 87"]
+    ] },
+  { n: 9, title: "Hydrocarbons", tag: "Petrol se polythene tak: carbon aur hydrogen ki poori family, Hinglish mein",
+    pages: 87, fig: 71, solved: 53, practice: "100+", qr: "2 QR simulations",
+    topics: [
+      ["Hydrocarbons ka parivaar", "Section 9.1", 4, "Classification aur general formulas 5 · Fuels, uses aur pollution 6 · Practice: formula se family pehchaano 7"],
+      ["Alkanes: naam, isomers aur banana", "Section 9.2.1, 9.2.2", 9, "Structure, isomers aur 1°/2°/3°/4° carbon 10 · Problem 9.1: C<sub>6</sub>H<sub>14</sub> ke isomers 11 · Problem 9.2: C<sub>5</sub>H<sub>11</sub> groups aur alcohols 12 · Problems 9.3, 9.4, 9.5: naam ↔ structure 13 · Banana: hydrogenation, Zn/HCl, Wurtz reaction 14 · Banana: decarboxylation, Kolbe + Problem 9.6 15"],
+      ["Alkanes ki properties", "Section 9.2.3", 17, "Physical properties: b.p., branching, solubility 18 · Substitution: halogenation 19 · Free radical mechanism + Exercise 9.1 20 · Combustion aur controlled oxidation 21 · Isomerisation, aromatisation, steam, pyrolysis 22 · Practice: properties ke questions 23"],
+      ["Conformations", "Section 9.2.4", 25, "Conformations kya hain: eclipsed, staggered 26 · Sawhorse aur Newman projections 27 · Stability, torsional strain, energy graph 28 · Practice: projections draw karo 29"],
+      ["Alkenes: structure, naam, isomerism", "Section 9.3.1 to 9.3.3", 31, "Double bond ki structure 32 · IUPAC naam + Problem 9.7 33 · σ aur π bonds ginna + Problem 9.8 34 · Structural isomers + Problem 9.9 35 · Geometrical (cis-trans) isomerism 36 · Problems 9.10, 9.11 + Exercise 9.9 37"],
+      ["Alkenes banana", "Section 9.3.4", 39, "Alkynes se: Lindlar aur Na/liquid NH<sub>3</sub> 40 · Alkyl halides se: dehydrohalogenation 41 · Vicinal dihalides aur alcohols se 42 · Practice: kaunsa reagent + Exercise 9.21 43"],
+      ["Alkenes ki reactions", "Section 9.3.5", 45, "Physical properties, H<sub>2</sub> aur halogens ka addition 46 · HX ka addition: Markovnikov rule 47 · Peroxide effect + Problem 9.12, Exercise 9.16 48 · H<sub>2</sub>SO<sub>4</sub> aur paani ka addition 49 · Oxidation: Baeyer reagent, acidic KMnO<sub>4</sub> 50 · Ozonolysis: double bond ki jagah 51 · Ozonolysis puzzles: Exercises 9.4 to 9.7 52 · Polymerisation 53"],
+      ["Alkynes", "Section 9.4", 55, "Naam, isomers + Problem 9.13 56 · Triple bond ki structure 57 · Banana: calcium carbide, vicinal dihalides 58 · Acidic character + Exercise 9.18 59 · Addition: H<sub>2</sub>, halogens, HX 60 · Water addition, polymerisation, summary 61"],
+      ["Benzene: structure aur aromaticity", "Section 9.5.1 to 9.5.4", 63, "Arenes: naam aur isomers 64 · Benzene ki structure + Exercise 9.17 65 · Aromaticity: Hückel rule + Exercises 9.10 to 9.12 66 · Benzene banana + Problem 9.14, Exercise 9.20 67 · Physical properties, combustion + Exercise 9.8 68"],
+      ["Benzene ki reactions", "Section 9.5.5, 9.5.6, 9.6", 70, "Electrophilic substitution: mechanism + Exercise 9.19 71 · Nitration aur halogenation 72 · Sulphonation aur Friedel-Crafts + Exercise 9.24 73 · Addition reactions aur combustion 74 · Directive influence: o/p aur m 75 · Conversions: Exercises 9.13, 9.22, 9.23 76 · Carcinogenicity aur toxicity 77"],
+      ["Revision", "Complete chapter", 79, "Conversions map: ek nazar mein 80 · Reagent sheet + rules 81 · Fact sheet: poora chapter ek page par 82 · Top 12 mistakes + exam ke favourite questions 83 · Final test, Part A: 16 MCQs 84 · Final test, Part B aur C + scorecard 85 · Answer key + tumhara certificate 86"]
+    ] }
+];
+
+const SAMPLE_PAGES = [[1, "Cover"], [3, "Is chapter mein kya hai"], [4, "Topic 1 ka pehla page"], [5, "Page 5"], [6, "Page 6"]];
+const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
+
+const $ = (s, el = document) => el.querySelector(s);
+const plain = html => html.replace(/<[^>]+>/g, "");
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const parseSubs = str => str.split(" · ").map(s => {
+  const m = s.match(/^(.*)\s(\d+)$/);
+  return m ? { name: m[1], page: +m[2] } : { name: s, page: null };
+});
+
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const done = store.get("chemophile-done") || {};
+
+// hero totals, summed from the chapter data so they stay correct
+(function heroStats() {
+  const sum = key => CHAPTERS.reduce((a, c) => a + (typeof c[key] === "number" ? c[key] : parseInt(c[key], 10)), 0);
+  const topics = CHAPTERS.reduce((a, c) => a + c.topics.length, 0);
+  const qr = CHAPTERS.reduce((a, c) => a + parseInt(c.qr, 10), 0);
+  const items = [
+    [CHAPTERS.length, "chapters"], [sum("pages"), "pages"], [topics, "topics"],
+    [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
+    [sum("practice") + "+", "practice questions"], [qr, "QR simulations"]
+  ];
+  $("#hero-stats").innerHTML = items.map(([v, l]) => `<span class="stat"><b>${v}</b> ${l}</span>`).join("");
+})();
+
+// shelf of covers
+$("#shelf").innerHTML = CHAPTERS.map(c => `
+  <a class="book" href="#ch${c.n}">
+    <img src="assets/thumbs/ch${c.n}-1.webp" alt="Chapter ${c.n}: ${esc(c.title)} ka cover" width="360" height="509" loading="lazy">
+    <div>
+      <div class="ch">Chapter ${c.n}</div>
+      <div class="nm">${esc(c.short || c.title)}</div>
+      <div class="meta">${c.topics.length} topics · ${c.pages} pages</div>
+    </div>
+  </a>`).join("");
+
+// chapter contents pages
+$("#chapter-list").innerHTML = CHAPTERS.map(c => {
+  const topics = c.topics.map(([name, sec, start, subs], i) => {
+    const isRev = i === c.topics.length - 1;
+    const id = `ch${c.n}-t${i + 1}`;
+    const subHtml = parseSubs(subs).map(s => `<span>${s.name}${s.page ? `&nbsp;<b>${s.page}</b>` : ""}</span>`).join("<i>·</i>");
+    return `
+      <li class="topic${isRev ? " rev" : ""}" id="${id}" style="--c: var(${TOPIC_COLORS[i % TOPIC_COLORS.length]})">
+        <div class="num">${i + 1}</div>
+        <div style="min-width:0">
+          <h4>${name}<span class="sec">${sec}</span></h4>
+          <p class="subs">${subHtml}</p>
+        </div>
+        <div class="side">
+          <span class="start" title="Page number">${start}</span>
+          <label class="track"><input type="checkbox" id="done-${id}" data-id="${id}"${done[id] ? " checked" : ""}> Padh liya</label>
+        </div>
+      </li>`;
+  }).join("");
+  const samples = SAMPLE_PAGES.map(([p, label]) => `
+    <button type="button" data-open="ch${c.n}-${p}">
+      <img src="assets/thumbs/ch${c.n}-${p}.webp" alt="" width="360" height="509" loading="lazy">${label}
+    </button>`).join("");
+  return `
+    <section class="chapter" id="ch${c.n}" aria-labelledby="ch${c.n}-title">
+      <div class="ch-head">
+        <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509" loading="lazy">
+        <div style="min-width:0">
+          <div class="kicker">Chemophile Part 1 (for 11th Class) · Chapter ${c.n}</div>
+          <h3 id="ch${c.n}-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
+          <p class="tag">${esc(c.tag)}</p>
+          <div class="stats">
+            <span class="stat"><b>${c.topics.length}</b> topics</span>
+            <span class="stat"><b>${c.pages}</b> pages</span>
+            <span class="stat"><b>${c.fig}</b> figures</span>
+            <span class="stat"><b>${c.solved}</b> solved examples</span>
+            <span class="stat"><b>${c.practice}</b> practice questions</span>
+            <span class="stat">${esc(c.qr)}</span>
+          </div>
+        </div>
+      </div>
+      <ol class="topics">${topics}</ol>
+      <div class="progress" id="progress-ch${c.n}"></div>
+      <div class="samples">
+        <h4>Andar se dekho: sample pages</h4>
+        <div class="sample-row">${samples}</div>
+      </div>
+    </section>`;
+}).join("");
+
+// study tracker ("Mera study tracker" from the booklets), kept only in this browser
+function updateProgress(c) {
+  const total = c.topics.length;
+  const n = c.topics.filter((_, i) => done[`ch${c.n}-t${i + 1}`]).length;
+  $(`#progress-ch${c.n}`).textContent = n ? `Mera study tracker: ${n} / ${total} topics padh liye` : "";
+}
+CHAPTERS.forEach(updateProgress);
+document.addEventListener("change", e => {
+  const id = e.target.dataset && e.target.dataset.id;
+  if (!id) return;
+  if (e.target.checked) done[id] = 1; else delete done[id];
+  store.set("chemophile-done", done);
+  updateProgress(CHAPTERS.find(c => id.startsWith(`ch${c.n}-`)));
+});
+
+// topic search across every chapter
+const INDEX = [];
+CHAPTERS.forEach(c => c.topics.forEach(([name, sec, start, subs], i) => {
+  const where = `Ch ${c.n} · ${c.short || c.title} · Topic ${i + 1}`;
+  INDEX.push({ id: `ch${c.n}-t${i + 1}`, text: plain(name), where: `${where} · ${sec}`, page: start });
+  parseSubs(subs).forEach(s => INDEX.push({ id: `ch${c.n}-t${i + 1}`, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
+}));
+const results = $("#results");
+$("#topic-search").addEventListener("input", e => {
+  const q = e.target.value.trim().toLowerCase();
+  if (q.length < 2) { results.hidden = true; return; }
+  const hits = INDEX.filter(x => x.text.toLowerCase().includes(q) || x.where.toLowerCase().includes(q)).slice(0, 40);
+  results.hidden = false;
+  if (!hits.length) { results.innerHTML = `<div class="empty">"${esc(q)}" se koi topic nahi mila. Koi aur word try karo.</div>`; return; }
+  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+  results.innerHTML = hits.map(h => `
+    <button type="button" data-go="${h.id}">
+      <span><span>${esc(h.text).replace(re, m => `<mark>${m}</mark>`)}</span><span class="where">${esc(h.where)}</span></span>
+      <span class="pg">${h.page ? "p. " + h.page : ""}</span>
+    </button>`).join("");
+});
+results.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
+  if (!b) return;
+  const el = document.getElementById(b.dataset.go);
+  el.scrollIntoView({ block: "center" });
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 1600);
+});
+
+// sample page viewer
+const PAGES = [["ch2-2", "Is booklet ko kaise padhein (Chapter 2, page 2)"]];
+CHAPTERS.forEach(c => SAMPLE_PAGES.forEach(([p, label]) => PAGES.push([`ch${c.n}-${p}`, `Chapter ${c.n}: ${c.short || c.title} · ${label}`])));
+const viewer = $("#viewer"), vImg = $("#viewer-img"), vCap = $("#viewer-cap");
+let current = 0, lastFocus = null;
+function show(i) {
+  current = (i + PAGES.length) % PAGES.length;
+  const [key, cap] = PAGES[current];
+  vImg.src = `assets/pages/${key}.webp`;
+  vImg.alt = cap;
+  vCap.textContent = cap;
+}
+function openViewer(key) {
+  lastFocus = document.activeElement;
+  show(PAGES.findIndex(p => p[0] === key));
+  viewer.hidden = false;
+  document.body.style.overflow = "hidden";
+  $("#viewer-close").focus();
+}
+function closeViewer() {
+  viewer.hidden = true;
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-open]");
+  if (b) openViewer(b.dataset.open);
+});
+$("#viewer-close").addEventListener("click", closeViewer);
+$("#viewer-prev").addEventListener("click", () => show(current - 1));
+$("#viewer-next").addEventListener("click", () => show(current + 1));
+viewer.addEventListener("click", e => { if (e.target === viewer || e.target.classList.contains("viewer-stage")) closeViewer(); });
+document.addEventListener("keydown", e => {
+  if (viewer.hidden) return;
+  if (e.key === "Escape") closeViewer();
+  if (e.key === "ArrowLeft") show(current - 1);
+  if (e.key === "ArrowRight") show(current + 1);
+});
+let touchX = null;
+viewer.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+viewer.addEventListener("touchend", e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+  touchX = null;
+});
+
+// copy phone number
+$("#copy-phone").addEventListener("click", () => {
+  const msg = $("#copy-msg");
+  const fallback = () => {
+    const r = document.createRange(); r.selectNodeContents($("#phone-num"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    msg.textContent = "Number select ho gaya, ab copy kar lo.";
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText("9953821875").then(() => { msg.textContent = "Copy ho gaya!"; }, fallback);
+  } else fallback();
+});
+</script>
+</body>
+</html>
