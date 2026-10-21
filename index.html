@@ -400,7 +400,7 @@ section.block { padding-block: 64px; }
   <section class="hero night">
     <div class="wrap">
       <div>
-        <div class="pills"><span class="pill new">Class 11 ab available</span><span class="pill">Class 12 coming soon</span><span class="pill">CBSE 2026-27</span></div>
+        <div class="pills"><span class="pill new">Class 11: saare 9 chapters ready</span><span class="pill">Class 12 coming soon</span><span class="pill">CBSE 2026-27</span></div>
         <h1>Chemistry ka darr <span class="y">khatam.</span></h1>
         <p class="lede">Adeel Sir ki Chemophile booklets: Class 11 aur 12 Chemistry, Hinglish mein. Har concept pehle roz ki zindagi ke example se, phir diagram se, phir exam wale answer tak.</p>
         <p class="hand">Ratna nahi padega. Samajh aayega, aur yaad bhi rahega.</p>
@@ -434,7 +434,7 @@ section.block { padding-block: 64px; }
       <div class="pain">
         <div><q>NCERT 3 baar padha, phir bhi samajh nahi aaya.</q><p>Chemophile mein har topic <b>Adeel Sir ke example</b> se shuru hota hai: comb, balloon, TV, cold drink. Pehle samajh, phir definition.</p></div>
         <div><q>Concept aata hai, par exam mein likhna nahi aata.</q><p>Har topic ke saath <b>"Exam mein aise likho"</b> box: board ke liye English answer, ruled lines par, ready.</p></div>
-        <div><q>Numericals dekh ke hi darr lagta hai.</q><p>Class 11 ke 8 chapters mein <b>239 solved examples</b> step-by-step, phir "Ab tumhari baari" mein khud try.</p></div>
+        <div><q>Numericals dekh ke hi darr lagta hai.</q><p>Class 11 ke 9 chapters mein <b>333 solved examples</b> step-by-step, phir "Ab tumhari baari" mein khud try.</p></div>
         <div><q>Padha sab, par marks phir bhi cut gaye.</q><p><b>"Galti mat karna"</b> box woh galtiyan pehle hi bata deta hai jo sabse zyada marks katwati hain.</p></div>
       </div>
     </div>
@@ -451,7 +451,7 @@ section.block { padding-block: 64px; }
           <div class="show-img"><span class="tape"></span><img src="assets/feature/example.webp" alt="Book se: Adeel Sir ka example box, comb aur paper ke tukde" width="900" height="171" loading="lazy"></div>
         </div>
         <div class="show-row">
-          <div><div class="k">Step 2 · Dekho</div><h3>Har page par diagram, saaf labels ke saath</h3><p>Sirf Class 11 mein 458 figures aur diagrams. Cathode ray tube ho ya chemical equilibrium, sab kuch aankhon ke saamne.</p></div>
+          <div><div class="k">Step 2 · Dekho</div><h3>Har page par diagram, saaf labels ke saath</h3><p>Sirf Class 11 mein 499 figures aur diagrams. Cathode ray tube ho ya chemical equilibrium, sab kuch aankhon ke saamne.</p></div>
           <div class="show-img"><span class="tape"></span><img src="assets/feature/diagram.webp" alt="Book se: glass discharge tube ka labelled diagram" width="900" height="348" loading="lazy"></div>
         </div>
         <div class="show-row">
@@ -654,6 +654,7 @@ const WHATSAPP = "919953821875";
 // Rupees per chapter. Leave null until the price is decided; the page then shows "jaldi".
 // Key = "class-chapter", e.g. "11-2" is Class 11 Chapter 2.
 const PRICES = {
+  "11-1": { pdf: null, paperback: null },
   "11-2": { pdf: null, paperback: null },
   "11-3": { pdf: null, paperback: null },
   "11-4": { pdf: null, paperback: null },
@@ -666,7 +667,6 @@ const PRICES = {
 
 // Chapters still being written, as per the CBSE 2026-27 syllabus. Move a chapter into CHAPTERS when it is ready.
 const UPCOMING = [
-  { cls: 11, n: 1, title: "Some Basic Concepts of Chemistry", tag: "Mole concept, stoichiometry aur concentration terms", f: "n = m / M" },
   { cls: 12, n: 1, title: "Solutions", tag: "Concentration, Raoult's law aur colligative properties", f: "ΔT<sub>b</sub> = K<sub>b</sub> · m" },
   { cls: 12, n: 2, title: "Electrochemistry", tag: "Cells, Nernst equation aur conductance", f: "E = E° − (0.059/n) log Q" },
   { cls: 12, n: 3, title: "Chemical Kinetics", tag: "Rate law, order aur Arrhenius equation", f: "k = A e<sup>−Ea/RT</sup>" },
@@ -680,8 +680,23 @@ const UPCOMING = [
 ];
 const PART = { 11: "Part 1 (for 11th Class)", 12: "Part 2 (for 12th Class)" };
 
-// Available Class 11 chapters. Topic sub-lists are "name page · name page", as on each booklet's contents page.
+// Available chapters (all Class 11 for now). Topic sub-lists are "name page · name page", as on each booklet's contents page.
 const CHAPTERS = [
+  { n: 1, title: "Some Basic Concepts of Chemistry", tag: "Ek chammach cheeni mein kitne molecules? Hinglish mein seekho",
+    pages: 82, fig: 41, solved: 94, practice: "90+", qr: "5 QR simulations",
+    topics: [
+      ["Chemistry aur matter", "Section 1.1, 1.2", 4, "Chemistry kyun zaroori hai 5 · Matter ki teen states 6 · Mixture, element aur compound 7 · Practice: pehchaano aur classify karo 8"],
+      ["Properties aur measurement", "Section 1.3", 10, "Physical/chemical properties aur SI units 11 · SI prefixes + Exercises 1.14, 1.15 12 · Mass, weight aur volume 13 · Density aur temperature 14 · Practice: units + Exercise 1.13 15"],
+      ["Uncertainty in measurement", "Section 1.4", 17, "Scientific notation + Exercise 1.18 18 · Precision aur accuracy 19 · Significant figures + Exercises 1.16, 1.19 20 · Calculations aur rounding + Exercises 1.20, 1.31 21 · Dimensional analysis + Exercises 1.21(b), 1.22, 1.27 22"],
+      ["Laws of chemical combination", "Section 1.5", 24, "Conservation of mass aur definite proportions 25 · Multiple proportions + Exercise 1.21(a) 26 · Gay Lussac aur Avogadro + Exercise 1.26 27 · Practice: laws ke numericals 28"],
+      ["Dalton theory aur atomic masses", "Section 1.6, 1.7", 30, "Dalton's atomic theory 31 · Atomic mass aur amu 32 · Average atomic mass + Exercises 1.9, 1.32 33 · Molecular mass, formula mass + Problem 1.1, Exercise 1.1 34 · Practice: masses ke numericals 35"],
+      ["Mole concept", "Section 1.8", 37, "Mole aur Avogadro constant 38 · Molar mass aur mole ka bridge 39 · Mole ke numericals + Exercise 1.30 40 · Exercises 1.10, 1.28, 1.33 41 · Practice: mole bridge 42"],
+      ["Percentage composition aur formulas", "Section 1.9", 44, "Mass percent + Exercise 1.2 45 · Empirical aur molecular formula 46 · Problem 1.2 + Exercises 1.3, 1.8 47 · Combustion data se formula + Exercise 1.34 48 · Practice + Exercise 1.7 49"],
+      ["Stoichiometry", "Section 1.10", 51, "Balanced equation ka matlab 52 · Equation balance karna 53 · Mass-mass calculations + Problems 1.3, 1.4 54 · Exercises 1.4(i), 1.36 + mass-volume 55 · Practice: stoichiometry 56"],
+      ["Limiting reagent", "Section 1.10.1", 58, "Limiting reagent kya hai + Exercise 1.23 59 · NCERT Problem 1.5 60 · Exercises 1.4(ii), (iii) aur 1.24 61 · Practice: limiting reagent 62"],
+      ["Reactions in solutions", "Section 1.10.2", 64, "Solution aur concentration ke 4 tareeke 65 · Mass per cent aur ppm 66 · Mole fraction 67 · Molarity (Problem 1.7, Exercise 1.5) 68 · Dilution aur Exercises 1.12, 1.25 69 · Molality (Problem 1.8) + temperature effect 70 · Exercises 1.6, 1.11, 1.29, 1.35 71 · Practice: solutions 72"],
+      ["Revision", "Complete chapter", 74, "Mole map: ek nazar mein 75 · Formula sheet + rules 76 · Fact sheet: poora chapter ek page par 77 · Top 12 mistakes + exam ke favourite questions 78 · Final test, Part A: 16 MCQs 79 · Final test, Part B aur C + scorecard 80 · Answer key + tumhara certificate 81"]
+    ] },
   { n: 2, title: "Structure of Atom", tag: "Atom ki complete story: Hinglish mein, visuals ke saath",
     pages: 81, fig: 88, solved: 27, practice: "130+", qr: "5 QR simulations",
     topics: [
@@ -877,7 +892,7 @@ function renderShelf() {
     </div>`;
   }).join("");
   $("#shelf-note").textContent = cls === 11
-    ? `Chemophile ${PART[11]}: ${ready.length} chapters ready, ${soon.length} coming soon.`
+    ? `Chemophile ${PART[11]}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : `saare ${ready.length} chapters ready hain.`}`
     : `Chemophile ${PART[12]}: saare ${soon.length} chapters aa rahe hain. Jo chapter chahiye, uske neeche "Aate hi batana" dabao.`;
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }

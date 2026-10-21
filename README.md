@@ -4,7 +4,7 @@ Website for **Chemophile**, a Hinglish visual booklet series for Class 11 and 12
 
 The site (`index.html`) is a sales page for Class 11 and Class 12:
 
-- Class 11 (Part 1): Chapters 2 to 9 are ready, with every topic, sub-topic, NCERT section number and page number from each booklet's "Is chapter mein kya hai" page
+- Class 11 (Part 1): all 9 chapters are ready, with every topic, sub-topic, NCERT section number and page number from each booklet's "Is chapter mein kya hai" page
 - chapters not written yet (as per the CBSE 2026-27 syllabus) show as "Coming soon", with a WhatsApp "Aate hi batana" link
 - real cut-outs from the booklets, 5 free sample pages per chapter, and topic search
 - PDF and Paperback price for every chapter
