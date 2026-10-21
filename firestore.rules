@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// Security rules for the Chemophile online reader.
+// Paste this whole file into Firebase console → Firestore Database → Rules, then Publish.
+// Replace ADMIN_EMAIL_HERE with the same admin email you put in js/firebase-config.js.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.email == 'ADMIN_EMAIL_HERE'; }
+    function student() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+
+    // One document per student: name, phone, chapters bought, and the device the ID is locked to.
+    match /users/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, delete: if isAdmin();
+      // A student may only lock their ID to a device when it is not locked yet. Only the admin can unlock it.
+      allow update: if isAdmin() || (
+        signedIn() && request.auth.uid == uid
+        && resource.data.deviceId == null
+        && request.resource.data.deviceId is string
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deviceId', 'deviceInfo', 'boundAt'])
+      );
+
+      // Log of logins tried from another device, shown to the admin.
+      match /attempts/{attemptId} {
+        allow create: if signedIn() && request.auth.uid == uid;
+        allow read, delete: if isAdmin();
+      }
+    }
+
+    // Chapter info (title, number of pages uploaded).
+    match /chapters/{chapterId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Page images. A student can open a page only if their ID is active, locked to a device,
+    // and the page's chapter is in their list.
+    match /pages/{pageId} {
+      allow read: if isAdmin() || (
+        signedIn()
+        && student().active == true
+        && student().deviceId != null
+        && resource.data.ch in student().chapters
+      );
+      allow write: if isAdmin();
+    }
+  }
+}

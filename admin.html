@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chemophile Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* Layout: one admin desk with two tabs. Students: add form on top, then a searchable list. Chapters: one upload row per chapter. */
+.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); margin-block: 24px 18px; }
+.tabs button { font: 700 .95rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 9px 18px; border-radius: 999px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 640px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.pw-row { display: flex; gap: 8px; }
+.pw-row input { flex: 1; min-width: 0; }
+.chap-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 4px 14px; margin-top: 8px; }
+.chap-picks label { display: flex; gap: 8px; align-items: center; font-size: .92rem; padding: 4px 0; cursor: pointer; }
+.chap-picks input { width: 18px; height: 18px; accent-color: var(--good); }
+.section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.section-title h2 { font-size: 1.35rem; }
+.stack { display: grid; gap: 16px; padding-bottom: 48px; }
+.creds { display: grid; gap: 10px; }
+.creds pre { margin: 0; white-space: pre-wrap; font: .95rem/1.5 var(--font-body); background: var(--paper); border-radius: 10px; padding: 12px; user-select: all; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.search { max-width: 360px; }
+.students { display: grid; gap: 10px; }
+.stu { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 10px; background: var(--surface); }
+.stu-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.stu h3 { font-size: 1.1rem; }
+.stu .sub { font-size: .86rem; color: var(--muted); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: .78rem; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); }
+.pill.good { border-color: var(--good); color: var(--good); }
+.pill.bad { border-color: var(--bad); color: var(--bad); }
+.pill.warn { background: var(--warn-bg); border-color: transparent; }
+.chap-rows { display: grid; gap: 10px; }
+.chap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
+.chap-row h3 { font-size: 1.05rem; }
+.chap-row .sub { font-size: .85rem; color: var(--muted); }
+.chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+@media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
+progress { width: 100%; height: 10px; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header class="app-head">
+  <div class="wrap">
+    <a class="brand" href="index.html">Chemophile<small>Admin</small></a>
+    <div class="head-actions">
+      <span class="who" id="who"></span>
+      <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Load ho raha hai"></div></div>
+
+  <div class="center-screen" id="v-setup" hidden>
+    <div class="card login-card">
+      <h1>Firebase setup baaki hai</h1>
+      <p><code>js/firebase-config.js</code> mein Firebase project ki settings aur admin email daalni hain. Steps <code>SETUP.md</code> mein likhe hain.</p>
+    </div>
+  </div>
+
+  <div class="center-screen" id="v-login" hidden>
+    <form class="card login-card" id="login-form" novalidate>
+      <h1>Admin login</h1>
+      <div class="field"><label for="a-email">Admin email</label><input id="a-email" type="email" autocomplete="username"></div>
+      <div class="field"><label for="a-pw">Password</label><input id="a-pw" type="password" autocomplete="current-password"></div>
+      <div class="msg bad" id="login-err" role="alert" hidden></div>
+      <button class="btn btn-sun" type="submit" id="login-btn">Login</button>
+    </form>
+  </div>
+
+  <div id="v-admin" hidden>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="t-students">Students</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="t-chapters">Chapters upload</button>
+    </div>
+
+    <section id="t-students" class="stack">
+      <form class="card stack" id="new-form" novalidate style="padding-bottom: 22px">
+        <div class="section-title"><h2>Naya student</h2><span class="hint">Payment milne ke baad ID banao</span></div>
+        <div class="grid2">
+          <div class="field"><label for="s-name">Naam</label><input id="s-name" autocomplete="off" placeholder="Rahul Sharma"></div>
+          <div class="field"><label for="s-phone">WhatsApp number</label><input id="s-phone" inputmode="tel" autocomplete="off" placeholder="10 digit"></div>
+          <div class="field"><label for="s-id">Login ID</label><input id="s-id" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="rahul11"><span class="hint">Chhote letters aur numbers, 3 se 24 characters</span></div>
+          <div class="field"><label for="s-pw">Password</label><div class="pw-row"><input id="s-pw" autocomplete="off"><button class="btn btn-line btn-sm" type="button" id="gen-pw">Naya banao</button></div></div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom: 0"><b>Chapters jo kharide hain</b><button class="btn btn-line btn-sm" type="button" id="all-ch">Saare chuno</button></div>
+          <div class="chap-picks" id="new-ch"></div>
+        </div>
+        <div class="msg" id="new-msg" role="status" hidden></div>
+        <div><button class="btn btn-sun" type="submit" id="new-btn">Student ID banao</button></div>
+        <div class="creds" id="creds" hidden>
+          <b>Yeh message student ko bhejo (password sirf abhi dikh raha hai):</b>
+          <pre id="creds-text"></pre>
+          <div class="actions">
+            <a class="btn btn-wa btn-sm" id="creds-wa" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a>
+            <button class="btn btn-line btn-sm" type="button" id="creds-copy">Copy karo</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="section-title"><h2>Saare students <span class="hint" id="stu-count"></span></h2>
+          <div class="field search"><input id="stu-search" type="search" placeholder="Naam, ID ya phone se dhoondo" aria-label="Student dhoondo"></div></div>
+        <div class="students" id="students"></div>
+      </div>
+    </section>
+
+    <section id="t-chapters" class="stack" hidden>
+      <div class="card">
+        <div class="section-title"><h2>Chapter ki PDF upload karo</h2></div>
+        <p class="hint">PDF ke har page ki image ban kar online reader mein chali jaati hai. PDF khud kahin save nahi hoti, aur students ko download ka option nahi milta. Laptop ya phone par <b>Chrome</b> mein upload karo, aur upload khatam hone tak yeh page band mat karna. Dobara upload karne se purane pages badal jaate hain.</p>
+      </div>
+      <div class="chap-rows" id="chap-rows"></div>
+    </section>
+  </div>
+</main>
+
+<script src="js/chapters.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script type="module">
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc } from "./js/fb.js";
+
+const $ = s => document.querySelector(s);
+const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
+const fmtDate = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
+const chName = k => { const c = findChapter(k); return c ? `Ch ${c.n} ${c.short || c.title}` : k; };
+const allKeys = () => CHAPTERS.map(chapterKey);
+
+if (!configured || !ADMIN_EMAIL) show("v-setup");
+else onAuthStateChanged(auth, async user => {
+  if (!user) { $("#who").textContent = ""; $("#logout").hidden = true; show("v-login"); return; }
+  if ((user.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    await signOut(auth);
+    const err = $("#login-err"); err.textContent = "Yeh admin account nahi hai."; err.hidden = false;
+    return;
+  }
+  $("#who").textContent = user.email;
+  $("#logout").hidden = false;
+  show("v-admin");
+  loadStudents();
+  loadChapters();
+});
+
+$("#login-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#login-err"); err.hidden = true;
+  $("#login-btn").disabled = true;
+  try { await signInWithEmailAndPassword(auth, $("#a-email").value.trim(), $("#a-pw").value); }
+  catch (ex) { err.textContent = "Email ya password galat hai."; err.hidden = false; }
+  $("#login-btn").disabled = false;
+});
+$("#logout").addEventListener("click", () => signOut(auth));
+
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]");
+  if (!b) return;
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  ["t-students", "t-chapters"].forEach(t => { $("#" + t).hidden = t !== b.dataset.tab; });
+});
+
+// ---------- new student ----------
+const picks = (box, selected = []) => {
+  box.innerHTML = CHAPTERS.map(c => {
+    const k = chapterKey(c);
+    return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> Class ${c.cls} · ${esc(chName(k))}</label>`;
+  }).join("");
+};
+const picked = box => [...box.querySelectorAll("input:checked")].map(i => i.value);
+picks($("#new-ch"));
+$("#all-ch").addEventListener("click", () => {
+  const boxes = [...$("#new-ch").querySelectorAll("input")];
+  const all = boxes.every(b => b.checked);
+  boxes.forEach(b => { b.checked = !all; });
+});
+
+function genPassword() {
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
+  const a = new Uint32Array(8); crypto.getRandomValues(a);
+  return [...a].map(x => chars[x % chars.length]).join("");
+}
+$("#s-pw").value = genPassword();
+$("#gen-pw").addEventListener("click", () => { $("#s-pw").value = genPassword(); });
+$("#s-name").addEventListener("input", () => {
+  if ($("#s-id").dataset.touched) return;
+  const first = $("#s-name").value.trim().toLowerCase().split(/\s+/)[0].replace(/[^a-z0-9]/g, "");
+  $("#s-id").value = first ? first + String(Math.floor(100 + Math.random() * 900)) : "";
+});
+$("#s-id").addEventListener("input", () => { $("#s-id").dataset.touched = "1"; });
+
+$("#new-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("#new-msg");
+  const name = $("#s-name").value.trim();
+  const phone = $("#s-phone").value.replace(/\D/g, "").slice(-10);
+  const id = $("#s-id").value.trim().toLowerCase();
+  const pw = $("#s-pw").value.trim();
+  const chapters = picked($("#new-ch"));
+  const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
+  $("#creds").hidden = true;
+  if (!name) return fail("Student ka naam daalo.");
+  if (!ID_PATTERN.test(id)) return fail("Login ID mein sirf chhote letters, numbers, . _ - chalenge, 3 se 24 characters.");
+  if (pw.length < 6) return fail("Password kam se kam 6 characters ka rakho.");
+  if (!chapters.length) return fail("Kam se kam ek chapter chuno.");
+
+  $("#new-btn").disabled = true;
+  msg.className = "msg"; msg.textContent = "ID ban rahi hai…"; msg.hidden = false;
+  // A second Firebase app creates the student's login, so the admin stays logged in here.
+  const sec = initializeApp(firebaseConfig, "create-" + Date.now());
+  try {
+    const secAuth = initializeAuth(sec, { persistence: inMemoryPersistence });
+    const cred = await createUserWithEmailAndPassword(secAuth, idToEmail(id), pw);
+    await setDoc(doc(db, "users", cred.user.uid), {
+      name, phone, loginId: id, chapters, active: true,
+      deviceId: null, deviceInfo: null, boundAt: null, createdAt: serverTimestamp()
+    });
+    await signOut(secAuth);
+    msg.className = "msg good"; msg.textContent = `${name} ki ID ban gayi.`;
+    const link = READER_URL || new URL("read.html", location.href).href;
+    const text = `Hello ${name.split(" ")[0]}! Tumhari Chemophile online book ready hai.\n\nLink: ${link}\nLogin ID: ${id}\nPassword: ${pw}\n\nChapters: ${chapters.map(chName).join(", ")}\n\nDhyan do: ID sirf ek phone par chalegi. Jis phone par pehli baar login karoge, ID usi par lock ho jayegi. ID kisi ke saath share mat karna.\n- Adeel Sir`;
+    $("#creds-text").textContent = text;
+    $("#creds-wa").href = `https://wa.me/${phone ? "91" + phone : ""}?text=${encodeURIComponent(text)}`;
+    $("#creds").hidden = false;
+    ["s-name", "s-phone", "s-id"].forEach(i => { $("#" + i).value = ""; });
+    delete $("#s-id").dataset.touched;
+    $("#s-pw").value = genPassword();
+    picks($("#new-ch"));
+    loadStudents();
+  } catch (ex) {
+    fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" pehle se hai. Koi aur ID rakho.`
+      : ex.code === "auth/operation-not-allowed" ? "Firebase mein Email/Password login chalu nahi hai. SETUP.md ka step 3 dekho."
+      : "ID nahi ban paayi: " + (ex.message || ex.code));
+  } finally {
+    deleteApp(sec).catch(() => {});
+    $("#new-btn").disabled = false;
+  }
+});
+$("#creds-copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("#creds-text").textContent); $("#creds-copy").textContent = "Copy ho gaya"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
+});
+
+// ---------- students list ----------
+let students = [];
+async function loadStudents() {
+  const snap = await getDocs(collection(db, "users"));
+  students = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
+    .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+  await Promise.all(students.map(async s => {
+    try { s.attempts = (await getCountFromServer(collection(db, "users", s.uid, "attempts"))).data().count; }
+    catch (e) { s.attempts = 0; }
+  }));
+  renderStudents();
+}
+function renderStudents() {
+  const q = $("#stu-search").value.trim().toLowerCase();
+  const list = students.filter(s => !q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q)));
+  $("#stu-count").textContent = `(${students.length})`;
+  $("#students").innerHTML = list.length ? list.map(s => `
+    <div class="stu" data-uid="${s.uid}">
+      <div class="stu-top">
+        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">ID <b>${esc(s.loginId)}</b>${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · ${fmtDate(s.createdAt)}` : ""}</div></div>
+        <div class="pills">
+          ${s.active === false ? `<span class="pill bad">Band</span>` : `<span class="pill good">Chalu</span>`}
+          ${s.deviceId ? `<span class="pill">Locked: ${esc(s.deviceInfo || "device")}</span>` : `<span class="pill warn">Abhi login nahi kiya</span>`}
+          ${s.attempts ? `<span class="pill bad">${s.attempts} baar doosre device se try</span>` : ""}
+        </div>
+      </div>
+      <div class="sub">Chapters: ${(s.chapters || []).map(k => esc(chName(k))).join(", ") || "koi nahi"}</div>
+      <div class="actions">
+        <button class="btn btn-line btn-sm" type="button" data-act="edit">Chapters badlo</button>
+        ${s.deviceId ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
+        <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Chalu karo" : "Band karo"}</button>
+      </div>
+      <div class="edit" hidden>
+        <div class="chap-picks"></div>
+        <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save karo</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Rehne do</button></div>
+      </div>
+      <div class="msg" role="status" hidden></div>
+    </div>`).join("") : `<p class="hint">Koi student nahi mila.</p>`;
+}
+$("#stu-search").addEventListener("input", renderStudents);
+$("#students").addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const row = b.closest(".stu"), s = students.find(x => x.uid === row.dataset.uid);
+  const note = (t, cls = "good") => { const m = row.querySelector(".msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; };
+  const ref = doc(db, "users", s.uid);
+  try {
+    if (b.dataset.act === "edit") { picks(row.querySelector(".edit .chap-picks"), s.chapters || []); row.querySelector(".edit").hidden = false; }
+    if (b.dataset.act === "cancel") row.querySelector(".edit").hidden = true;
+    if (b.dataset.act === "save") {
+      const chapters = picked(row.querySelector(".edit .chap-picks"));
+      await updateDoc(ref, { chapters });
+      s.chapters = chapters; renderStudents();
+    }
+    if (b.dataset.act === "reset") {
+      await updateDoc(ref, { deviceId: null, deviceInfo: null, boundAt: null });
+      s.deviceId = null; s.deviceInfo = null; renderStudents();
+    }
+    if (b.dataset.act === "toggle") {
+      const active = s.active === false;
+      await updateDoc(ref, { active });
+      s.active = active; renderStudents();
+    }
+  } catch (ex) {
+    note("Save nahi hua: " + (ex.message || ex.code), "bad");
+  }
+});
+
+// ---------- chapters upload ----------
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const uploaded = new Map();
+async function loadChapters() {
+  const snap = await getDocs(collection(db, "chapters"));
+  snap.docs.forEach(d => uploaded.set(d.id, d.data()));
+  $("#chap-rows").innerHTML = CHAPTERS.map(c => {
+    const k = chapterKey(c), u = uploaded.get(k);
+    return `<div class="chap-row" data-k="${k}">
+      <div style="min-width:0"><h3>Class ${c.cls} · Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
+        <div class="sub status">${u ? `Upload ho gaya: ${u.pageCount} pages · ${fmtDate(u.updatedAt)}` : "Abhi upload nahi hua"}</div>
+        <progress max="100" value="0" hidden></progress></div>
+      <div class="ctl"><input type="file" accept="application/pdf" aria-label="Chapter ${c.n} ki PDF"><button class="btn btn-sun btn-sm" type="button" data-up>${u ? "Dobara upload" : "Upload karo"}</button></div>
+    </div>`;
+  }).join("");
+}
+
+function pageImage(canvas) {
+  let q = 0.8, url = canvas.toDataURL("image/webp", q);
+  const webp = url.startsWith("data:image/webp");
+  if (!webp) url = canvas.toDataURL("image/jpeg", q);
+  while (url.length > 900000 && q > 0.4) {
+    q -= 0.1;
+    url = canvas.toDataURL(webp ? "image/webp" : "image/jpeg", q);
+  }
+  return url;
+}
+
+$("#chap-rows").addEventListener("click", async e => {
+  const b = e.target.closest("[data-up]");
+  if (!b) return;
+  const row = b.closest(".chap-row"), k = row.dataset.k, c = findChapter(k);
+  const file = row.querySelector("input[type=file]").files[0];
+  const status = row.querySelector(".status"), bar = row.querySelector("progress");
+  if (!file) { status.textContent = "Pehle PDF file chuno."; return; }
+  b.disabled = true; bar.hidden = false;
+  let lock = null;
+  try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
+  try {
+    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    const total = pdf.numPages;
+    for (let n = 1; n <= total; n++) {
+      status.textContent = `Page ${n} / ${total} upload ho raha hai…`;
+      const page = await pdf.getPage(n);
+      const scale = 1100 / page.getViewport({ scale: 1 }).width;
+      const vp = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      await setDoc(doc(db, "pages", pageId(k, n)), { ch: k, n, img: pageImage(canvas) });
+      page.cleanup();
+      bar.value = Math.round((n / total) * 100);
+    }
+    const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, updatedAt: serverTimestamp() };
+    await setDoc(doc(db, "chapters", k), info);
+    uploaded.set(k, { ...info, updatedAt: null });
+    status.textContent = `Upload ho gaya: ${total} pages. Students ab padh sakte hain.`;
+    b.textContent = "Dobara upload";
+  } catch (ex) {
+    status.textContent = "Upload ruk gaya: " + (ex.message || ex.code) + ". Dobara try karo.";
+  } finally {
+    b.disabled = false;
+    if (lock) lock.release().catch(() => {});
+  }
+});
+</script>
+</body>
+</html>
