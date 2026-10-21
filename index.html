@@ -757,12 +757,10 @@ function renderPick() {
 function renderSummary() {
   const chosen = CHAPTERS.filter(c => pack.has(key(c)));
   const total = chosen.reduce((a, c) => a + priceFor(c, fmt), 0);
-  const pages = chosen.reduce((a, c) => a + c.pages, 0);
   const paper = fmt !== "online";
   $("#summary").innerHTML = `
     <dt>Format</dt><dd>${fmtLabel[fmt]}</dd>
     <dt>Chapters</dt><dd>${chosen.length}</dd>
-    <dt>Pages</dt><dd>${pages}</dd>
     <div class="total" style="display:contents"><dt>Total</dt><dd>${chosen.length ? rupee(total) : "–"}</dd></div>`;
   $("#summary-note").textContent = !chosen.length
     ? "Kam se kam ek chapter tick karo."
