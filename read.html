@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chemophile Online</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:wght@400;500;600;700&family=Kalam:wght@700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* Layout: login card → bookshelf of the student's chapters → a scrolling page reader with a slim toolbar. */
+.shelf-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; padding-block: 28px 8px; }
+.shelf-head h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem); }
+.shelf-head p { color: var(--muted); }
+.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-block: 16px 40px; }
+.book { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
+.book .cv { width: 92px; aspect-ratio: 595 / 842; border-radius: 6px; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .9rem var(--font-display); text-align: center; padding: 6px; box-shadow: 0 6px 14px rgba(20,18,70,.2); overflow: hidden; }
+.book .cv img { width: 100%; height: 100%; object-fit: cover; }
+.book .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.book h2 { font-size: 1.12rem; margin-top: 2px; }
+.book .meta { font-size: .84rem; color: var(--muted); margin-top: 4px; }
+.book .btn { margin-top: 10px; }
+.pw { margin-bottom: 40px; }
+.pw summary { cursor: pointer; font-weight: 600; }
+.pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
+.pw .field { flex: 1 1 220px; }
+
+/* reader */
+.reader { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.r-bar .wrap { gap: 8px; }
+.r-title { min-width: 0; flex: 1; }
+.r-title b { display: block; font: 700 1rem/1.2 var(--font-display); color: var(--night-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-title span { font-size: .8rem; color: var(--night-muted); font-variant-numeric: tabular-nums; }
+.pages { max-width: 860px; margin-inline: auto; padding: 14px max(8px, env(safe-area-inset-right, 0px)) 60px max(8px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
+.page { position: relative; aspect-ratio: 595 / 842; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; place-items: center; }
+.page canvas { width: 100%; height: 100%; display: block; }
+.page .ph { color: var(--muted); font-size: .9rem; display: grid; justify-items: center; gap: 10px; }
+.toc { position: fixed; inset: 0; z-index: 40; background: rgba(10,9,35,.55); display: flex; justify-content: flex-end; }
+.toc-body { background: var(--paper); width: min(420px, 100%); height: 100%; overflow-y: auto; padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) 16px; }
+.toc-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.toc ol { list-style: none; padding: 0; margin: 0; }
+.toc li button { width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px 4px; font: inherit; color: var(--fg); cursor: pointer; }
+.toc li button:hover { background: var(--surface); }
+.toc .n { width: 28px; height: 28px; border-radius: 50%; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .85rem var(--font-display); }
+.toc .p { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9rem; }
+.jump { display: flex; gap: 8px; margin: 6px 0 14px; }
+.jump input { flex: 1; min-width: 0; font: 1rem var(--font-body); padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+</style>
+</head>
+<body>
+
+<header class="app-head" id="head">
+  <div class="wrap">
+    <a class="brand" href="index.html">Chemophile<small>Online padho</small></a>
+    <div class="head-actions">
+      <span class="who" id="who"></span>
+      <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
+    </div>
+  </div>
+</header>
+
+<header class="app-head r-bar" id="rbar" hidden>
+  <div class="wrap">
+    <button class="btn btn-ghost btn-sm" type="button" id="back">← Mere chapters</button>
+    <div class="r-title"><b id="r-name"></b><span id="r-page"></span></div>
+    <button class="btn btn-sun btn-sm" type="button" id="toc-open">Topics</button>
+  </div>
+</header>
+
+<main>
+  <div class="wrap center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Load ho raha hai"></div></div>
+
+  <div class="wrap center-screen" id="v-setup" hidden>
+    <div class="card login-card">
+      <h1>Online reader abhi setup ho raha hai</h1>
+      <p>Adeel Sir ne abhi online reader chalu nahi kiya hai. Thodi der baad try karo, ya Adeel Sir se WhatsApp par poochho.</p>
+      <a class="btn btn-wa" id="setup-wa" href="#" target="_blank" rel="noopener">WhatsApp par poochho</a>
+    </div>
+  </div>
+
+  <div class="wrap center-screen" id="v-login" hidden>
+    <form class="card login-card" id="login-form" novalidate>
+      <div class="seal">Adeel<br>Sir</div>
+      <h1>Apne chapters padho</h1>
+      <p class="hint">Order ke baad Adeel Sir ne jo login ID aur password diya hai, woh yahan daalo.</p>
+      <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="jaise: rahul11" required></div>
+      <div class="field"><label for="login-pw">Password</label><input id="login-pw" type="password" autocomplete="current-password" required></div>
+      <div class="msg bad" id="login-err" role="alert" hidden></div>
+      <button class="btn btn-sun" type="submit" id="login-btn">Login karo</button>
+      <p class="hint">Dhyan do: ek ID sirf ek phone ya tablet par chalti hai. Jis device par pehli baar login karoge, ID usi par lock ho jayegi.</p>
+      <p class="hint">Book nahi li abhi tak? <a href="index.html#pack">Yahan order karo</a></p>
+    </form>
+  </div>
+
+  <div class="wrap center-screen" id="v-blocked" hidden>
+    <div class="card login-card">
+      <h1 id="blocked-title"></h1>
+      <p id="blocked-text"></p>
+      <a class="btn btn-wa" id="blocked-wa" href="#" target="_blank" rel="noopener">Adeel Sir ko WhatsApp karo</a>
+      <button class="btn btn-line" type="button" id="blocked-back">Login page par jao</button>
+    </div>
+  </div>
+
+  <div id="v-library" hidden>
+    <div class="wrap">
+      <div class="shelf-head">
+        <div><h1 id="hello"></h1><p>Tumhare chapters. Jahan chhoda tha, wahin se shuru karo.</p></div>
+      </div>
+      <div class="lib" id="lib"></div>
+      <details class="card pw">
+        <summary>Password badlo</summary>
+        <form id="pw-form" novalidate>
+          <div class="field"><label for="pw-new">Naya password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="Kam se kam 6 characters"></div>
+          <button class="btn btn-line" type="submit">Password badlo</button>
+        </form>
+        <div class="msg" id="pw-msg" role="status" hidden style="margin-top: 12px"></div>
+      </details>
+    </div>
+  </div>
+
+  <div class="reader" id="v-reader" hidden>
+    <div class="pages" id="pages"></div>
+  </div>
+</main>
+
+<div class="toc" id="toc" hidden role="dialog" aria-modal="true" aria-labelledby="toc-title">
+  <div class="toc-body">
+    <div class="toc-top"><h2 id="toc-title" style="font-size: 1.3rem">Topics</h2><button class="btn btn-line btn-sm" type="button" id="toc-close">Band karo ✕</button></div>
+    <form class="jump" id="jump-form"><input id="jump-n" type="number" inputmode="numeric" min="1" placeholder="Page number"><button class="btn btn-sun btn-sm" type="submit">Jao</button></form>
+    <ol id="toc-list"></ol>
+  </div>
+</div>
+
+<script src="js/chapters.js"></script>
+<script type="module">
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, findChapter, esc } from "./js/fb.js";
+
+const $ = s => document.querySelector(s);
+const VIEWS = ["v-loading", "v-setup", "v-login", "v-blocked", "v-library", "v-reader"];
+const wa = text => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+function show(id) {
+  VIEWS.forEach(v => { $("#" + v).hidden = v !== id; });
+  const reading = id === "v-reader";
+  $("#head").hidden = reading;
+  $("#rbar").hidden = !reading;
+  if (!reading) stopReader();
+  window.scrollTo(0, 0);
+}
+
+let me = null;          // the student's user document
+let unwatch = null;     // stops listening to the user document
+let kicking = false;
+
+function blocked(title, text, waText) {
+  $("#blocked-title").textContent = title;
+  $("#blocked-text").textContent = text;
+  $("#blocked-wa").href = wa(waText);
+  show("v-blocked");
+}
+async function kick(title, text, waText) {
+  kicking = true;
+  if (unwatch) { unwatch(); unwatch = null; }
+  try { await signOut(auth); } catch (e) {}
+  blocked(title, text, waText);
+  kicking = false;
+}
+
+$("#setup-wa").href = wa("Hello Adeel Sir, Chemophile online reader kab chalu hoga?");
+$("#blocked-back").addEventListener("click", () => show("v-login"));
+
+if (!configured) {
+  show("v-setup");
+} else {
+  onAuthStateChanged(auth, user => {
+    if (kicking) return;
+    if (!user) {
+      me = null; $("#who").textContent = ""; $("#logout").hidden = true;
+      if ($("#v-blocked").hidden) show("v-login");
+      return;
+    }
+    start(user);
+  });
+}
+
+// ---------- login ----------
+const loginErrors = {
+  "auth/invalid-credential": "Login ID ya password galat hai. Dobara check karo.",
+  "auth/wrong-password": "Password galat hai.",
+  "auth/user-not-found": "Yeh login ID nahi mili.",
+  "auth/user-disabled": "Yeh ID band kar di gayi hai. Adeel Sir se baat karo.",
+  "auth/too-many-requests": "Bahut baar galat try hua. Thodi der baad try karo.",
+  "auth/network-request-failed": "Internet nahi chal raha. Connection check karo."
+};
+$("#login-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const id = $("#login-id").value.trim().toLowerCase();
+  const pw = $("#login-pw").value;
+  const err = $("#login-err");
+  err.hidden = true;
+  if (!ID_PATTERN.test(id) || !pw) { err.textContent = "Login ID aur password dono daalo."; err.hidden = false; return; }
+  if (!deviceId()) { err.textContent = "Is browser mein login nahi ho sakta. Private/Incognito mode band karke normal Chrome mein kholo."; err.hidden = false; return; }
+  $("#login-btn").disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, idToEmail(id), pw);
+  } catch (ex) {
+    err.textContent = loginErrors[ex.code] || "Login nahi ho paaya. Dobara try karo.";
+    err.hidden = false;
+  }
+  $("#login-btn").disabled = false;
+});
+$("#logout").addEventListener("click", () => signOut(auth));
+
+// ---------- device lock ----------
+async function start(user) {
+  show("v-loading");
+  const loginId = emailToId(user.email || "");
+  const ref = doc(db, "users", user.uid);
+  let snap;
+  try { snap = await getDoc(ref); } catch (e) { snap = null; }
+  if (!snap || !snap.exists()) {
+    return kick("Account abhi taiyaar nahi hai", "Is login ID ke saath koi chapter nahi juda hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile login ID "${loginId}" kaam nahi kar rahi.`);
+  }
+  me = snap.data();
+  const mine = deviceId();
+  if (!mine) {
+    return kick("Is browser mein nahi chalega", "Private/Incognito mode band karke normal browser mein kholo.", `Hello Adeel Sir, meri ID "${loginId}" browser mein nahi khul rahi.`);
+  }
+  if (me.active === false) {
+    return kick("Yeh ID band hai", "Tumhari login ID abhi band hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" band dikha rahi hai.`);
+  }
+  if (!me.deviceId) {
+    try {
+      await updateDoc(ref, { deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp() });
+      me.deviceId = mine;
+    } catch (e) {
+      return kick("Login nahi ho paaya", "Device register nahi ho paaya. Internet check karke dobara try karo.", `Hello Adeel Sir, meri ID "${loginId}" device par register nahi ho rahi.`);
+    }
+  } else if (me.deviceId !== mine) {
+    try { await addDoc(collection(db, "users", user.uid, "attempts"), { at: serverTimestamp(), deviceInfo: deviceInfo() }); } catch (e) {}
+    return kick("Yeh ID doosre device par chal rahi hai",
+      `Tumhari ID "${loginId}" pehle se ${me.deviceInfo || "ek aur device"} par lock hai. Ek ID sirf ek device par chalti hai. Naya phone liya hai to Adeel Sir se device reset karwao.`,
+      `Hello Adeel Sir, meri Chemophile ID "${loginId}" ka device reset karna hai. Maine naya phone liya hai.`);
+  }
+
+  // Keep watching: if Adeel Sir blocks the ID or resets the device, this device logs out.
+  if (unwatch) unwatch();
+  unwatch = onSnapshot(ref, s => {
+    const d = s.data();
+    if (!d) return;
+    if (d.active === false) return kick("Yeh ID band kar di gayi hai", "Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" band ho gayi hai.`);
+    if (d.deviceId !== mine) return kick("Device reset ho gaya", "Tumhari ID ka device reset hua hai. Jis phone par padhna hai, usme dobara login karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" logout ho gayi.`);
+    const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters);
+    me = d;
+    if (changed && !$("#v-library").hidden) renderLibrary();
+  });
+
+  $("#who").textContent = `${me.name || loginId} · ${loginId}`;
+  $("#logout").hidden = false;
+  me.loginId = loginId;
+  renderLibrary();
+}
+
+// ---------- library ----------
+const chapterInfo = new Map();
+async function renderLibrary() {
+  show("v-library");
+  $("#hello").textContent = `Hello ${(me.name || "").split(" ")[0] || me.loginId}!`;
+  const keys = me.chapters || [];
+  if (!keys.length) {
+    $("#lib").innerHTML = `<div class="card">Abhi tumhare account mein koi chapter nahi hai. Adeel Sir se baat karo.</div>`;
+    return;
+  }
+  await Promise.all(keys.map(async k => {
+    if (chapterInfo.has(k)) return;
+    try { const s = await getDoc(doc(db, "chapters", k)); chapterInfo.set(k, s.exists() ? s.data() : null); }
+    catch (e) { chapterInfo.set(k, null); }
+  }));
+  $("#lib").innerHTML = keys.map(k => {
+    const c = findChapter(k) || {};
+    const info = chapterInfo.get(k);
+    const [cls, n] = k.split("-");
+    const title = c.title || (info && info.title) || `Chapter ${n}`;
+    const last = store.get(`chemophile-last-${k}`);
+    const cover = cls === "11" ? `<img src="assets/thumbs/ch${n}-1.webp" alt="" width="360" height="509">` : `Chapter ${n}`;
+    const action = info && info.pageCount
+      ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Page ${last} se aage padho` : "Padhna shuru karo"}</button>`
+      : `<p class="meta">Yeh chapter jaldi upload hoga.</p>`;
+    return `<div class="card book">
+      <div class="cv">${cover}</div>
+      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h2>${esc(title)}</h2>
+      <div class="meta">${info && info.pageCount ? `${info.pageCount} pages` : ""}</div>${action}</div>
+    </div>`;
+  }).join("");
+}
+$("#lib").addEventListener("click", e => {
+  const b = e.target.closest("[data-read]");
+  if (b) openReader(b.dataset.read);
+});
+
+$("#pw-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("#pw-msg"), pw = $("#pw-new").value;
+  msg.hidden = false;
+  if (pw.length < 6) { msg.className = "msg bad"; msg.textContent = "Password kam se kam 6 characters ka rakho."; return; }
+  try {
+    await updatePassword(auth.currentUser, pw);
+    msg.className = "msg good"; msg.textContent = "Password badal gaya. Agli baar naya password use karna.";
+    $("#pw-new").value = "";
+  } catch (ex) {
+    msg.className = "msg bad";
+    msg.textContent = ex.code === "auth/requires-recent-login" ? "Pehle logout karke dobara login karo, phir password badlo." : "Password nahi badal paaya. Dobara try karo.";
+  }
+});
+
+// ---------- reader ----------
+let reading = null, loadObs = null, keepObs = null, nowObs = null;
+const cache = new Map(); // page id → data URL, last 24 pages
+
+function stopReader() {
+  [loadObs, keepObs, nowObs].forEach(o => o && o.disconnect());
+  loadObs = keepObs = nowObs = null;
+  if (reading) { $("#pages").innerHTML = ""; reading = null; cache.clear(); }
+}
+
+function openReader(k) {
+  const info = chapterInfo.get(k);
+  if (!info || !info.pageCount) return;
+  const c = findChapter(k) || {};
+  show("v-reader");
+  reading = { k, total: info.pageCount, c };
+  $("#r-name").textContent = c.short || c.title || info.title || k;
+  const box = $("#pages");
+  box.innerHTML = Array.from({ length: info.pageCount }, (_, i) =>
+    `<div class="page" id="pg-${i + 1}" data-n="${i + 1}"><div class="ph"><div class="spinner"></div>Page ${i + 1}</div></div>`).join("");
+
+  loadObs = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) loadPage(en.target); }), { rootMargin: "1400px 0px" });
+  keepObs = new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) releasePage(en.target); }), { rootMargin: "4000px 0px" });
+  nowObs = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      const n = +en.target.dataset.n;
+      $("#r-page").textContent = `Page ${n} / ${reading.total}`;
+      store.set(`chemophile-last-${k}`, n);
+    }
+  }), { rootMargin: "-45% 0px -50% 0px" });
+  box.querySelectorAll(".page").forEach(p => { loadObs.observe(p); keepObs.observe(p); nowObs.observe(p); });
+
+  buildToc(c);
+  const last = store.get(`chemophile-last-${k}`);
+  if (last > 1) requestAnimationFrame(() => goTo(last));
+}
+
+async function loadPage(el) {
+  if (el.dataset.state === "loading" || el.dataset.state === "done") return;
+  el.dataset.state = "loading";
+  const id = pageId(reading.k, +el.dataset.n);
+  try {
+    let src = cache.get(id);
+    if (!src) {
+      const s = await getDoc(doc(db, "pages", id));
+      if (!s.exists()) throw new Error("missing");
+      src = s.data().img;
+      cache.set(id, src);
+      if (cache.size > 24) cache.delete(cache.keys().next().value);
+    }
+    if (!reading || !el.isConnected) return;
+    await drawPage(el, src);
+    el.dataset.state = "done";
+  } catch (e) {
+    el.dataset.state = "";
+    el.innerHTML = `<div class="ph">Page ${el.dataset.n} load nahi hua. <button class="btn btn-line btn-sm" type="button" data-retry>Dobara try karo</button></div>`;
+  }
+}
+$("#pages").addEventListener("click", e => {
+  const b = e.target.closest("[data-retry]");
+  if (b) loadPage(b.closest(".page"));
+});
+
+function releasePage(el) {
+  if (el.dataset.state !== "done") return;
+  el.dataset.state = "";
+  el.innerHTML = `<div class="ph"><div class="spinner"></div>Page ${el.dataset.n}</div>`;
+}
+
+// Every page is drawn on a canvas with the student's name and ID across it,
+// so a screenshot or photo shows whose copy it came from.
+function drawPage(el, src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const mark = `${me.name || me.loginId} · ID ${me.loginId}${me.phone ? " · " + me.phone : ""}`;
+      ctx.save();
+      ctx.globalAlpha = 0.11;
+      ctx.fillStyle = "#1b1a45";
+      ctx.font = `600 ${Math.round(w * 0.026)}px "Fira Sans", Arial, sans-serif`;
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(-Math.PI / 7);
+      const stepX = ctx.measureText(mark).width + w * 0.12, stepY = w * 0.16;
+      for (let y = -h; y < h; y += stepY) for (let x = -w * 1.2 + ((y / stepY) % 2) * stepX / 2; x < w * 1.2; x += stepX) ctx.fillText(mark, x, y);
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = "#d6304f";
+      ctx.font = `600 ${Math.round(w * 0.016)}px "Fira Sans", Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(`Sirf ${me.name || me.loginId} (ID ${me.loginId}) ke liye. Share karna mana hai.`, w / 2, h - w * 0.012);
+      ctx.restore();
+      el.style.aspectRatio = `${w} / ${h}`;
+      el.innerHTML = "";
+      el.appendChild(cv);
+      resolve();
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function goTo(n) {
+  n = Math.min(Math.max(1, n), reading.total);
+  const el = document.getElementById(`pg-${n}`);
+  if (el) el.scrollIntoView({ block: "start" });
+  window.scrollBy(0, -66);
+}
+
+function buildToc(c) {
+  const list = (c.topics || []).map(([name, sec, start], i) =>
+    `<li><button type="button" data-go="${start}"><span class="n">${i + 1}</span><span>${name}</span><span class="p">p. ${start}</span></button></li>`);
+  $("#toc-list").innerHTML = list.length ? list.join("") : `<li class="hint">Page number daal kar seedha jao.</li>`;
+}
+$("#toc-open").addEventListener("click", () => { $("#toc").hidden = false; });
+$("#toc-close").addEventListener("click", () => { $("#toc").hidden = true; });
+$("#toc").addEventListener("click", e => {
+  if (e.target.id === "toc") { $("#toc").hidden = true; return; }
+  const b = e.target.closest("[data-go]");
+  if (b) { $("#toc").hidden = true; goTo(+b.dataset.go); }
+});
+$("#jump-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const n = parseInt($("#jump-n").value, 10);
+  if (n) { $("#toc").hidden = true; goTo(n); }
+});
+$("#back").addEventListener("click", () => renderLibrary());
+
+// No right-click, long-press save or drag on pages.
+document.addEventListener("contextmenu", e => { if (e.target.closest(".reader")) e.preventDefault(); });
+document.addEventListener("dragstart", e => { if (e.target.closest(".reader")) e.preventDefault(); });
+document.addEventListener("keydown", e => {
+  if ($("#v-reader").hidden) return;
+  if ((e.ctrlKey || e.metaKey) && ["s", "p"].includes(e.key.toLowerCase())) e.preventDefault();
+  if (e.key === "Escape") $("#toc").hidden = true;
+});
+</script>
+</body>
+</html>
