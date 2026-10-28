@@ -9,11 +9,34 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isAdmin() { return signedIn() && request.auth.token.email == 'ADMIN_EMAIL_HERE'; }
     function student() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function promoPath(code) { return /databases/$(database)/documents/promos/$(code); }
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+
+    // A promo code may be used while it is switched on, before its last date, and under its limit.
+    function promoOpen(p) { return p.active == true && request.time < p.expiresAt && p.used < p.maxUses; }
+
+    // A promo user is created together with: the code's use count going up by one, and a redemption record.
+    function validPromoSignup(uid) {
+      let d = request.resource.data;
+      let before = get(promoPath(d.promo)).data;
+      let after = getAfter(promoPath(d.promo)).data;
+      return signedIn() && request.auth.uid == uid
+        && d.keys().hasOnly(['name', 'phone', 'loginId', 'chapters', 'active', 'deviceId', 'deviceInfo', 'boundAt', 'createdAt', 'promo', 'expiresAt'])
+        && d.promo is string
+        && promoOpen(before)
+        && after.used == before.used + 1
+        && d.chapters == before.chapters
+        && d.expiresAt == before.expiresAt
+        && d.active == true
+        && d.deviceId is string
+        && existsAfter(/databases/$(database)/documents/promos/$(d.promo)/redemptions/$(uid));
+    }
 
     // One document per student: name, phone, chapters bought, and the device the ID is locked to.
     match /users/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
-      allow create, delete: if isAdmin();
+      allow create: if isAdmin() || validPromoSignup(uid);
+      allow delete: if isAdmin();
       // A student may only lock their ID to a device when it is not locked yet. Only the admin can unlock it.
       allow update: if isAdmin() || (
         signedIn() && request.auth.uid == uid
@@ -29,6 +52,27 @@ service cloud.firestore {
       }
     }
 
+    // Promo codes made by the admin. Anyone signed in may look up one code by its exact name (not list them),
+    // and may raise its use count by one only while creating their own promo account in the same write.
+    match /promos/{code} {
+      allow get: if signedIn();
+      allow list, create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used'])
+        && request.resource.data.used == resource.data.used + 1
+        && promoOpen(resource.data)
+        && !exists(userPath(request.auth.uid))
+        && getAfter(userPath(request.auth.uid)).data.promo == code
+      );
+      match /redemptions/{uid} {
+        allow create: if signedIn() && request.auth.uid == uid
+          && !exists(userPath(uid))
+          && getAfter(userPath(uid)).data.promo == code;
+        allow read, delete: if isAdmin();
+      }
+    }
+
     // Chapter info (title, number of pages uploaded).
     match /chapters/{chapterId} {
       allow read: if signedIn();
@@ -36,12 +80,13 @@ service cloud.firestore {
     }
 
     // Page images. A student can open a page only if their ID is active, locked to a device,
-    // and the page's chapter is in their list.
+    // not past its promo date, and the page's chapter is in their list.
     match /pages/{pageId} {
       allow read: if isAdmin() || (
         signedIn()
         && student().active == true
         && student().deviceId != null
+        && (student().get('expiresAt', null) == null || request.time < student().expiresAt)
         && resource.data.ch in student().chapters
       );
       allow write: if isAdmin();

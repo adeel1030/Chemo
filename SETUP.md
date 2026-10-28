@@ -2,8 +2,10 @@
 
 Online reader do pages se chalta hai:
 
-- `read.html`: students yahan login karke apne chapters padhte hain
-- `admin.html`: Adeel Sir yahan chapters upload karte hain aur student IDs banate hain
+- `read.html`: students yahan login ID ya promo code se apne chapters book ki tarah (page palat kar) padhte hain
+- `admin.html`: Adeel Sir yahan chapters upload karte hain, student IDs aur promo codes banate hain
+
+Free sample PDFs (`samples/` folder) ke liye Firebase ki zaroorat nahi. Woh website par seedha download aur flipbook mein padhne ke liye hain.
 
 Login aur pages ka data **Firebase** (Google ki free service) mein rehta hai. Neeche ke steps ek baar karne hain, laptop par karna aasaan rahega. Lagbhag 20 minute lagenge.
 
@@ -24,6 +26,7 @@ Login aur pages ka data **Firebase** (Google ki free service) mein rehta hai. Ne
 
 1. Left menu mein **Build → Authentication → Get started** dabao.
 2. **Sign-in method** tab mein **Email/Password** chuno, **Enable** karo aur Save karo.
+3. Wapas **Sign-in method** tab mein **Add new provider → Anonymous** chuno, **Enable** karo aur Save karo. Promo code isi se chalta hai: code daalne wale ko ID-password nahi banana padta.
 
 ## 4. Apna admin account banao
 
@@ -57,7 +60,7 @@ Yahi rules tay karte hain ki student sirf apne kharide hue chapters padh sake, s
 
 1. `https://adeel1030.github.io/Chemo/admin.html` kholo aur admin email-password se login karo.
 2. **Chapters upload** tab kholo.
-3. Har chapter ke saamne uski PDF chuno aur **Upload karo** dabao. Ek chapter mein 1–2 minute lagte hain. Upload khatam hone tak page band mat karna, aur Chrome use karna.
+3. Class 11 aur Class 12 ke har chapter ke saamne uski PDF chuno aur **Upload karo** dabao. Ek chapter mein 1–2 minute lagte hain. Upload khatam hone tak page band mat karna, aur Chrome use karna.
 
 PDF ke har page ki image ban kar Firebase mein jaati hai. PDF file khud kahin save nahi hoti, aur students ko download ka koi option nahi milta.
 
@@ -73,6 +76,21 @@ Students list mein har student ke liye yeh options hain:
 - **Device reset**: student ne phone badla ho to. Reset ke baad jis device par woh pehle login karega, ID usi par lock ho jayegi.
 - **Band karo**: ID turant band ho jaati hai. Jo bhi device us waqt khula hai, woh bhi logout ho jaata hai.
 - **"N baar doosre device se try"**: matlab kisi ne yeh ID doosre phone par kholne ki koshish ki thi, yaani ID share hui hai.
+
+## 10. Promo code (teachers, schools ya demo ke liye)
+
+1. Admin panel mein **Promo codes** tab kholo.
+2. Code ka naam (jaise `DPS2026`), note (sirf aapke liye, jaise "DPS teachers"), kitne log use kar sakte hain, aakhri date aur chapters chuno.
+3. **Promo code banao** dabao, phir **WhatsApp par bhejo** se code teachers ko bhej do.
+4. Teacher website par **Login → Promo code** mein code, apna naam aur number daalta hai. Book usi phone par khul jaati hai. Har page par uska naam aur number watermark mein hota hai, aur download ka koi option nahi hota.
+
+Dhyan rakhne wali baatein:
+
+- Limit poori hote hi, ya aakhri date nikalte hi, code apne aap band ho jaata hai. Code kisi WhatsApp group mein leak bhi ho jaye, to limit se zyada log nahi khol paayenge.
+- Code se khuli book bhi usi aakhri date tak chalti hai. Uske baad page nahi khulte.
+- **Kisne use kiya** dabakar dekh sakte ho ki kis naam aur number ne code lagaya.
+- Kisi ek promo user ko rokna ho to **Students** tab mein uske naam par **Band karo** dabao. Poora code rokna ho to **Promo codes** tab mein **Band karo** dabao.
+- Promo wali book sirf usi phone ke usi browser mein rehti hai. Agar user browser ka data clear kar de, to use dobara code lagana padega, aur isse code ka ek use aur gina jayega.
 
 ## Yeh system kya rokta hai, kya nahi
 
@@ -90,4 +108,4 @@ Students list mein har student ke liye yeh options hain:
 
 ## Free limit
 
-Free plan mein roz **50,000 reads** milte hain. Ek page kholne mein lagbhag 2 reads lagte hain, yaani roz lagbhag 25,000 page views free hain. Saare 9 chapters ke 651 pages lagbhag 150 MB jagah lenge, jabki free limit 1 GB hai. Students bahut badh jaayein to Firebase **Usage** tab mein dekh lena.
+Free plan mein roz **50,000 reads** milte hain. Ek page kholne mein lagbhag 2 reads lagte hain, yaani roz lagbhag 25,000 page views free hain. Class 11 aur 12 ke saare 19 chapters ke 1226 pages lagbhag 280 MB jagah lenge, jabki free limit 1 GB hai. Students bahut badh jaayein to Firebase **Usage** tab mein dekh lena.

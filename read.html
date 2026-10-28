@@ -11,43 +11,27 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:wght@400;500;600;700&family=Kalam:wght@700&display=swap">
 <link rel="stylesheet" href="css/app.css">
 <style>
-/* Layout: login card → bookshelf of the student's chapters → a scrolling page reader with a slim toolbar. */
+/* Layout: login card (ID or promo code) → bookshelf of the student's chapters → full-screen flipbook. */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+.tabs button { font: 700 .92rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 9px 10px; border-radius: 999px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
 .shelf-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; padding-block: 28px 8px; }
 .shelf-head h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem); }
 .shelf-head p { color: var(--muted); }
-.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-block: 16px 40px; }
+.lib-group { font: 700 .8rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 18px; }
+.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-block: 12px 24px; }
 .book { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
-.book .cv { width: 92px; aspect-ratio: 595 / 842; border-radius: 6px; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .9rem var(--font-display); text-align: center; padding: 6px; box-shadow: 0 6px 14px rgba(20,18,70,.2); overflow: hidden; }
+.book .cv { width: 92px; aspect-ratio: 595 / 842; border-radius: 6px; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .9rem var(--font-display); text-align: center; padding: 0; border: 0; box-shadow: 0 6px 14px rgba(20,18,70,.2); overflow: hidden; cursor: pointer; }
 .book .cv img { width: 100%; height: 100%; object-fit: cover; }
 .book .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .book h2 { font-size: 1.12rem; margin-top: 2px; }
 .book .meta { font-size: .84rem; color: var(--muted); margin-top: 4px; }
 .book .btn { margin-top: 10px; }
-.pw { margin-bottom: 40px; }
+.promo-note { margin-top: 8px; }
+.pw { margin-block: 16px 40px; }
 .pw summary { cursor: pointer; font-weight: 600; }
 .pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
 .pw .field { flex: 1 1 220px; }
-
-/* reader */
-.reader { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.r-bar .wrap { gap: 8px; }
-.r-title { min-width: 0; flex: 1; }
-.r-title b { display: block; font: 700 1rem/1.2 var(--font-display); color: var(--night-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.r-title span { font-size: .8rem; color: var(--night-muted); font-variant-numeric: tabular-nums; }
-.pages { max-width: 860px; margin-inline: auto; padding: 14px max(8px, env(safe-area-inset-right, 0px)) 60px max(8px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
-.page { position: relative; aspect-ratio: 595 / 842; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; place-items: center; }
-.page canvas { width: 100%; height: 100%; display: block; }
-.page .ph { color: var(--muted); font-size: .9rem; display: grid; justify-items: center; gap: 10px; }
-.toc { position: fixed; inset: 0; z-index: 40; background: rgba(10,9,35,.55); display: flex; justify-content: flex-end; }
-.toc-body { background: var(--paper); width: min(420px, 100%); height: 100%; overflow-y: auto; padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) 16px; }
-.toc-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
-.toc ol { list-style: none; padding: 0; margin: 0; }
-.toc li button { width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px 4px; font: inherit; color: var(--fg); cursor: pointer; }
-.toc li button:hover { background: var(--surface); }
-.toc .n { width: 28px; height: 28px; border-radius: 50%; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .85rem var(--font-display); }
-.toc .p { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9rem; }
-.jump { display: flex; gap: 8px; margin: 6px 0 14px; }
-.jump input { flex: 1; min-width: 0; font: 1rem var(--font-body); padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
 </style>
 </head>
 <body>
@@ -62,14 +46,6 @@
   </div>
 </header>
 
-<header class="app-head r-bar" id="rbar" hidden>
-  <div class="wrap">
-    <button class="btn btn-ghost btn-sm" type="button" id="back">← Mere chapters</button>
-    <div class="r-title"><b id="r-name"></b><span id="r-page"></span></div>
-    <button class="btn btn-sun btn-sm" type="button" id="toc-open">Topics</button>
-  </div>
-</header>
-
 <main>
   <div class="wrap center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Load ho raha hai"></div></div>
 
@@ -78,21 +54,40 @@
       <h1>Online reader abhi setup ho raha hai</h1>
       <p>Adeel Sir ne abhi online reader chalu nahi kiya hai. Thodi der baad try karo, ya Adeel Sir se WhatsApp par poochho.</p>
       <a class="btn btn-wa" id="setup-wa" href="#" target="_blank" rel="noopener">WhatsApp par poochho</a>
+      <a class="btn btn-line" href="index.html#free-sample">Tab tak free sample padho</a>
     </div>
   </div>
 
   <div class="wrap center-screen" id="v-login" hidden>
-    <form class="card login-card" id="login-form" novalidate>
+    <div class="card login-card">
       <div class="seal">Adeel<br>Sir</div>
       <h1>Apne chapters padho</h1>
-      <p class="hint">Order ke baad Adeel Sir ne jo login ID aur password diya hai, woh yahan daalo.</p>
-      <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="jaise: rahul11" required></div>
-      <div class="field"><label for="login-pw">Password</label><input id="login-pw" type="password" autocomplete="current-password" required></div>
-      <div class="msg bad" id="login-err" role="alert" hidden></div>
-      <button class="btn btn-sun" type="submit" id="login-btn">Login karo</button>
-      <p class="hint">Dhyan do: ek ID sirf ek phone ya tablet par chalti hai. Jis device par pehli baar login karoge, ID usi par lock ho jayegi.</p>
-      <p class="hint">Book nahi li abhi tak? <a href="index.html#pack">Yahan order karo</a></p>
-    </form>
+      <div class="tabs" role="tablist" aria-label="Kaise kholna hai">
+        <button type="button" role="tab" aria-selected="true" data-tab="login-form">Login ID</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="promo-form">Promo code</button>
+      </div>
+
+      <form id="login-form" class="login-card" novalidate>
+        <p class="hint">Order ke baad Adeel Sir ne jo login ID aur password diya hai, woh yahan daalo.</p>
+        <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="jaise: rahul11"></div>
+        <div class="field"><label for="login-pw">Password</label><input id="login-pw" type="password" autocomplete="current-password"></div>
+        <div class="msg bad" id="login-err" role="alert" hidden></div>
+        <button class="btn btn-sun" type="submit" id="login-btn">Login karo</button>
+        <p class="hint">Ek ID sirf ek phone ya tablet par chalti hai. Jis device par pehli baar login karoge, ID usi par lock ho jayegi.</p>
+      </form>
+
+      <form id="promo-form" class="login-card" novalidate hidden>
+        <p class="hint">Adeel Sir ne promo code diya hai? Code, apna naam aur WhatsApp number daalo. Book isi phone par khul jayegi.</p>
+        <div class="field"><label for="promo-code">Promo code</label><input id="promo-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="jaise: ADEEL2026"></div>
+        <div class="field"><label for="promo-name">Tumhara naam</label><input id="promo-name" autocomplete="name"></div>
+        <div class="field"><label for="promo-phone">WhatsApp number</label><input id="promo-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
+        <div class="msg bad" id="promo-err" role="alert" hidden></div>
+        <button class="btn btn-sun" type="submit" id="promo-btn">Book kholo</button>
+        <p class="hint">Promo code wali book sirf isi phone aur isi browser par khulegi, aur code ki aakhri date tak chalegi.</p>
+      </form>
+
+      <p class="hint">Book nahi li abhi tak? <a href="index.html#pack">Yahan order karo</a> ya <a href="index.html#free-sample">free sample padho</a>.</p>
+    </div>
   </div>
 
   <div class="wrap center-screen" id="v-blocked" hidden>
@@ -107,10 +102,11 @@
   <div id="v-library" hidden>
     <div class="wrap">
       <div class="shelf-head">
-        <div><h1 id="hello"></h1><p>Tumhare chapters. Jahan chhoda tha, wahin se shuru karo.</p></div>
+        <div><h1 id="hello"></h1><p>Tumhare chapters. Cover par tap karo, book khul jayegi. Jahan chhoda tha, wahin se shuru hogi.</p></div>
       </div>
-      <div class="lib" id="lib"></div>
-      <details class="card pw">
+      <div id="promo-note" class="msg warn promo-note" hidden></div>
+      <div id="lib"></div>
+      <details class="card pw" id="pw-box">
         <summary>Password badlo</summary>
         <form id="pw-form" novalidate>
           <div class="field"><label for="pw-new">Naya password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="Kam se kam 6 characters"></div>
@@ -120,69 +116,63 @@
       </details>
     </div>
   </div>
-
-  <div class="reader" id="v-reader" hidden>
-    <div class="pages" id="pages"></div>
-  </div>
 </main>
 
-<div class="toc" id="toc" hidden role="dialog" aria-modal="true" aria-labelledby="toc-title">
-  <div class="toc-body">
-    <div class="toc-top"><h2 id="toc-title" style="font-size: 1.3rem">Topics</h2><button class="btn btn-line btn-sm" type="button" id="toc-close">Band karo ✕</button></div>
-    <form class="jump" id="jump-form"><input id="jump-n" type="number" inputmode="numeric" min="1" placeholder="Page number"><button class="btn btn-sun btn-sm" type="submit">Jao</button></form>
-    <ol id="toc-list"></ol>
-  </div>
-</div>
-
 <script src="js/chapters.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script src="js/flipbook.js"></script>
 <script type="module">
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, findChapter, esc } from "./js/fb.js";
 
 const $ = s => document.querySelector(s);
-const VIEWS = ["v-loading", "v-setup", "v-login", "v-blocked", "v-library", "v-reader"];
+const VIEWS = ["v-loading", "v-setup", "v-login", "v-blocked", "v-library"];
 const wa = text => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
+const fmtDate = d => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+const PROMO_PATTERN = /^[A-Z0-9-]{4,20}$/;
 
 function show(id) {
   VIEWS.forEach(v => { $("#" + v).hidden = v !== id; });
-  const reading = id === "v-reader";
-  $("#head").hidden = reading;
-  $("#rbar").hidden = !reading;
-  if (!reading) stopReader();
   window.scrollTo(0, 0);
 }
 
 let me = null;          // the student's user document
 let unwatch = null;     // stops listening to the user document
-let kicking = false;
+let book = null;        // the open flipbook
+let busy = false;       // a login or promo redemption is in progress
 
 function blocked(title, text, waText) {
+  if (book) { book.close(); book = null; }
   $("#blocked-title").textContent = title;
   $("#blocked-text").textContent = text;
   $("#blocked-wa").href = wa(waText);
   show("v-blocked");
 }
 async function kick(title, text, waText) {
-  kicking = true;
   if (unwatch) { unwatch(); unwatch = null; }
-  try { await signOut(auth); } catch (e) {}
   blocked(title, text, waText);
-  kicking = false;
+  try { await signOut(auth); } catch (e) {}
 }
 
 $("#setup-wa").href = wa("Hello Adeel Sir, Chemophile online reader kab chalu hoga?");
 $("#blocked-back").addEventListener("click", () => show("v-login"));
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]");
+  if (!b) return;
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  ["login-form", "promo-form"].forEach(id => { $("#" + id).hidden = id !== b.dataset.tab; });
+});
 
 if (!configured) {
   show("v-setup");
 } else {
   onAuthStateChanged(auth, user => {
-    if (kicking) return;
+    if (busy) return;
     if (!user) {
       me = null; $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
@@ -192,7 +182,7 @@ if (!configured) {
   });
 }
 
-// ---------- login ----------
+// ---------- login with ID ----------
 const loginErrors = {
   "auth/invalid-credential": "Login ID ya password galat hai. Dobara check karo.",
   "auth/wrong-password": "Password galat hai.",
@@ -211,6 +201,7 @@ $("#login-form").addEventListener("submit", async e => {
   if (!deviceId()) { err.textContent = "Is browser mein login nahi ho sakta. Private/Incognito mode band karke normal Chrome mein kholo."; err.hidden = false; return; }
   $("#login-btn").disabled = true;
   try {
+    if (auth.currentUser) await signOut(auth);
     await signInWithEmailAndPassword(auth, idToEmail(id), pw);
   } catch (ex) {
     err.textContent = loginErrors[ex.code] || "Login nahi ho paaya. Dobara try karo.";
@@ -220,23 +211,87 @@ $("#login-form").addEventListener("submit", async e => {
 });
 $("#logout").addEventListener("click", () => signOut(auth));
 
+// ---------- promo code ----------
+$("#promo-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#promo-err");
+  const fail = t => { err.textContent = t; err.hidden = false; };
+  err.hidden = true;
+  const code = $("#promo-code").value.trim().toUpperCase();
+  const name = $("#promo-name").value.trim();
+  const phone = $("#promo-phone").value.replace(/\D/g, "").slice(-10);
+  if (!PROMO_PATTERN.test(code)) return fail("Promo code sahi se daalo.");
+  if (name.length < 2) return fail("Apna naam daalo.");
+  if (phone.length !== 10) return fail("10 digit ka WhatsApp number daalo.");
+  const mine = deviceId();
+  if (!mine) return fail("Is browser mein book nahi khul sakti. Private/Incognito mode band karke normal Chrome mein kholo.");
+
+  busy = true;
+  $("#promo-btn").disabled = true;
+  let user = null;
+  try {
+    if (auth.currentUser && !auth.currentUser.isAnonymous) await signOut(auth);
+    user = auth.currentUser || (await signInAnonymously(auth)).user;
+    const ps = await getDoc(doc(db, "promos", code));
+    const p = ps.exists() ? ps.data() : null;
+    const expires = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
+    if (!p) throw new Error("Yeh promo code sahi nahi hai. Spelling check karo.");
+    if (p.active === false) throw new Error("Yeh promo code band ho chuka hai.");
+    if (!expires || expires < new Date()) throw new Error("Is promo code ki aakhri date nikal chuki hai.");
+    if ((p.used || 0) >= p.maxUses) throw new Error("Is promo code ki limit poori ho chuki hai.");
+    const existing = await getDoc(doc(db, "users", user.uid));
+    if (!existing.exists()) {
+      const batch = writeBatch(db);
+      batch.set(doc(db, "users", user.uid), {
+        name, phone, loginId: `promo ${code}`, chapters: p.chapters, active: true,
+        deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp(), createdAt: serverTimestamp(),
+        promo: code, expiresAt: p.expiresAt
+      });
+      batch.update(doc(db, "promos", code), { used: increment(1) });
+      batch.set(doc(db, "promos", code, "redemptions", user.uid), { name, phone, deviceInfo: deviceInfo(), at: serverTimestamp() });
+      await batch.commit();
+    }
+    busy = false;
+    $("#promo-btn").disabled = false;
+    start(user);
+  } catch (ex) {
+    busy = false;
+    $("#promo-btn").disabled = false;
+    if (user && user.isAnonymous) {
+      const has = await getDoc(doc(db, "users", user.uid)).catch(() => null);
+      if (!has || !has.exists()) { try { await user.delete(); } catch (e2) { try { await signOut(auth); } catch (e3) {} } }
+    }
+    fail(ex.code === "permission-denied" ? "Promo code abhi kaam nahi kar raha (limit ya date poori ho gayi). Adeel Sir se baat karo."
+      : ex.code === "auth/operation-not-allowed" ? "Promo code abhi chalu nahi hai. Adeel Sir se baat karo."
+      : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
+      : ex.message);
+    show("v-login");
+  }
+});
+
 // ---------- device lock ----------
 async function start(user) {
   show("v-loading");
-  const loginId = emailToId(user.email || "");
+  const loginId = user.isAnonymous ? "promo" : emailToId(user.email || "");
   const ref = doc(db, "users", user.uid);
   let snap;
   try { snap = await getDoc(ref); } catch (e) { snap = null; }
   if (!snap || !snap.exists()) {
+    if (user.isAnonymous) { try { await signOut(auth); } catch (e) {} show("v-login"); return; }
     return kick("Account abhi taiyaar nahi hai", "Is login ID ke saath koi chapter nahi juda hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile login ID "${loginId}" kaam nahi kar rahi.`);
   }
   me = snap.data();
+  const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
   const mine = deviceId();
   if (!mine) {
-    return kick("Is browser mein nahi chalega", "Private/Incognito mode band karke normal browser mein kholo.", `Hello Adeel Sir, meri ID "${loginId}" browser mein nahi khul rahi.`);
+    return kick("Is browser mein nahi chalega", "Private/Incognito mode band karke normal browser mein kholo.", `Hello Adeel Sir, meri Chemophile ${label} browser mein nahi khul rahi.`);
   }
   if (me.active === false) {
-    return kick("Yeh ID band hai", "Tumhari login ID abhi band hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" band dikha rahi hai.`);
+    return kick("Yeh ID band hai", "Tumhari ID abhi band hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ${label} band dikha rahi hai.`);
+  }
+  const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
+  if (expires && expires < new Date()) {
+    return kick("Promo ki muddat khatam", `Yeh promo code ${fmtDate(expires)} tak tha. Poori book ke liye Adeel Sir se order karo.`, `Hello Adeel Sir, mera Chemophile promo code khatam ho gaya. Mujhe book order karni hai.`);
   }
   if (!me.deviceId) {
     try {
@@ -257,16 +312,17 @@ async function start(user) {
   unwatch = onSnapshot(ref, s => {
     const d = s.data();
     if (!d) return;
-    if (d.active === false) return kick("Yeh ID band kar di gayi hai", "Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" band ho gayi hai.`);
+    if (d.active === false) return kick("Yeh ID band kar di gayi hai", "Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ${label} band ho gayi hai.`);
     if (d.deviceId !== mine) return kick("Device reset ho gaya", "Tumhari ID ka device reset hua hai. Jis phone par padhna hai, usme dobara login karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" logout ho gayi.`);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters);
-    me = d;
+    me = Object.assign(d, { loginId: me.loginId });
     if (changed && !$("#v-library").hidden) renderLibrary();
   });
 
-  $("#who").textContent = `${me.name || loginId} · ${loginId}`;
-  $("#logout").hidden = false;
-  me.loginId = loginId;
+  me.loginId = me.promo ? `promo ${me.promo}` : loginId;
+  $("#who").textContent = `${me.name || loginId}${me.promo ? "" : " · " + loginId}`;
+  $("#logout").hidden = !!me.promo;
+  $("#pw-box").hidden = !!me.promo;
   renderLibrary();
 }
 
@@ -275,6 +331,10 @@ const chapterInfo = new Map();
 async function renderLibrary() {
   show("v-library");
   $("#hello").textContent = `Hello ${(me.name || "").split(" ")[0] || me.loginId}!`;
+  const note = $("#promo-note");
+  const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
+  note.hidden = !me.promo;
+  if (me.promo) note.textContent = `Promo code ${me.promo} se khula hai${expires ? `, ${fmtDate(expires)} tak` : ""}. Book sirf isi phone par khulegi, isliye browser ka data clear mat karna.`;
   const keys = me.chapters || [];
   if (!keys.length) {
     $("#lib").innerHTML = `<div class="card">Abhi tumhare account mein koi chapter nahi hai. Adeel Sir se baat karo.</div>`;
@@ -285,26 +345,29 @@ async function renderLibrary() {
     try { const s = await getDoc(doc(db, "chapters", k)); chapterInfo.set(k, s.exists() ? s.data() : null); }
     catch (e) { chapterInfo.set(k, null); }
   }));
-  $("#lib").innerHTML = keys.map(k => {
+  const card = k => {
     const c = findChapter(k) || {};
     const info = chapterInfo.get(k);
     const [cls, n] = k.split("-");
     const title = c.title || (info && info.title) || `Chapter ${n}`;
     const last = store.get(`chemophile-last-${k}`);
-    const cover = cls === "11" ? `<img src="assets/thumbs/ch${n}-1.webp" alt="" width="360" height="509">` : `Chapter ${n}`;
-    const action = info && info.pageCount
-      ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Page ${last} se aage padho` : "Padhna shuru karo"}</button>`
-      : `<p class="meta">Yeh chapter jaldi upload hoga.</p>`;
+    const ready = info && info.pageCount;
+    const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${n}`;
     return `<div class="card book">
-      <div class="cv">${cover}</div>
+      <button class="cv" type="button" ${ready ? `data-read="${k}"` : "disabled"} aria-label="${esc(title)} kholo">${cover}</button>
       <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h2>${esc(title)}</h2>
-      <div class="meta">${info && info.pageCount ? `${info.pageCount} pages` : ""}</div>${action}</div>
+      <div class="meta">${ready ? `${info.pageCount} pages` : "Yeh chapter jaldi upload hoga."}</div>
+      ${ready ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Page ${last} se aage padho` : "Book kholo"}</button>` : ""}</div>
     </div>`;
+  };
+  $("#lib").innerHTML = [11, 12].map(cls => {
+    const list = keys.filter(k => k.startsWith(cls + "-"));
+    return list.length ? `<div class="lib-group">Class ${cls}</div><div class="lib">${list.map(card).join("")}</div>` : "";
   }).join("");
 }
 $("#lib").addEventListener("click", e => {
   const b = e.target.closest("[data-read]");
-  if (b) openReader(b.dataset.read);
+  if (b) openBook(b.dataset.read);
 });
 
 $("#pw-form").addEventListener("submit", async e => {
@@ -322,78 +385,29 @@ $("#pw-form").addEventListener("submit", async e => {
   }
 });
 
-// ---------- reader ----------
-let reading = null, loadObs = null, keepObs = null, nowObs = null;
-const cache = new Map(); // page id → data URL, last 24 pages
-
-function stopReader() {
-  [loadObs, keepObs, nowObs].forEach(o => o && o.disconnect());
-  loadObs = keepObs = nowObs = null;
-  if (reading) { $("#pages").innerHTML = ""; reading = null; cache.clear(); }
-}
-
-function openReader(k) {
+// ---------- book ----------
+function openBook(k) {
   const info = chapterInfo.get(k);
   if (!info || !info.pageCount) return;
   const c = findChapter(k) || {};
-  show("v-reader");
-  reading = { k, total: info.pageCount, c };
-  $("#r-name").textContent = c.short || c.title || info.title || k;
-  const box = $("#pages");
-  box.innerHTML = Array.from({ length: info.pageCount }, (_, i) =>
-    `<div class="page" id="pg-${i + 1}" data-n="${i + 1}"><div class="ph"><div class="spinner"></div>Page ${i + 1}</div></div>`).join("");
-
-  loadObs = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) loadPage(en.target); }), { rootMargin: "1400px 0px" });
-  keepObs = new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) releasePage(en.target); }), { rootMargin: "4000px 0px" });
-  nowObs = new IntersectionObserver(es => es.forEach(en => {
-    if (en.isIntersecting) {
-      const n = +en.target.dataset.n;
-      $("#r-page").textContent = `Page ${n} / ${reading.total}`;
-      store.set(`chemophile-last-${k}`, n);
-    }
-  }), { rootMargin: "-45% 0px -50% 0px" });
-  box.querySelectorAll(".page").forEach(p => { loadObs.observe(p); keepObs.observe(p); nowObs.observe(p); });
-
-  buildToc(c);
-  const last = store.get(`chemophile-last-${k}`);
-  if (last > 1) requestAnimationFrame(() => goTo(last));
-}
-
-async function loadPage(el) {
-  if (el.dataset.state === "loading" || el.dataset.state === "done") return;
-  el.dataset.state = "loading";
-  const id = pageId(reading.k, +el.dataset.n);
-  try {
-    let src = cache.get(id);
-    if (!src) {
-      const s = await getDoc(doc(db, "pages", id));
+  book = new Flipbook({
+    title: c.short || c.title || info.title || k,
+    pageCount: info.pageCount,
+    start: store.get(`chemophile-last-${k}`) || 1,
+    toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
+    onPage: n => store.set(`chemophile-last-${k}`, n),
+    onClose: () => { book = null; renderLibrary(); },
+    loadPage: async n => {
+      const s = await getDoc(doc(db, "pages", pageId(k, n)));
       if (!s.exists()) throw new Error("missing");
-      src = s.data().img;
-      cache.set(id, src);
-      if (cache.size > 24) cache.delete(cache.keys().next().value);
+      return drawPage(s.data().img);
     }
-    if (!reading || !el.isConnected) return;
-    await drawPage(el, src);
-    el.dataset.state = "done";
-  } catch (e) {
-    el.dataset.state = "";
-    el.innerHTML = `<div class="ph">Page ${el.dataset.n} load nahi hua. <button class="btn btn-line btn-sm" type="button" data-retry>Dobara try karo</button></div>`;
-  }
-}
-$("#pages").addEventListener("click", e => {
-  const b = e.target.closest("[data-retry]");
-  if (b) loadPage(b.closest(".page"));
-});
-
-function releasePage(el) {
-  if (el.dataset.state !== "done") return;
-  el.dataset.state = "";
-  el.innerHTML = `<div class="ph"><div class="spinner"></div>Page ${el.dataset.n}</div>`;
+  }).open();
 }
 
-// Every page is drawn on a canvas with the student's name and ID across it,
+// Every page is drawn on a canvas with the student's name and number across it,
 // so a screenshot or photo shows whose copy it came from.
-function drawPage(el, src) {
+function drawPage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -402,7 +416,8 @@ function drawPage(el, src) {
       cv.width = w; cv.height = h;
       const ctx = cv.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
-      const mark = `${me.name || me.loginId} · ID ${me.loginId}${me.phone ? " · " + me.phone : ""}`;
+      const who = me.name || me.loginId;
+      const mark = `${who}${me.phone ? " · " + me.phone : ""}${me.promo ? "" : " · ID " + me.loginId}`;
       ctx.save();
       ctx.globalAlpha = 0.11;
       ctx.fillStyle = "#1b1a45";
@@ -417,52 +432,14 @@ function drawPage(el, src) {
       ctx.fillStyle = "#d6304f";
       ctx.font = `600 ${Math.round(w * 0.016)}px "Fira Sans", Arial, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(`Sirf ${me.name || me.loginId} (ID ${me.loginId}) ke liye. Share karna mana hai.`, w / 2, h - w * 0.012);
+      ctx.fillText(`Sirf ${who}${me.phone ? " (" + me.phone + ")" : ""} ke liye. Share karna mana hai.`, w / 2, h - w * 0.012);
       ctx.restore();
-      el.style.aspectRatio = `${w} / ${h}`;
-      el.innerHTML = "";
-      el.appendChild(cv);
-      resolve();
+      resolve(cv);
     };
     img.onerror = reject;
     img.src = src;
   });
 }
-
-function goTo(n) {
-  n = Math.min(Math.max(1, n), reading.total);
-  const el = document.getElementById(`pg-${n}`);
-  if (el) el.scrollIntoView({ block: "start" });
-  window.scrollBy(0, -66);
-}
-
-function buildToc(c) {
-  const list = (c.topics || []).map(([name, sec, start], i) =>
-    `<li><button type="button" data-go="${start}"><span class="n">${i + 1}</span><span>${name}</span><span class="p">p. ${start}</span></button></li>`);
-  $("#toc-list").innerHTML = list.length ? list.join("") : `<li class="hint">Page number daal kar seedha jao.</li>`;
-}
-$("#toc-open").addEventListener("click", () => { $("#toc").hidden = false; });
-$("#toc-close").addEventListener("click", () => { $("#toc").hidden = true; });
-$("#toc").addEventListener("click", e => {
-  if (e.target.id === "toc") { $("#toc").hidden = true; return; }
-  const b = e.target.closest("[data-go]");
-  if (b) { $("#toc").hidden = true; goTo(+b.dataset.go); }
-});
-$("#jump-form").addEventListener("submit", e => {
-  e.preventDefault();
-  const n = parseInt($("#jump-n").value, 10);
-  if (n) { $("#toc").hidden = true; goTo(n); }
-});
-$("#back").addEventListener("click", () => renderLibrary());
-
-// No right-click, long-press save or drag on pages.
-document.addEventListener("contextmenu", e => { if (e.target.closest(".reader")) e.preventDefault(); });
-document.addEventListener("dragstart", e => { if (e.target.closest(".reader")) e.preventDefault(); });
-document.addEventListener("keydown", e => {
-  if ($("#v-reader").hidden) return;
-  if ((e.ctrlKey || e.metaKey) && ["s", "p"].includes(e.key.toLowerCase())) e.preventDefault();
-  if (e.key === "Escape") $("#toc").hidden = true;
-});
 </script>
 </body>
 </html>
