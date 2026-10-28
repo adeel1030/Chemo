@@ -22,6 +22,7 @@
 .chap-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 4px 14px; margin-top: 8px; }
 .chap-picks label { display: flex; gap: 8px; align-items: center; font-size: .92rem; padding: 4px 0; cursor: pointer; }
 .chap-picks input { width: 18px; height: 18px; accent-color: var(--good); }
+.pick-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 .section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .section-title h2 { font-size: 1.35rem; }
 .stack { display: grid; gap: 16px; padding-bottom: 48px; }
@@ -84,6 +85,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
   <div id="v-admin" hidden>
     <div class="tabs" role="tablist">
       <button type="button" role="tab" aria-selected="true" data-tab="t-students">Students</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="t-promos">Promo codes</button>
       <button type="button" role="tab" aria-selected="false" data-tab="t-chapters">Chapters upload</button>
     </div>
 
@@ -119,6 +121,28 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
       </div>
     </section>
 
+    <section id="t-promos" class="stack" hidden>
+      <form class="card stack" id="promo-form" novalidate style="padding-bottom: 22px">
+        <div class="section-title"><h2>Naya promo code</h2><span class="hint">Teachers, schools ya demo ke liye</span></div>
+        <div class="grid2">
+          <div class="field"><label for="p-code">Code</label><input id="p-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="ADEEL2026"><span class="hint">Bade letters aur numbers, 4 se 20 characters</span></div>
+          <div class="field"><label for="p-note">Kiske liye (sirf aapke liye note)</label><input id="p-note" autocomplete="off" placeholder="DPS teachers demo"></div>
+          <div class="field"><label for="p-max">Kitne log use kar sakte hain</label><input id="p-max" type="number" inputmode="numeric" min="1" max="1000" value="20"></div>
+          <div class="field"><label for="p-till">Aakhri date (is din raat 11:59 tak chalega)</label><input id="p-till" type="date"></div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom: 0"><b>Kaunse chapters khulenge</b></div>
+          <div class="chap-picks" id="p-ch"></div>
+        </div>
+        <div class="msg" id="p-msg" role="status" hidden></div>
+        <div><button class="btn btn-sun" type="submit" id="p-btn">Promo code banao</button></div>
+      </form>
+      <div class="card">
+        <div class="section-title"><h2>Saare promo codes</h2></div>
+        <div class="students" id="promos"></div>
+      </div>
+    </section>
+
     <section id="t-chapters" class="stack" hidden>
       <div class="card">
         <div class="section-title"><h2>Chapter ki PDF upload karo</h2></div>
@@ -134,7 +158,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getCountFromServer, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc } from "./js/fb.js";
 
@@ -157,6 +181,7 @@ else onAuthStateChanged(auth, async user => {
   show("v-admin");
   loadStudents();
   loadChapters();
+  loadPromos();
 });
 
 $("#login-form").addEventListener("submit", async e => {
@@ -173,16 +198,24 @@ document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]");
   if (!b) return;
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["t-students", "t-chapters"].forEach(t => { $("#" + t).hidden = t !== b.dataset.tab; });
+  ["t-students", "t-promos", "t-chapters"].forEach(t => { $("#" + t).hidden = t !== b.dataset.tab; });
 });
 
 // ---------- new student ----------
 const picks = (box, selected = []) => {
-  box.innerHTML = CHAPTERS.map(c => {
-    const k = chapterKey(c);
-    return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> Class ${c.cls} · ${esc(chName(k))}</label>`;
-  }).join("");
+  box.innerHTML = [11, 12].map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">Poori Class ${cls}</button></div>` +
+    CHAPTERS.filter(c => c.cls === cls).map(c => {
+      const k = chapterKey(c);
+      return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> ${esc(chName(k))}</label>`;
+    }).join("")).join("");
 };
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-pick-cls]");
+  if (!b) return;
+  const boxes = [...b.closest(".chap-picks").querySelectorAll(`input[value^="${b.dataset.pickCls}-"]`)];
+  const all = boxes.every(x => x.checked);
+  boxes.forEach(x => { x.checked = !all; });
+});
 const picked = box => [...box.querySelectorAll("input:checked")].map(i => i.value);
 picks($("#new-ch"));
 $("#all-ch").addEventListener("click", () => {
@@ -279,6 +312,7 @@ function renderStudents() {
         <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">ID <b>${esc(s.loginId)}</b>${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
           ${s.active === false ? `<span class="pill bad">Band</span>` : `<span class="pill good">Chalu</span>`}
+          ${s.promo ? `<span class="pill warn">Promo ${esc(s.promo)}${s.expiresAt ? " · " + fmtDate(s.expiresAt) + " tak" : ""}</span>` : ""}
           ${s.deviceId ? `<span class="pill">Locked: ${esc(s.deviceInfo || "device")}</span>` : `<span class="pill warn">Abhi login nahi kiya</span>`}
           ${s.attempts ? `<span class="pill bad">${s.attempts} baar doosre device se try</span>` : ""}
         </div>
@@ -286,7 +320,7 @@ function renderStudents() {
       <div class="sub">Chapters: ${(s.chapters || []).map(k => esc(chName(k))).join(", ") || "koi nahi"}</div>
       <div class="actions">
         <button class="btn btn-line btn-sm" type="button" data-act="edit">Chapters badlo</button>
-        ${s.deviceId ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
+        ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Chalu karo" : "Band karo"}</button>
       </div>
       <div class="edit" hidden>
@@ -322,6 +356,91 @@ $("#students").addEventListener("click", async e => {
     }
   } catch (ex) {
     note("Save nahi hua: " + (ex.message || ex.code), "bad");
+  }
+});
+
+// ---------- promo codes ----------
+picks($("#p-ch"));
+const till = new Date(Date.now() + 14 * 864e5);
+$("#p-till").value = till.toISOString().slice(0, 10);
+$("#promo-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("#p-msg");
+  const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
+  const code = $("#p-code").value.trim().toUpperCase();
+  const note = $("#p-note").value.trim();
+  const maxUses = parseInt($("#p-max").value, 10);
+  const date = $("#p-till").value;
+  const chapters = picked($("#p-ch"));
+  if (!/^[A-Z0-9-]{4,20}$/.test(code)) return fail("Code mein sirf bade letters, numbers aur - chalenge, 4 se 20 characters.");
+  if (!(maxUses >= 1 && maxUses <= 1000)) return fail("Kitne log: 1 se 1000 ke beech number daalo.");
+  if (!date) return fail("Aakhri date chuno.");
+  const expires = new Date(date + "T23:59:59");
+  if (expires < new Date()) return fail("Aakhri date aaj ya aage ki honi chahiye.");
+  if (!chapters.length) return fail("Kam se kam ek chapter chuno.");
+  $("#p-btn").disabled = true;
+  try {
+    if ((await getDoc(doc(db, "promos", code))).exists()) throw new Error(`Code "${code}" pehle se bana hua hai. Koi aur naam rakho.`);
+    await setDoc(doc(db, "promos", code), { chapters, maxUses, used: 0, active: true, note, expiresAt: Timestamp.fromDate(expires), createdAt: serverTimestamp() });
+    msg.className = "msg good"; msg.textContent = `Promo code ${code} ban gaya.`; msg.hidden = false;
+    $("#p-code").value = ""; $("#p-note").value = "";
+    picks($("#p-ch"));
+    loadPromos();
+  } catch (ex) {
+    fail(ex.message || ex.code);
+  }
+  $("#p-btn").disabled = false;
+});
+
+let promos = [];
+async function loadPromos() {
+  const snap = await getDocs(collection(db, "promos"));
+  promos = snap.docs.map(d => ({ code: d.id, ...d.data() }))
+    .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+  renderPromos();
+}
+function promoMessage(p) {
+  const link = READER_URL || new URL("read.html", location.href).href;
+  return `Chemophile online book (Adeel Sir)\n\nLink: ${link}\n"Promo code" dabao aur yeh code daalo: ${p.code}\n\n${p.chapters.length} chapters khulenge, ${fmtDate(p.expiresAt)} tak. Book sirf usi phone par khulegi jis par code daaloge.`;
+}
+function renderPromos() {
+  const now = new Date();
+  $("#promos").innerHTML = promos.length ? promos.map(p => {
+    const exp = p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
+    const state = p.active === false ? `<span class="pill bad">Band</span>`
+      : exp && exp < now ? `<span class="pill bad">Date nikal gayi</span>`
+      : p.used >= p.maxUses ? `<span class="pill bad">Limit poori</span>`
+      : `<span class="pill good">Chalu</span>`;
+    return `<div class="stu" data-code="${esc(p.code)}">
+      <div class="stu-top">
+        <div style="min-width:0"><h3>${esc(p.code)}</h3><div class="sub">${p.note ? esc(p.note) + " · " : ""}${exp ? fmtDate(p.expiresAt) + " tak" : ""}</div></div>
+        <div class="pills">${state}<span class="pill"><b>${p.used || 0}</b> / ${p.maxUses} use hue</span></div>
+      </div>
+      <div class="sub">Chapters: ${p.chapters.map(k => esc(chName(k))).join(", ")}</div>
+      <div class="actions">
+        <a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(promoMessage(p))}" target="_blank" rel="noopener">WhatsApp par bhejo</a>
+        <button class="btn btn-line btn-sm" type="button" data-pact="who">Kisne use kiya</button>
+        <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Chalu karo" : "Band karo"}</button>
+      </div>
+      <div class="who-list sub" hidden></div>
+    </div>`;
+  }).join("") : `<p class="hint">Abhi koi promo code nahi bana.</p>`;
+}
+$("#promos").addEventListener("click", async e => {
+  const b = e.target.closest("[data-pact]");
+  if (!b) return;
+  const row = b.closest(".stu"), p = promos.find(x => x.code === row.dataset.code);
+  if (b.dataset.pact === "toggle") {
+    const active = p.active === false;
+    await updateDoc(doc(db, "promos", p.code), { active });
+    p.active = active; renderPromos();
+  }
+  if (b.dataset.pact === "who") {
+    const box = row.querySelector(".who-list");
+    const snap = await getDocs(collection(db, "promos", p.code, "redemptions"));
+    const list = snap.docs.map(d => d.data()).sort((a, b) => ((a.at && a.at.seconds) || 0) - ((b.at && b.at.seconds) || 0));
+    box.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Abhi kisi ne use nahi kiya.";
+    box.hidden = false;
   }
 });
 

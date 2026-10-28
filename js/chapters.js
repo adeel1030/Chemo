@@ -13,23 +13,22 @@ const PRICES = {
   "11-6": { online: 183, paperback: 438 },
   "11-7": { online: 130, paperback: 312 },
   "11-8": { online: 220, paperback: 528 },
-  "11-9": { online: 218, paperback: 522 }
+  "11-9": { online: 218, paperback: 522 },
+  "12-1": { online: 165, paperback: 396 },
+  "12-2": { online: 148, paperback: 354 },
+  "12-3": { online: 133, paperback: 318 },
+  "12-4": { online: 145, paperback: 348 },
+  "12-5": { online: 138, paperback: 330 },
+  "12-6": { online: 150, paperback: 360 },
+  "12-7": { online: 138, paperback: 330 },
+  "12-8": { online: 160, paperback: 384 },
+  "12-9": { online: 130, paperback: 312 },
+  "12-10": { online: 133, paperback: 318 }
 };
 const priceOf = (c, format) => PRICES[`${c.cls}-${c.n}`][format];
 
-// Chapters still being written, as per the CBSE 2026-27 syllabus. Move a chapter into CHAPTERS when it is ready.
-const UPCOMING = [
-  { cls: 12, n: 1, title: "Solutions", tag: "Concentration, Raoult's law aur colligative properties", f: "ΔT<sub>b</sub> = K<sub>b</sub> · m" },
-  { cls: 12, n: 2, title: "Electrochemistry", tag: "Cells, Nernst equation aur conductance", f: "E = E° − (0.059/n) log Q" },
-  { cls: 12, n: 3, title: "Chemical Kinetics", tag: "Rate law, order aur Arrhenius equation", f: "k = A e<sup>−Ea/RT</sup>" },
-  { cls: 12, n: 4, title: "The d- and f-Block Elements", tag: "Transition elements, lanthanoids aur actinoids", f: "Cr: [Ar] 3d<sup>5</sup> 4s<sup>1</sup>" },
-  { cls: 12, n: 5, title: "Coordination Compounds", tag: "Werner theory, naming, VBT aur CFT", f: "[Co(NH<sub>3</sub>)<sub>6</sub>]<sup>3+</sup>" },
-  { cls: 12, n: 6, title: "Haloalkanes and Haloarenes", tag: "S<sub>N</sub>1, S<sub>N</sub>2 aur haloarenes ki reactions", f: "R–X + OH<sup>−</sup> → R–OH" },
-  { cls: 12, n: 7, title: "Alcohols, Phenols and Ethers", tag: "Banane ke tareeke, reactions aur acidity", f: "R–OH · Ar–OH · R–O–R" },
-  { cls: 12, n: 8, title: "Aldehydes, Ketones and Carboxylic Acids", tag: "Nucleophilic addition aur named reactions", f: "&gt;C=O" },
-  { cls: 12, n: 9, title: "Amines", tag: "Basicity, diazonium salts aur pehchaan ke tests", f: "R–NH<sub>2</sub>" },
-  { cls: 12, n: 10, title: "Biomolecules", tag: "Carbohydrates, proteins, vitamins aur nucleic acids", f: "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>" }
-];
+// Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).
+const UPCOMING = [];
 const PART = { 11: "Part 1 (for 11th Class)", 12: "Part 2 (for 12th Class)" };
 
 // Available chapters (all Class 11 for now). Topic sub-lists are "name page · name page", as on each booklet's contents page.
@@ -158,3 +157,134 @@ const CHAPTERS = [
     ] }
 ];
 CHAPTERS.forEach(c => { c.cls = 11; });
+
+// Class 12 (Part 2), from each booklet's contents page.
+const CLASS_12 = [
+  { n: 1, title: "Solutions", tag: "Solute ke particles, poore solution ka khel", pages: 66, fig: 26, solved: 74, practice: "90+", qr: "1 QR simulation",
+    topics: [
+      ["Solutions aur concentration", "Section 1.1, 1.2", 4, "Solution kya hai + 9 types 5 · Mass %, volume %, mass by volume % aur ppm 6 · Mole fraction, molarity, molality + Examples 1.1 se 1.3 7 · Intext Questions 1.1 se 1.5 8 · Exercises 1.4, 1.5, 1.7, 1.8 9 · Exercises 1.6, 1.9, 1.26, 1.28, 1.29, 1.30 10 · Practice: concentration 11"],
+      ["Solubility aur Henry's law", "Section 1.3", 13, "Solid ki solubility, like dissolves like 14 · Gas ki solubility aur Henry's law 15 · Henry's law numericals: Example 1.4, Intext 1.6, 1.7, Exercise 1.13 16 · Henry's law ke applications + temperature ka asar 17 · Exercises 1.23, 1.24, 1.25, 1.27, 1.35, 1.39 18"],
+      ["Vapour pressure aur Raoult's law", "Section 1.4.1, 1.4.2", 20, "Vapour pressure aur Raoult's law (liquid + liquid) 21 · Example 1.5 aur Intext 1.8 22 · Raoult = Henry ka special case; solid wale solutions 23 · Exercises 1.16, 1.36, 1.38 24"],
+      ["Ideal aur non-ideal solutions", "Section 1.5", 26, "Ideal vs non-ideal solutions 27 · Positive aur negative deviation (Exercise 1.14) 28 · Azeotropes + Exercise 1.10 29 · Exercises 1.37 (graph) aur 1.10 30"],
+      ["Colligative properties: vapour pressure ka lowering", "Section 1.4.3, 1.6.1", 32, "Colligative properties + RLVP ka formula 33 · Example 1.6, Intext 1.9, Exercise 1.34 34 · Exercises 1.15, 1.17, 1.18, 1.19 35"],
+      ["Elevation of boiling point", "Section 1.6.2", 37, "ΔTb = Kb m, graph aur Table 1.3 38 · Examples 1.7, 1.8 aur Intext 1.10 39 · Practice: boiling point elevation 40"],
+      ["Depression of freezing point", "Section 1.6.3", 42, "ΔTf = Kf m aur graph (Fig. 1.8) 43 · Examples 1.9, 1.10 aur Intext 1.11 44 · Exercises 1.20, 1.21 + antifreeze 45"],
+      ["Osmosis aur osmotic pressure", "Section 1.6.4, 1.6.5", 47, "Osmosis aur π = CRT 48 · Isotonic solutions aur reverse osmosis 49 · Example 1.11, Intext 1.12, Exercise 1.22 50"],
+      ["Abnormal molar masses aur van't Hoff factor", "Section 1.7", 52, "Abnormal molar mass aur i (Table 1.4) 53 · Degree of dissociation/association + Examples 1.12, 1.13 54 · Exercises 1.31, 1.32, 1.33 55 · Exercises 1.40, 1.41 + practice 56"],
+      ["Revision", "Complete chapter", 58, "Formula sheet: poora chapter 59 · Fact sheet: poora chapter ek page par 60 · Top 12 mistakes + exam ke favourite questions 61 · Board pattern test: Section A (MCQ + Assertion-Reason) 62 · Board pattern test: Sections B aur C 63 · Board pattern test: Sections D, E + scorecard 64 · Answer key + tumhara certificate 65"]
+    ] },
+  { n: 2, title: "Electrochemistry", tag: "Electrons ka safar: chemistry se bijli", pages: 59, fig: 35, solved: 39, practice: "100+", qr: "1 QR simulation",
+    topics: [
+      ["Electrochemical cells aur galvanic cell", "Section 2.1, 2.2", 4, "Electrochemistry aur do tarah ke cells 5 · Daniell cell aur salt bridge 6 · External potential: galvanic se electrolytic 7 · Cell potential aur cell notation (Exercise 2.3) 8"],
+      ["Electrode potential, SHE aur electrochemical series", "Section 2.2.1", 10, "Standard hydrogen electrode (SHE) 11 · Table 2.1: electrochemical series 12 · Table 2.1 ke use (Intext 2.2, 2.3; Exercises 2.1, 2.2) 13 · Feasibility: Exercise 2.17 + JEE extra 14"],
+      ["Nernst equation", "Section 2.3", 16, "Nernst equation: electrode aur cell 17 · Example 2.1, Intext 2.4, 2.5 18 · Exercise 2.5: chaar cells ka emf 19"],
+      ["Cell potential, equilibrium constant aur Gibbs energy", "Section 2.3.1, 2.3.2", 21, "Equilibrium constant (Example 2.2) 22 · Gibbs energy (Example 2.3, Intext 2.6) 23 · Exercises 2.4, 2.6 24"],
+      ["Conductance: conductivity aur molar conductivity", "Section 2.4, 2.4.1", 26, "R, ρ, G, κ aur do tarah ka conductance 27 · Conductivity cell, cell constant, Wheatstone bridge 28 · Molar conductivity (Examples 2.4, 2.5) 29 · Exercises 2.8, 2.9 + practice 30"],
+      ["Concentration ka effect aur Kohlrausch's law", "Section 2.4.2", 32, "κ ghatta, Λm badhta (Intext 2.7, Exercise 2.7) 33 · Strong electrolytes (Example 2.6) 34 · Kohlrausch's law (Examples 2.7, 2.8; Intext 2.8) 35 · Weak electrolytes: α aur Ka (Example 2.9, Intext 2.9, Exercise 2.11) 36 · Exercise 2.10: NaCl ka graph 37"],
+      ["Electrolysis aur Faraday's laws", "Section 2.5", 39, "Electrolytic cell aur Faraday's laws (Example 2.10) 40 · Kitne Faraday? (Intext 2.10, 2.12; Exercises 2.12–2.14) 41 · Exercises 2.15, 2.16 (cells in series) 42 · Products of electrolysis (Exercise 2.18, Intext 2.11) 43"],
+      ["Batteries, fuel cells aur corrosion", "Section 2.6, 2.7, 2.8", 45, "Primary batteries: dry cell, mercury cell 46 · Secondary batteries: lead storage, Ni-Cd (Intext 2.13) 47 · Fuel cells aur hydrogen economy (Intext 2.14) 48 · Corrosion aur rusting (Intext 2.15) 49"],
+      ["Revision", "Complete chapter", 51, "Formula sheet: poora chapter 52 · Fact sheet: poora chapter ek page par 53 · Top 12 mistakes + exam ke favourite questions 54 · Board pattern test: Section A (MCQ + Assertion-Reason) 55 · Board pattern test: Sections B aur C 56 · Board pattern test: Sections D, E + scorecard 57 · Answer key + tumhara certificate 58"]
+    ] },
+  { n: 3, title: "Chemical Kinetics", tag: "Reaction kitni tez? Kyun? Kaise tez karein?", pages: 53, fig: 23, solved: 48, practice: "80+", qr: "1 QR simulation",
+    topics: [
+      ["Rate of a chemical reaction", "Section 3.1", 4, "Average aur instantaneous rate 5 · Example 3.1 aur Intext 3.1 6 · Stoichiometry ke saath rate (Example 3.2, Intext 3.2) 7"],
+      ["Rate law, rate constant aur order", "Section 3.2, 3.2.1 to 3.2.3", 9, "Factors, rate law aur rate constant 10 · Order aur k ki units (Examples 3.3, 3.4; Intext 3.3, 3.4) 11 · Exercises 3.1, 3.2, 3.4, 3.5 12 · Concentration badlo, rate kitna? (Exercises 3.6, 3.9) 13 · Initial rate method (Exercises 3.10 to 3.12) 14"],
+      ["Molecularity aur reaction mechanism", "Section 3.2.4", 16, "Molecularity aur complex reactions 17 · Mechanism aur rate determining step 18 · Order vs molecularity 19"],
+      ["Zero order reactions", "Section 3.3, 3.3.1", 21, "Zero order: derivation, graphs, examples 22 · Zero order: half-life aur numericals (Exercise 3.3) 23"],
+      ["First order reactions aur half-life", "Section 3.3.2, 3.3.3", 25, "First order: derivation, graphs, examples 26 · First order numericals (Examples 3.5, 3.6; Intext 3.5) 27 · Half-life (Examples 3.7, 3.8; Intext 3.6; Exercises 3.13, 3.16, 3.18) 28 · Exercises 3.14, 3.17, 3.19, 3.24, 3.25 29 · Exercises 3.15, 3.20, 3.21 (data aur pressure) 30 · Pseudo first order (Example 3.9, Exercise 3.8) 31"],
+      ["Temperature ka effect aur Arrhenius equation", "Section 3.4", 33, "Temperature, Arrhenius equation, activation energy 34 · Maxwell–Boltzmann aur ln k vs 1/T (Intext 3.7) 35 · Do temperatures ka formula (Examples 3.10, 3.11; Intext 3.8, 3.9; Exercise 3.30) 36 · Exercises 3.23, 3.26, 3.27, 3.28 37 · Exercises 3.22, 3.29 (graph aur two-temperature) 38"],
+      ["Catalyst aur collision theory", "Section 3.4.1, 3.5", 40, "Effect of catalyst 41 · Catalyst roz ki zindagi mein + numerical 42 · Collision theory aur orientation 43"],
+      ["Revision", "Complete chapter", 45, "Formula sheet: poora chapter 46 · Fact sheet: poora chapter ek page par 47 · Top 12 mistakes + exam ke favourite questions 48 · Board pattern test: Section A (MCQ + Assertion-Reason) 49 · Board pattern test: Sections B aur C 50 · Board pattern test: Sections D, E + scorecard 51 · Answer key + tumhara certificate 52"]
+    ] },
+  { n: 4, title: "The d- and f-Block Elements", short: "d- and f-Block Elements", tag: "Rang, chumbak aur catalyst: d-block ka jaadu", pages: 58, fig: 29, solved: 41, practice: "90+", qr: "",
+    topics: [
+      ["Position aur electronic configuration", "Section 4.1, 4.2", 4, "d-block ki position, transition element kise kehte hain 5 · Electronic configuration, Cr aur Cu exceptions, Example 4.1 6 · NCERT exercises: ions ke configuration (Exercise 4.1, 4.8, 4.9) 7"],
+      ["Physical properties, size aur ionisation enthalpy", "Section 4.3.1 to 4.3.3", 9, "Physical properties, enthalpy of atomisation (Example 4.2, Intext 4.2) 10 · Atomic aur ionic size, lanthanoid contraction, density 11 · Ionisation enthalpy: IE1, IE2, IE3 ka pattern (Intext 4.5) 12"],
+      ["Oxidation states aur electrode potentials", "Section 4.3.4 to 4.3.8", 14, "Oxidation states ka pattern (Example 4.3, Intext 4.3) 15 · E°(M²⁺/M): irregular trend, Cu ka positive E° 16 · E°(M³⁺/M²⁺): oxidising aur reducing ions 17 · Higher oxidation states, Cu⁺ disproportionation 18 · NCERT exercises 4.2 to 4.5 19 · NCERT Example 4.5, Exercises 4.6, 4.13, 4.17 20 · NCERT exercises 4.19, 4.21 to 4.23 21"],
+      ["Magnetic, colour, catalyst, alloys", "Section 4.3.9 to 4.3.14", 23, "Magnetic properties, spin only formula (Example 4.8, Intext 4.8) 24 · μ ki table, t₂g/eg filling (Exercises 4.24, 4.36, 4.38) 25 · Coloured ions, d–d transition (Exercise 4.18) 26 · Complexes, catalysts, interstitial compounds, alloys 27 · NCERT reasons: Exercises 4.11, 4.12 28"],
+      ["Potassium dichromate aur permanganate", "Section 4.4", 30, "Oxides aur oxoanions ka trend (Exercise 4.25) 31 · K₂Cr₂O₇: preparation, structure (Exercise 4.26) 32 · K₂Cr₂O₇ ka oxidising action (Exercises 4.14, 4.15) 33 · KMnO₄: preparation, structure, properties (Example 4.9) 34 · KMnO₄ ka oxidising action (Exercise 4.16) 35"],
+      ["Lanthanoids", "Section 4.5", 37, "Electronic configuration (Exercises 4.28, 4.31) 38 · Lanthanoid contraction aur consequences (Exercise 4.7) 39 · Oxidation states (Example 4.10, Exercises 4.10, 4.32) 40 · General characteristics, reactions, uses (Exercise 4.27) 41"],
+      ["Actinoids aur applications", "Section 4.6, 4.7", 43, "Actinoids: configuration aur contraction (Intext 4.10, Exercise 4.30) 44 · Oxidation states, general characteristics (Exercise 4.29) 45 · Lanthanoids vs actinoids (Exercises 4.20, 4.33, 4.34) 46 · Applications of d- and f-block elements 47 · 3d vs 4d, 5d series (Exercises 4.35, 4.37) 48"],
+      ["Revision", "Complete chapter", 50, "Rule sheet: poora chapter 51 · Fact sheet: poora chapter ek page par 52 · Top 12 mistakes + exam ke favourite questions 53 · Board pattern test: Section A (MCQ + Assertion-Reason) 54 · Board pattern test: Sections B aur C 55 · Board pattern test: Sections D, E + scorecard 56 · Answer key + tumhara certificate 57"]
+    ] },
+  { n: 5, title: "Coordination Compounds", tag: "Ek metal, kai ligands: complexes ki duniya", pages: 55, fig: 36, solved: 38, practice: "80+", qr: "",
+    topics: [
+      ["Werner theory aur key terms", "Section 5.1, 5.2", 4, "Werner ki theory: primary aur secondary valence (Example 5.1) 5 · Double salt vs complex (Exercises 5.1, 5.2) 6 · Important terms: entity, central ion, CN, sphere, polyhedron, oxidation number 7 · Ligands: denticity, chelate, ambidentate 8 · NCERT exercises: terms, ligands, oxidation numbers (5.3 to 5.5) 9"],
+      ["Nomenclature", "Section 5.3", 11, "Formula likhne ke rules (Example 5.2, Intext 5.1) 12 · Naming rules, ligands ke naam (Example 5.3, Intext 5.2) 13 · NCERT exercises: formulas aur names (5.6, 5.7) 14"],
+      ["Isomerism", "Section 5.4", 16, "Types; geometrical isomerism: cis/trans, fac/mer (Examples 5.4, 5.5) 17 · Optical isomerism (Example 5.6) 18 · Structural isomerism: linkage, coordination, ionisation, solvate (Intext 5.4) 19 · NCERT: Intext 5.3, Exercises 5.8, 5.9 20 · NCERT: Exercises 5.10 to 5.12 (isomers draw karo) 21"],
+      ["Valence bond theory aur magnetism", "Section 5.5.1 to 5.5.3", 23, "VBT: hybridisation, [Co(NH₃)₆]³⁺ vs [CoF₆]³⁻ 24 · Tetrahedral aur square planar: [NiCl₄]²⁻, [Ni(CN)₄]²⁻ (Example 5.7) 25 · Magnetic properties aur VBT ki limitations 26 · NCERT Intext 5.5 to 5.8 27 · NCERT: Intext 5.9, Exercises 5.15, 5.19, 5.29 28"],
+      ["Crystal field theory", "Section 5.5.4", 30, "Octahedral field: t₂g aur eg splitting (Exercise 5.16) 31 · Spectrochemical series, Δₒ vs P, high/low spin (Intext 5.10) 32 · Tetrahedral field; Exercise 5.17 33 · NCERT exercises: CFSE, d occupancy (5.18, 5.23) 34"],
+      ["Colour aur theories ki limits", "Section 5.5.5, 5.5.6", 36, "Colour ka reason, [Ti(H₂O)₆]³⁺ (Exercise 5.13) 37 · Ligand se rang badalna, gemstones, CFT ki limitations 38 · NCERT exercises: colour (5.20, 5.21, 5.25, 5.31) 39"],
+      ["Metal carbonyls aur applications", "Section 5.6, 5.7", 41, "Metal carbonyls: structures, synergic bonding (Exercise 5.22) 42 · Importance aur applications 43 · NCERT: Exercises 5.26, 5.27, 5.28, 5.30 44 · NCERT: Exercises 5.24, 5.14 45"],
+      ["Revision", "Complete chapter", 47, "Rule sheet: poora chapter 48 · Fact sheet: poora chapter ek page par 49 · Top 12 mistakes + exam ke favourite questions 50 · Board pattern test: Section A (MCQ + Assertion-Reason) 51 · Board pattern test: Sections B aur C 52 · Board pattern test: Sections D, E + scorecard 53 · Answer key + tumhara certificate 54"]
+    ] },
+  { n: 6, title: "Haloalkanes and Haloarenes", tag: "Ek halogen atom, poori reactivity badal de", pages: 60, fig: 42, solved: 22, practice: "110+", qr: "",
+    topics: [
+      ["Classification aur nomenclature", "Section 6.1, 6.2", 4, "Classification: number of halogens, sp³ aur sp² C–X 5 · Nomenclature: common aur IUPAC naam (Table 6.1, Example 6.2) 6 · C₅H₁₁Br ke 8 isomers (Example 6.1), Intext 6.1 7 · C₄H₉Br ke isomers (Exercise 6.6) aur naming practice 8 · NCERT Exercise 6.1: naam aur classification 9 · NCERT Exercises 6.2, 6.3: IUPAC naam aur structures 10"],
+      ["C–X bond aur haloalkanes ki preparation", "Section 6.3, 6.4", 12, "Nature of C–X bond: length, enthalpy, dipole (Table 6.2) 13 · Alcohols se haloalkanes (Intext 6.2) 14 · Free radical halogenation (Example 6.3, Intext 6.4, Exercise 6.5) 15 · Alkenes se: HX aur X₂ addition (Example 6.4, Intext 6.3) 16 · Halogen exchange: Finkelstein, Swarts (Exercise 6.7) 17 · Major monohalo products (Intext 6.5) 18"],
+      ["Haloarenes ki preparation aur physical properties", "Section 6.5, 6.6", 20, "Haloarenes: electrophilic substitution aur Sandmeyer 21 · Physical properties: b.p., density, solubility 22 · m.p. aur dipole ke questions (Exercises 6.4, 6.18, Intext 6.6) 23 · Dipole aur solubility ke kaaran, aniline se chlorobenzene (Exercises 6.12, 6.19) 24"],
+      ["Nucleophilic substitution: S<sub>N</sub>2 aur S<sub>N</sub>1", "Section 6.7.1 (S<sub>N</sub>2, S<sub>N</sub>1)", 26, "Nucleophiles aur products (Table 6.4), ambident (Example 6.5, Exercise 6.8) 27 · S<sub>N</sub>2 mechanism: backside attack, inversion, steric hindrance (Example 6.6) 28 · S<sub>N</sub>1 mechanism: carbocation, stability order (Example 6.7) 29 · S<sub>N</sub>1 vs S<sub>N</sub>2 table, Intext 6.7, 6.8 30 · NCERT Exercises 6.9, 6.15, 6.16, 6.17 31"],
+      ["Stereochemistry, elimination aur metals", "Section 6.7.1 (stereo, E, metals)", 33, "Optical activity, chirality, enantiomers (Example 6.8) 34 · Retention, inversion, racemisation 35 · Elimination: Saytzeff rule (Exercises 6.10, 6.20) 36 · Metals ke saath: Grignard, Wurtz (Intext 6.9, Exercise 6.12) 37 · Major products aur isobutyl bromide (Exercises 6.14, 6.21) 38"],
+      ["Haloarenes ki reactions", "Section 6.7.2", 40, "Nucleophilic substitution kyun mushkil; –NO₂ ka asar 41 · Electrophilic substitution: o/p director (Example 6.9) 42 · Wurtz–Fittig, Fittig, Exercise 6.22 aur conversions 43"],
+      ["Polyhalogen compounds aur conversions", "Section 6.8", 45, "CH₂Cl₂, CHCl₃, CHI₃, CCl₄ 46 · Freons, ozone, DDT (Exercise 6.13) 47 · Conversions: Exercise 6.11 48 · Conversions: Exercise 6.19 (i) to (x) 49 · Conversions: Exercise 6.19 (xi) to (xx) 50"],
+      ["Revision", "Complete chapter", 52, "Rule sheet: poora chapter 53 · Fact sheet: poora chapter ek page par 54 · Top 12 mistakes + exam ke favourite questions 55 · Board pattern test: Section A (MCQ + Assertion-Reason) 56 · Board pattern test: Sections B aur C 57 · Board pattern test: Sections D, E + scorecard 58 · Answer key + tumhara certificate 59"]
+    ] },
+  { n: 7, title: "Alcohols, Phenols and Ethers", tag: "Ek –OH, ek –O–: teen families", pages: 55, fig: 33, solved: 16, practice: "100+", qr: "",
+    topics: [
+      ["Classification aur nomenclature", "Section 7.1 to 7.3", 4, "Classification: alcohols, phenols, ethers 5 · 1°, 2°, 3° aur allylic alcohols (Intext 7.1, 7.2) 6 · Nomenclature: common aur IUPAC naam (Example 7.1) 7 · Structure: bond angle aur bond length; Intext 7.3 8 · NCERT Exercises 7.1, 7.2: naam aur structures 9 · C₅H₁₂O ke isomers, cresols, ethers ke naam (Exercises 7.3, 7.7, 7.23) 10"],
+      ["Alcohols ki preparation", "Section 7.4.1", 12, "Alkenes se: hydration aur hydroboration (Exercises 7.6, 7.11) 13 · Carbonyl compounds aur Grignard se (Example 7.2) 14 · Intext 7.4, 7.5; Exercise 7.13 15 · Conversions aur alkenes se alcohols (Exercises 7.20, 7.32) 16"],
+      ["Phenols ki preparation aur physical properties", "Section 7.4.2, 7.4.3", 18, "Phenol banana: haloarene, sulphonic acid, diazonium, cumene (Exercises 7.9, 7.10, 7.12) 19 · Boiling point aur solubility: H-bonding (Example 7.3, Exercises 7.4, 7.5) 20 · o-Nitrophenol aur ethanol ka b.p. (Exercises 7.8, 7.22) 21"],
+      ["Acidity aur O–H bond ki reactions", "Section 7.4.4 (a)", 23, "Metals aur NaOH ke saath; alcohols ki acidity 24 · Phenol zyada acidic kyun: phenoxide resonance, pKa (Table 7.3) 25 · Acid strength order, nitrophenoxide resonance (Example 7.4, Intext 7.8, Exercises 7.14, 7.15) 26 · Esterification aur acetylation: aspirin 27"],
+      ["C–O bond ki reactions: HX, dehydration, oxidation", "Section 7.4.4 (b)", 29, "HX, Lucas test, PX₃ (Intext 7.6) 30 · Dehydration: conditions, mechanism (Exercise 7.19, Intext 7.7, Exercise 7.33) 31 · Oxidation: PCC, CrO₃, KMnO₄, Cu (Exercises 7.17 (i), 7.21) 32"],
+      ["Phenols ki reactions aur important alcohols", "Section 7.4.4 (c), 7.5", 34, "Electrophilic substitution: nitration, bromination (Exercise 7.16) 35 · Nitration ke products, bromination (Example 7.5, Exercise 7.17) 36 · Kolbe, Reimer–Tiemann, Zn dust, oxidation (Intext 7.9, Exercises 7.17 (iv), 7.18) 37 · Methanol aur ethanol: banana, uses, denaturation 38"],
+      ["Ethers", "Section 7.6", 40, "Ethers banana: dehydration aur Williamson (Example 7.6) 41 · Williamson practice (Intext 7.10, 7.11; Exercises 7.18, 7.24 to 7.27) 42 · Williamson ki limits, dehydration, physical properties (Exercises 7.25 to 7.27) 43 · Ethers ki reactions: HX se cleavage (Example 7.7, Intext 7.12) 44 · Anisole ki ring reactions; Exercises 7.28 to 7.31 45"],
+      ["Revision", "Complete chapter", 47, "Rule sheet: poora chapter 48 · Fact sheet: poora chapter ek page par 49 · Top 12 mistakes + exam ke favourite questions 50 · Board pattern test: Section A (MCQ + Assertion-Reason) 51 · Board pattern test: Sections B aur C 52 · Board pattern test: Sections D, E + scorecard 53 · Answer key + tumhara certificate 54"]
+    ] },
+  { n: 8, title: "Aldehydes, Ketones and Carboxylic Acids", short: "Aldehydes, Ketones & Acids", tag: "Ek C=O group: teen families", pages: 64, fig: 31, solved: 7, practice: "130+", qr: "",
+    topics: [
+      ["Nomenclature aur carbonyl group", "Section 8.1", 4, "Families aur nomenclature: common aur IUPAC naam 5 · Structures from names (Intext 8.1) 6 · Carbonyl group ki structure aur polarity 7 · NCERT: IUPAC naam (Exercises 8.2, 8.4) 8 · NCERT: naam se structure (Exercise 8.3) 9"],
+      ["Aldehydes aur ketones ki preparation", "Section 8.2", 11, "General methods: oxidation, dehydrogenation, ozonolysis, alkynes 12 · Sirf aldehydes: Rosenmund, Stephen, DIBAL-H 13 · Benzaldehyde: Etard, chromic oxide, benzal chloride, Gatterman–Koch 14 · Sirf ketones: R2Cd, nitrile + RMgX, Friedel– Crafts acylation 15 · Example 8.1, Intext 8.2 16"],
+      ["Physical properties aur nucleophilic addition", "Section 8.3, 8.4.1", 18, "Physical properties (Example 8.2, Intext 8.3) 19 · Nucleophilic addition: mechanism aur reactivity (Example 8.3, Intext 8.4) 20 · HCN, NaHSO3, Grignard (Exercises 8.12 (i), 8.18 (i)) 21 · Alcohols se hemiacetal, acetal, ketal 22 · Ammonia derivatives: oxime, hydrazone, semicarbazone (Intext 8.5, Exercise 8.18 (ii)) 23 · NCERT: terms aur derivatives (Exercises 8.1, 8.5) 24"],
+      ["Reduction, oxidation aur tests", "Section 8.4.2, 8.4.3", 26, "Reduction: alcohol, Clemmensen, Wolff–Kishner 27 · Oxidation: aldehyde aasaan, ketone mushkil; Tollens' aur Fehling's 28 · Haloform aur iodoform test 29 · Example 8.4, Exercises 8.6, 8.19 30 · Do compounds mein farq: chemical tests (Exercise 8.13) 31"],
+      ["α-Hydrogen, Cannizzaro aur uses", "Section 8.4.4, 8.4.5, 8.5", 33, "α-H ki acidity aur aldol condensation 34 · Cross aldol aur Claisen–Schmidt (Exercises 8.9, 8.16 (iii), 8.17 (vii)) 35 · Cannizzaro, electrophilic substitution (Exercises 8.10, 8.16 (ii)) 36 · NCERT: aldol ya Cannizzaro? (Exercises 8.7, 8.8) 37 · Uses of aldehydes and ketones 38"],
+      ["Carboxylic acids: naam, banana, properties", "Section 8.6 to 8.8", 40, "Nomenclature: common aur IUPAC (Intext 8.6) 41 · Carboxyl group ki structure aur physical properties 42 · Banana (1): alcohols, aldehydes, alkylbenzenes, nitriles, amides 43 · Banana (2): Grignard, acyl halides, anhydrides, esters 44 · Example 8.5, Intext 8.7 45"],
+      ["Carboxylic acids ki reactions aur uses", "Section 8.9, 8.10", 47, "Acidity: metals, alkalies, NaHCO3; acids vs phenols (Exercise 8.20) 48 · Substituents ka asar (Intext 8.8, Exercise 8.12) 49 · C–OH ka toota: anhydride, esterification aur mechanism (Exercise 8.18 (iii)) 50 · Acid chlorides aur amides; reduction, decarboxylation (Exercise 8.16) 51 · HVZ, ring substitution, uses; Exercise 8.11 52 · NCERT conversions (Exercises 8.14, 8.15) 53 · NCERT: missing reagent ya product (Exercise 8.17) 54"],
+      ["Revision", "Complete chapter", 56, "Rule sheet: poora chapter 57 · Fact sheet: poora chapter ek page par 58 · Top 12 mistakes + exam ke favourite questions 59 · Board pattern test: Section A (MCQ + Assertion-Reason) 60 · Board pattern test: Sections B aur C 61 · Board pattern test: Sections D, E + scorecard 62 · Answer key + tumhara certificate 63"]
+    ] },
+  { n: 9, title: "Amines", tag: "Ek N, ek lone pair: poori chemistry", pages: 52, fig: 24, solved: 8, practice: "110+", qr: "",
+    topics: [
+      ["Structure, classification aur naam", "Section 9.1 to 9.3", 4, "Structure aur classification 5 · Nomenclature: common aur IUPAC 6 · Classify karo, isomers likho (Intext 9.1, 9.2) 7 · NCERT: naam aur class (Exercise 9.1) 8"],
+      ["Amines ki preparation", "Section 9.4", 10, "Nitro compounds ka reduction, ammonolysis (Example 9.1) 11 · Nitriles aur amides ka reduction (Example 9.2) 12 · Gabriel phthalimide synthesis (Exercises 9.3 (vii), 9.12) 13 · Hoffmann bromamide degradation (Example 9.3, Exercise 9.10) 14 · NCERT: conversions aur short notes (Intext 9.3, Exercise 9.7) 15"],
+      ["Physical properties aur basicity", "Section 9.5, 9.6 (basic character)", 17, "Physical properties: smell, solubility, boiling point 18 · Basic character: salts, Kb aur pKb (Intext 9.5, Exercises 9.3 (iii), 9.14 (i)) 19 · Alkanamines vs ammonia: inductive, solvation, steric (Example 9.4) 20 · Arylamines vs ammonia: resonance (Exercises 9.3 (i), 9.14 (iii)) 21 · NCERT: basicity order (Intext 9.4, Exercise 9.4) 22"],
+      ["Amino group ki reactions", "Section 9.6 (reactions of –NH₂)", 24, "Alkylation, acylation, benzoylation (Intext 9.6, 9.7) 25 · Carbylamine aur nitrous acid (Intext 9.8, Exercises 9.7 (i), 9.13) 26 · Hinsberg test aur farq karne wale tests (Exercises 9.2, 9.6) 27"],
+      ["Aniline ki ring reactions", "Section 9.6 (ring substitution)", 29, "Activating –NH2, bromination, protection (Exercises 9.8 (vii), 9.11 (v)) 30 · Nitration aur sulphonation; Friedel–Crafts nahi (Exercises 9.3 (iv), (v), 9.11 (iii)) 31"],
+      ["Diazonium salts", "Section 9.7 to 9.10", 33, "Diazotisation, stability, physical properties (Exercises 9.3 (vi), 9.7 (ii)) 34 · N2 ka displacement: Sandmeyer, Gatterman aur doosri (Exercise 9.11) 35 · Coupling reactions aur importance (Exercise 9.7 (iv)) 36 · Example 9.5, Intext 9.9 37"],
+      ["Conversions aur pehchaan", "NCERT exercises", 39, "Exercise 9.5: carbon badhana, ghatana 40 · Exercise 9.8: aromatic conversions 41 · Exercise 9.9: A, B, C pehchano 42"],
+      ["Revision", "Complete chapter", 44, "Rule sheet: poora chapter 45 · Fact sheet: poora chapter ek page par 46 · Top 12 mistakes + exam ke favourite questions 47 · Board pattern test: Section A (MCQ + Assertion-Reason) 48 · Board pattern test: Sections B aur C 49 · Board pattern test: Sections D, E + scorecard 50 · Answer key + tumhara certificate 51"]
+    ] },
+  { n: 10, title: "Biomolecules", tag: "Zindagi ki chemistry: sugar, protein, DNA", pages: 53, fig: 34, solved: 5, practice: "100+", qr: "",
+    topics: [
+      ["Carbohydrates aur glucose", "Section 10.1 to 10.1.2.1", 4, "Definition aur classification 5 · Monosaccharides aur glucose ki preparation 6 · Glucose ki open chain structure ke saboot 7 · Oxidation aur D/L configuration (Exercise 10.9) 8"],
+      ["Cyclic structure aur disaccharides", "Section 10.1.2 to 10.1.3", 10, "Open chain ki kamiyan aur cyclic structure 11 · Haworth structure aur pyranose (Intext 10.3) 12 · Fructose ki structure 13 · Glycosidic linkage aur sucrose (Exercise 10.5) 14 · Maltose aur lactose (Intext 10.2, Exercise 10.7) 15"],
+      ["Polysaccharides aur unki importance", "Section 10.1.4, 10.1.5", 17, "Starch aur glycogen (Exercise 10.6) 18 · Cellulose aur starch se fark (Exercise 10.8) 19 · Carbohydrates ki importance (Exercise 10.3) 20"],
+      ["Amino acids aur peptide bond", "Section 10.2.1, 10.2.2", 22, "Amino acids aur classification (Exercise 10.11) 23 · Table 10.2: 20 natural amino acids 24 · Zwitterion aur optical activity (Intext 10.4, Exercise 10.16) 25 · Peptide bond aur polypeptides (Exercise 10.12 (i)) 26"],
+      ["Proteins ki structure aur enzymes", "Section 10.2.3 to 10.3", 28, "Fibrous, globular aur secondary structure (Exercise 10.13 to 10.15) 29 · Tertiary aur quaternary structure (Exercise 10.12 (ii)) 30 · Denaturation (Exercise 10.12 (iii), 10.18, Intext 10.5) 31 · Enzymes aur unka action (Exercise 10.17) 32"],
+      ["Vitamins aur hormones", "Section 10.4, 10.6", 34, "Vitamins aur classification (Exercise 10.19) 35 · Table 10.3: sources aur deficiency (Exercise 10.20, Intext 10.6) 36 · Hormones: types aur kaam 37"],
+      ["Nucleic acids", "Section 10.5", 39, "Chemical composition: sugar aur bases 40 · Nucleoside, nucleotide, phosphodiester (Exercise 10.22, Intext 10.7) 41 · DNA double helix aur RNA (Exercise 10.23, 10.25, Intext 10.8) 42 · Kaam aur DNA vs RNA (Exercise 10.21, 10.24) 43"],
+      ["Revision", "Complete chapter", 45, "Rule sheet: poora chapter 46 · Fact sheet: poora chapter ek page par 47 · Top 12 mistakes + exam ke favourite questions 48 · Board pattern test: Section A (MCQ + Assertion-Reason) 49 · Board pattern test: Sections B aur C 50 · Board pattern test: Sections D, E + scorecard 51 · Answer key + tumhara certificate 52"]
+    ] }
+];
+CLASS_12.forEach(c => { c.cls = 12; CHAPTERS.push(c); });
+
+// Free sample books (whole PDFs, free to download). Their pages are also in assets/samples/<class>/NN.webp.
+const SAMPLE_BOOKS = {
+  11: { title: "Chemophile Part 1 (Class 11): Free sample", pdf: "samples/Chemophile-Class-11-Free-Sample.pdf", pages: 25, sizeMB: 4.3 },
+  12: { title: "Chemophile Part 2 (Class 12): Free sample", pdf: "samples/Chemophile-Class-12-Free-Sample.pdf", pages: 27, sizeMB: 4.4 }
+};
+const pad2 = n => String(n).padStart(2, "0");
+const sampleImg = (cls, p, thumb) => `assets/samples/${cls}/${thumb ? "t" : ""}${pad2(p)}.webp`;
+const assetName = c => c.cls === 11 ? `ch${c.n}` : `c12-ch${c.n}`;
+const coverOf = c => `assets/thumbs/${assetName(c)}-1.webp`;
+// Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
+const samplePagesOf = c => [[1, "Cover"], [3, "Is chapter mein kya hai"], [4, "Topic 1 ka pehla page"], [5, "Page 5"], [6, "Page 6"]]
+  .map(([p, label]) => [`assets/thumbs/${assetName(c)}-${p}.webp`, `assets/pages/${assetName(c)}-${p}.webp`, label]);

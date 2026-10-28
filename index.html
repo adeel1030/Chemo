@@ -275,6 +275,22 @@ section.block { padding-block: 64px; }
 .results mark { background: var(--mark); color: inherit; border-radius: 3px; }
 .results .empty { padding: 12px 16px; color: var(--muted); }
 
+/* free samples */
+.samples-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 28px; }
+@media (max-width: 720px) { .samples-grid { grid-template-columns: minmax(0, 1fr); } }
+.sample-card { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 18px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.sample-card .cv { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; }
+.sample-card .cv img { border-radius: 6px; box-shadow: 0 10px 22px rgba(20,18,70,.25); transform: rotate(-2deg); transition: transform .2s ease; }
+.sample-card .cv:hover img { transform: rotate(0) translateY(-3px); }
+.sample-card h3 { font-size: 1.2rem; }
+.sample-card p { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+.sample-card .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sample-card .btn { padding: 9px 16px; font-size: .92rem; }
+.sample-card .btn-sun { box-shadow: none; }
+@media (max-width: 420px) { .sample-card { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 14px; } }
+.pick-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 6px 2px; border-top: 1px solid var(--line); margin-top: 6px; }
+.pick-group:first-child { border-top: 0; margin-top: 0; }
+
 /* pack builder */
 .pack { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 24px; margin-top: 28px; align-items: start; }
 @media (max-width: 860px) { .pack { grid-template-columns: minmax(0, 1fr); } }
@@ -402,12 +418,12 @@ section.block { padding-block: 64px; }
   <section class="hero night">
     <div class="wrap">
       <div>
-        <div class="pills"><span class="pill new">Class 11: saare 9 chapters ready</span><span class="pill">Class 12 coming soon</span><span class="pill">CBSE 2026-27</span></div>
+        <div class="pills"><span class="pill new">Class 11 + 12: saare 19 chapters ready</span><span class="pill">CBSE 2026-27</span></div>
         <h1>Chemistry ka darr <span class="y">khatam.</span></h1>
         <p class="lede">Adeel Sir ki Chemophile booklets: Class 11 aur 12 Chemistry, Hinglish mein. Har concept pehle roz ki zindagi ke example se, phir diagram se, phir exam wale answer tak.</p>
         <p class="hand">Ratna nahi padega. Samajh aayega, aur yaad bhi rahega.</p>
         <div class="hero-actions">
-          <button class="btn btn-sun" type="button" data-open="ch2-5">Free sample page padho</button>
+          <a class="btn btn-sun" href="#free-sample">Free sample padho</a>
           <a class="btn btn-ghost" href="#pack">Apna pack banao</a>
         </div>
         <ul class="trust">
@@ -415,17 +431,27 @@ section.block { padding-block: 64px; }
           <li>Board answers English mein</li>
           <li>JEE/NEET extra boxes</li>
           <li>Online padho ya Paperback lo</li>
+          <li>Free sample PDF</li>
         </ul>
       </div>
       <div class="cover-fan">
         <img src="assets/thumbs/ch6-1.webp" alt="" width="360" height="509">
-        <img src="assets/thumbs/ch9-1.webp" alt="" width="360" height="509">
+        <img src="assets/thumbs/c12-ch5-1.webp" alt="" width="360" height="509">
         <img src="assets/thumbs/ch2-1.webp" alt="Chemophile Chapter 2: Structure of Atom ka cover" width="360" height="509">
         <div class="sticker" aria-hidden="true">Hinglish<br>mein!</div>
       </div>
     </div>
     <div class="numbers">
       <div class="wrap" id="numbers"></div>
+    </div>
+  </section>
+
+  <section class="block" id="free-sample">
+    <div class="wrap">
+      <div class="eyebrow">Bilkul free, bina login</div>
+      <h2 class="sec-title">Pehle <span class="hl">free sample</span> padho</h2>
+      <p class="sec-intro">Har chapter se ek poora topic, asli book ke pages ke saath. Yahin book ki tarah page palat kar padho, ya PDF download karke dosto ko bhejo.</p>
+      <div class="samples-grid" id="samples-grid"></div>
     </div>
   </section>
 
@@ -436,7 +462,7 @@ section.block { padding-block: 64px; }
       <div class="pain">
         <div><q>NCERT 3 baar padha, phir bhi samajh nahi aaya.</q><p>Chemophile mein har topic <b>Adeel Sir ke example</b> se shuru hota hai: comb, balloon, TV, cold drink. Pehle samajh, phir definition.</p></div>
         <div><q>Concept aata hai, par exam mein likhna nahi aata.</q><p>Har topic ke saath <b>"Exam mein aise likho"</b> box: board ke liye English answer, ruled lines par, ready.</p></div>
-        <div><q>Numericals dekh ke hi darr lagta hai.</q><p>Class 11 ke 9 chapters mein <b>333 solved examples</b> step-by-step, phir "Ab tumhari baari" mein khud try.</p></div>
+        <div><q>Numericals dekh ke hi darr lagta hai.</q><p>Class 11 aur 12 ke 19 chapters mein <b>631 solved examples</b> step-by-step, phir "Ab tumhari baari" mein khud try.</p></div>
         <div><q>Padha sab, par marks phir bhi cut gaye.</q><p><b>"Galti mat karna"</b> box woh galtiyan pehle hi bata deta hai jo sabse zyada marks katwati hain.</p></div>
       </div>
     </div>
@@ -453,7 +479,7 @@ section.block { padding-block: 64px; }
           <div class="show-img"><span class="tape"></span><img src="assets/feature/example.webp" alt="Book se: Adeel Sir ka example box, comb aur paper ke tukde" width="900" height="171" loading="lazy"></div>
         </div>
         <div class="show-row">
-          <div><div class="k">Step 2 · Dekho</div><h3>Har page par diagram, saaf labels ke saath</h3><p>Sirf Class 11 mein 499 figures aur diagrams. Cathode ray tube ho ya chemical equilibrium, sab kuch aankhon ke saamne.</p></div>
+          <div><div class="k">Step 2 · Dekho</div><h3>Har page par diagram, saaf labels ke saath</h3><p>Class 11 aur 12 mein milakar 812 figures aur diagrams. Cathode ray tube ho ya chemical equilibrium, sab kuch aankhon ke saamne.</p></div>
           <div class="show-img"><span class="tape"></span><img src="assets/feature/diagram.webp" alt="Book se: glass discharge tube ka labelled diagram" width="900" height="348" loading="lazy"></div>
         </div>
         <div class="show-row">
@@ -575,7 +601,7 @@ section.block { padding-block: 64px; }
         <details><summary>Online book kaise padhunga?</summary><p>Order aur payment ke baad Adeel Sir tumhe login ID aur password denge. Website par "Login" dabao, ID-password daalo aur apne chapters padho. Ek ID sirf ek device par chalti hai, isliye apna ID kisi ke saath share mat karna. Phone badalna ho to Adeel Sir se baat karo.</p></details>
         <details><summary>Price kitna hai?</summary><p>Har chapter ka Online aur Paperback price uske cover ke neeche likha hai. "Apna pack banao" mein chapters chuno, total apne aap jud jaata hai. Paperback par delivery charges alag hain.</p></details>
         <details><summary>Order kaise karun?</summary><p>Upar "Apna pack banao" mein format aur chapters chuno, phir "WhatsApp par order bhejo" dabao. Payment aur delivery ki details Adeel Sir WhatsApp par batayenge.</p></details>
-        <details><summary>Jo chapters "Coming soon" hain, woh kab aayenge?</summary><p>Naye chapters ek-ek karke aa rahe hain. Chapter ke neeche "Aate hi batana" dabao, WhatsApp par message chala jayega aur chapter aate hi tumhe pata chal jayega.</p></details>
+        <details><summary>Kharidne se pehle book dekh sakte hain?</summary><p>Haan. Class 11 aur Class 12 dono ki free sample book hai, jismein har chapter se ek poora topic hai. Upar "Free sample" mein book ki tarah page palat kar padho, ya PDF download kar lo.</p></details>
       </div>
     </div>
   </section>
@@ -652,8 +678,9 @@ section.block { padding-block: 64px; }
 </div>
 
 <script src="js/chapters.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script src="js/flipbook.js"></script>
 <script>
-const SAMPLE_PAGES = [[1, "Cover"], [3, "Is chapter mein kya hai"], [4, "Topic 1 ka pehla page"], [5, "Page 5"], [6, "Page 6"]];
 const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -677,7 +704,7 @@ const store = {
   const sum = f => CHAPTERS.reduce((a, c) => a + parseInt(c[f], 10), 0);
   const items = [
     [CHAPTERS.length, "chapters ready"], [sum("pages"), "pages"], [sum("fig"), "figures aur diagrams"],
-    [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [UPCOMING.length, "chapters aa rahe hain"]
+    [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [2, "free sample books"]
   ];
   $("#numbers").innerHTML = items.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
 })();
@@ -712,7 +739,7 @@ function renderShelf() {
       const k = key(c), on = pack.has(k);
       return `<div class="card">
         <button class="cover-btn" type="button" data-sheet="${k}" aria-label="Chapter ${c.n}: ${esc(c.title)} ke topics dekho">
-          <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509" loading="lazy">
+          <img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">
         </button>
         <div><div class="ch">Chapter ${c.n}</div><div class="nm">${esc(nameOf(c))}</div>
         <div class="meta">${c.topics.length} topics · ${c.pages} pages · ${c.solved} solved</div></div>
@@ -731,13 +758,15 @@ function renderShelf() {
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Aate hi batana →</a>
     </div>`;
   }).join("");
-  $("#shelf-note").textContent = cls === 11
-    ? `Chemophile ${PART[11]}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : `saare ${ready.length} chapters ready hain.`}`
-    : `Chemophile ${PART[12]}: saare ${soon.length} chapters aa rahe hain. Jo chapter chahiye, uske neeche "Aate hi batana" dabao.`;
+  $("#shelf-note").textContent = ready.length
+    ? `Chemophile ${PART[cls]}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : `saare ${ready.length} chapters ready hain.`}`
+    : `Chemophile ${PART[cls]}: saare ${soon.length} chapters aa rahe hain. Jo chapter chahiye, uske neeche "Aate hi batana" dabao.`;
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
-$("#tab-11-n").textContent = `${CHAPTERS.length} ready`;
-$("#tab-12-n").textContent = "coming soon";
+[11, 12].forEach(k => {
+  const ready = CHAPTERS.filter(c => c.cls === k).length, soon = UPCOMING.filter(u => u.cls === k).length;
+  $(`#tab-${k}-n`).textContent = ready ? `${ready} ready` : "coming soon";
+});
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-cls]");
   if (!b) return;
@@ -747,10 +776,16 @@ document.querySelector(".tabs").addEventListener("click", e => {
 
 // ---------- pack builder ----------
 function renderPick() {
-  $("#pick-list").innerHTML = CHAPTERS.map(c => {
-    const k = key(c), v = priceFor(c, fmt);
-    return `<li><label><input type="checkbox" id="pick-${k}" data-pick="${k}"${pack.has(k) ? " checked" : ""}>
+  $("#pick-list").innerHTML = [11, 12].map(k => {
+    const list = CHAPTERS.filter(c => c.cls === k);
+    if (!list.length) return "";
+    const all = list.every(c => pack.has(key(c)));
+    return `<li class="pick-group"><b>Class ${k}</b><button class="more-btn" type="button" data-pick-cls="${k}">${all ? "Class " + k + " hatao" : "Poori Class " + k}</button></li>` +
+      list.map(c => {
+        const ck = key(c), v = priceFor(c, fmt);
+        return `<li><label><input type="checkbox" id="pick-${ck}" data-pick="${ck}"${pack.has(ck) ? " checked" : ""}>
       <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${rupee(v)}</span></label></li>`;
+      }).join("");
   }).join("");
   $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Sab hatao" : "Saare chapters";
 }
@@ -791,6 +826,14 @@ document.querySelectorAll('input[name="fmt"]').forEach(r => {
   r.addEventListener("change", () => { fmt = r.value; renderPick(); renderSummary(); });
 });
 $("#pick-list").addEventListener("change", e => { if (e.target.dataset.pick) toggle(e.target.dataset.pick, e.target.checked); });
+$("#pick-list").addEventListener("click", e => {
+  const b = e.target.closest("[data-pick-cls]");
+  if (!b) return;
+  const list = CHAPTERS.filter(c => c.cls === +b.dataset.pickCls);
+  const all = list.every(c => pack.has(key(c)));
+  list.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
+  renderShelf(); renderPick(); renderSummary();
+});
 $("#pick-all").addEventListener("click", () => {
   const all = pack.size === CHAPTERS.length;
   CHAPTERS.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
@@ -819,20 +862,20 @@ function openSheet(k, topicId) {
       <span class="start" title="Page number">${start}</span>
     </li>`;
   }).join("");
-  const samples = SAMPLE_PAGES.map(([p, label]) => `<button type="button" data-open="ch${c.n}-${p}">
-      <img src="assets/thumbs/ch${c.n}-${p}.webp" alt="" width="360" height="509" loading="lazy">${label}</button>`).join("");
+  const samples = samplePagesOf(c).map(([thumb, full, label]) => `<button type="button" data-open="${full}">
+      <img src="${thumb}" alt="" width="360" height="509" loading="lazy">${label}</button>`).join("");
   sheetBody.innerHTML = `
     <div class="sheet-top"><button class="close-btn" type="button" id="sheet-close">Band karo ✕</button></div>
     <div class="ch-head night">
-      <img src="assets/thumbs/ch${c.n}-1.webp" alt="" width="360" height="509">
+      <img src="${coverOf(c)}" alt="" width="360" height="509">
       <div style="min-width:0">
-        <div class="kicker">Chemophile ${PART[11]} · Chapter ${c.n}</div>
+        <div class="kicker">Chemophile ${PART[c.cls]} · Chapter ${c.n}</div>
         <h3 id="sheet-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
         <p class="tag">${esc(c.tag)}</p>
         <div class="stats">
           <span class="stat"><b>${c.topics.length}</b> topics</span><span class="stat"><b>${c.pages}</b> pages</span>
           <span class="stat"><b>${c.fig}</b> figures</span><span class="stat"><b>${c.solved}</b> solved examples</span>
-          <span class="stat"><b>${c.practice}</b> practice questions</span><span class="stat">${esc(c.qr)}</span>
+          <span class="stat"><b>${c.practice}</b> practice questions</span>${c.qr ? `<span class="stat">${esc(c.qr)}</span>` : ""}
         </div>
       </div>
     </div>
@@ -868,7 +911,7 @@ document.addEventListener("click", e => {
 // ---------- topic search ----------
 const INDEX = [];
 CHAPTERS.forEach(c => c.topics.forEach(([name, sec, start, subs], i) => {
-  const where = `Class 11 · Ch ${c.n} ${nameOf(c)} · Topic ${i + 1}`;
+  const where = `Class ${c.cls} · Ch ${c.n} ${nameOf(c)} · Topic ${i + 1}`;
   const ref = { k: key(c), t: `t-${key(c)}-${i + 1}` };
   INDEX.push({ ...ref, text: plain(name), where: `${where} · ${sec}`, page: start });
   parseSubs(subs).forEach(s => INDEX.push({ ...ref, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
@@ -896,14 +939,14 @@ results.addEventListener("click", e => {
 });
 
 // ---------- sample page viewer ----------
-const PAGES = [["ch2-2", "Is booklet ko kaise padhein"]];
-CHAPTERS.forEach(c => SAMPLE_PAGES.forEach(([p, label]) => PAGES.push([`ch${c.n}-${p}`, `Chapter ${c.n}: ${nameOf(c)} · ${label}`])));
+const PAGES = [["assets/pages/ch2-2.webp", "Is booklet ko kaise padhein"]];
+CHAPTERS.forEach(c => samplePagesOf(c).forEach(([, full, label]) => PAGES.push([full, `Class ${c.cls} · Chapter ${c.n}: ${nameOf(c)} · ${label}`])));
 const viewer = $("#viewer"), vImg = $("#viewer-img"), vCap = $("#viewer-cap");
 let current = 0, lastFocus = null;
 function show(i) {
   current = (i + PAGES.length) % PAGES.length;
   const [k, cap] = PAGES[current];
-  vImg.src = `assets/pages/${k}.webp`;
+  vImg.src = k;
   vImg.alt = cap;
   vCap.textContent = cap;
 }
@@ -941,6 +984,37 @@ viewer.addEventListener("touchend", e => {
   const dx = e.changedTouches[0].clientX - touchX;
   if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
   touchX = null;
+});
+
+// ---------- free samples ----------
+$("#samples-grid").innerHTML = [11, 12].map(k => {
+  const b = SAMPLE_BOOKS[k];
+  const n = CHAPTERS.filter(c => c.cls === k).length;
+  return `<div class="sample-card">
+    <button class="cv" type="button" data-sample="${k}" aria-label="Class ${k} free sample padho"><img src="${sampleImg(k, 1, true)}" alt="" width="360" height="509" loading="lazy"></button>
+    <div style="min-width:0">
+      <h3>Class ${k} free sample</h3>
+      <p>${PART[k]} · ${b.pages} pages · saare ${n} chapters se ek-ek topic</p>
+      <div class="acts">
+        <button class="btn btn-sun" type="button" data-sample="${k}">Book ki tarah padho</button>
+        <a class="btn btn-line" href="${b.pdf}" download>PDF download (${b.sizeMB} MB)</a>
+      </div>
+    </div>
+  </div>`;
+}).join("");
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function openSample(k) {
+  const b = SAMPLE_BOOKS[k];
+  const toc = CHAPTERS.filter(c => c.cls === k).map(c => [`Ch ${c.n} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
+  new Flipbook({
+    title: `Class ${k} free sample`, pageCount: b.pages, toc,
+    download: { href: b.pdf, label: "PDF download" },
+    loadPage: n => loadImg(sampleImg(k, n))
+  }).open();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-sample]");
+  if (b) openSample(+b.dataset.sample);
 });
 
 // ---------- contact ----------
