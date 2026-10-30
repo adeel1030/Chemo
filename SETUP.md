@@ -75,6 +75,7 @@ Students list mein har student ke liye yeh options hain:
 - **Chapters badlo**: naye chapters jodo, jaise jab student aur chapters kharide.
 - **Device reset**: student ne phone badla ho to. Reset ke baad jis device par woh pehle login karega, ID usi par lock ho jayegi.
 - **Band karo**: ID turant band ho jaati hai. Jo bhi device us waqt khula hai, woh bhi logout ho jaata hai.
+- **Delete**: student ko hamesha ke liye hata deta hai. Pehle ek warning aati hai, **Yes, delete** dabane par hi delete hota hai. Uski book har device par turant band ho jaati hai. Woh login ID dobara kisi ko nahi di ja sakti, isliye wapas aaye to nayi ID banani padegi. Kuch din ke liye rokna ho to **Band karo** (Block) use karo.
 - **"N baar doosre device se try"**: matlab kisi ne yeh ID doosre phone par kholne ki koshish ki thi, yaani ID share hui hai.
 
 ## 10. Promo code (teachers, schools ya demo ke liye)
@@ -90,6 +91,7 @@ Dhyan rakhne wali baatein:
 - Code se khuli book bhi usi aakhri date tak chalti hai. Uske baad page nahi khulte.
 - **Kisne use kiya** dabakar dekh sakte ho ki kis naam aur number ne code lagaya.
 - Kisi ek promo user ko rokna ho to **Students** tab mein uske naam par **Band karo** dabao. Poora code rokna ho to **Promo codes** tab mein **Band karo** dabao.
+- Code hamesha ke liye hatana ho to **Delete** dabao. Warning mein ek tick ka option aata hai: tick karoge to jin logon ne yeh code lagaya hai unki book bhi turant band ho jayegi. Tick nahi karoge to woh aakhri date tak padhte rahenge. Code ki "Kisne use kiya" list bhi delete ho jaati hai.
 - Promo wali book sirf usi phone ke usi browser mein rehti hai. Agar user browser ka data clear kar de, to use dobara code lagana padega, aur isse code ka ek use aur gina jayega.
 
 ## Yeh system kya rokta hai, kya nahi

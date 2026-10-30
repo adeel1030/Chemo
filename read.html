@@ -305,7 +305,7 @@ async function start(user) {
   $("#blocked-back").hidden = false;
   if (!snap.exists()) {
     if (user.isAnonymous) { try { await signOut(auth); } catch (e) {} show("v-login"); return; }
-    return kick("Account not ready", "No chapters are linked to this login ID yet. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile login ID "${loginId}" is not working.`);
+    return kick("Account not ready", "No chapters are linked to this login ID. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile login ID "${loginId}" is not working.`);
   }
   me = snap.data();
   const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
@@ -338,7 +338,11 @@ async function start(user) {
   if (unwatch) unwatch();
   unwatch = onSnapshot(ref, s => {
     const d = s.data();
-    if (!d) return;
+    if (!d) {
+      // Deleted by Adeel Sir (a cached "missing" while offline is not proof, so wait for the server).
+      if (!s.metadata.fromCache) kick("This ID has been removed", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been removed.`);
+      return;
+    }
     if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
     if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters);
