@@ -37,7 +37,7 @@ Login aur pages ka data **Firebase** (Google ki free service) mein rehta hai. Ne
 ## 5. Database banao
 
 1. **Build → Firestore Database → Create database** dabao.
-2. Location mein **asia-south1 (Mumbai)** chuno. Yeh baad mein badal nahi sakti.
+2. Edition poochhe to **Standard** chuno. Location mein **asia-south1 (Mumbai)** chuno. Yeh baad mein badal nahi sakti.
 3. **Start in production mode** chuno.
 
 ## 6. Security rules lagao (sabse zaroori step)
@@ -51,8 +51,8 @@ Yahi rules tay karte hain ki student sirf apne kharide hue chapters padh sake, s
 
 ## 7. Website live karo (GitHub Pages)
 
-1. GitHub par is branch ko `main` mein merge karo.
-2. Repo mein **Settings → Pages** kholo. **Deploy from a branch** chuno, branch `main` aur folder `/ (root)` rakho, phir Save karo.
+1. GitHub par `adeel1030/Chemo` repo kholo aur **Settings → Pages** mein jao.
+2. **Source** mein **Deploy from a branch** chuno. Branch mein `ccr-6ada8f89-5gh1t1` (abhi website ka saara code isi branch par hai) aur folder `/ (root)` chuno, phir **Save** dabao.
 3. Kuch minute baad site `https://adeel1030.github.io/Chemo/` par khulegi.
 4. `js/firebase-config.js` mein `READER_URL` ke aage `https://adeel1030.github.io/Chemo/read.html` likho. Yeh link student ko jaane wale message mein aata hai.
 
