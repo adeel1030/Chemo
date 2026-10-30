@@ -105,6 +105,14 @@
         <div><h1 id="hello"></h1><p>Your chapters. Tap a cover to open the book; it opens where you left off.</p></div>
       </div>
       <div id="promo-note" class="msg warn promo-note" hidden></div>
+      <div id="logout-confirm" class="card promo-note" role="alertdialog" aria-labelledby="logout-q" hidden>
+        <p id="logout-q"><b>Log out of this promo book?</b></p>
+        <p class="hint" style="margin-top: 6px">To open it again you will have to enter the promo code again, which uses one more place on the code. If the code has reached its limit or expired by then, the book will not open.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px">
+          <button class="btn btn-danger btn-sm" type="button" id="logout-yes">Yes, log out</button>
+          <button class="btn btn-line btn-sm" type="button" id="logout-no">Stay logged in</button>
+        </div>
+      </div>
       <div id="lib"></div>
       <details class="card pw" id="pw-box">
         <summary>Change password</summary>
@@ -209,7 +217,18 @@ $("#login-form").addEventListener("submit", async e => {
   }
   $("#login-btn").disabled = false;
 });
-$("#logout").addEventListener("click", () => signOut(auth));
+$("#logout").addEventListener("click", () => {
+  // A promo login cannot be restored after logging out, so ask first.
+  if (me && me.promo) {
+    if ($("#v-library").hidden) renderLibrary();
+    $("#logout-confirm").hidden = false;
+    $("#logout-no").focus();
+    return;
+  }
+  signOut(auth);
+});
+$("#logout-no").addEventListener("click", () => { $("#logout-confirm").hidden = true; });
+$("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden = true; signOut(auth); });
 
 // ---------- promo code ----------
 $("#promo-form").addEventListener("submit", async e => {
@@ -329,7 +348,7 @@ async function start(user) {
 
   me.loginId = me.promo ? `promo ${me.promo}` : loginId;
   $("#who").textContent = `${me.name || loginId}${me.promo ? "" : " · " + loginId}`;
-  $("#logout").hidden = !!me.promo;
+  $("#logout").hidden = false;
   $("#pw-box").hidden = !!me.promo;
   renderLibrary();
 }
