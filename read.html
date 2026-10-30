@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi-Latn">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -38,7 +38,7 @@
 
 <header class="app-head" id="head">
   <div class="wrap">
-    <a class="brand" href="index.html">Chemophile<small>Online padho</small></a>
+    <a class="brand" href="index.html">Chemophile<small>Read online</small></a>
     <div class="head-actions">
       <span class="who" id="who"></span>
       <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
@@ -47,46 +47,46 @@
 </header>
 
 <main>
-  <div class="wrap center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Load ho raha hai"></div></div>
+  <div class="wrap center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
   <div class="wrap center-screen" id="v-setup" hidden>
     <div class="card login-card">
-      <h1>Online reader abhi setup ho raha hai</h1>
-      <p>Adeel Sir ne abhi online reader chalu nahi kiya hai. Thodi der baad try karo, ya Adeel Sir se WhatsApp par poochho.</p>
+      <h1>The online reader is being set up</h1>
+      <p>The online reader is not switched on yet. Please try again later, or ask Adeel Sir on WhatsApp.</p>
       <a class="btn btn-wa" id="setup-wa" href="#" target="_blank" rel="noopener">WhatsApp par poochho</a>
-      <a class="btn btn-line" href="index.html#free-sample">Tab tak free sample padho</a>
+      <a class="btn btn-line" href="index.html#free-sample">Read the free sample meanwhile</a>
     </div>
   </div>
 
   <div class="wrap center-screen" id="v-login" hidden>
     <div class="card login-card">
       <div class="seal">Adeel<br>Sir</div>
-      <h1>Apne chapters padho</h1>
-      <div class="tabs" role="tablist" aria-label="Kaise kholna hai">
+      <h1>Read your chapters</h1>
+      <div class="tabs" role="tablist" aria-label="How to sign in">
         <button type="button" role="tab" aria-selected="true" data-tab="login-form">Login ID</button>
         <button type="button" role="tab" aria-selected="false" data-tab="promo-form">Promo code</button>
       </div>
 
       <form id="login-form" class="login-card" novalidate>
-        <p class="hint">Order ke baad Adeel Sir ne jo login ID aur password diya hai, woh yahan daalo.</p>
-        <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="jaise: rahul11"></div>
+        <p class="hint">Enter the login ID and password Adeel Sir sent you after your order.</p>
+        <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. rahul11"></div>
         <div class="field"><label for="login-pw">Password</label><input id="login-pw" type="password" autocomplete="current-password"></div>
         <div class="msg bad" id="login-err" role="alert" hidden></div>
-        <button class="btn btn-sun" type="submit" id="login-btn">Login karo</button>
-        <p class="hint">Ek ID sirf ek phone ya tablet par chalti hai. Jis device par pehli baar login karoge, ID usi par lock ho jayegi.</p>
+        <button class="btn btn-sun" type="submit" id="login-btn">Log in</button>
+        <p class="hint">One ID works on one phone or tablet only. It locks to the first device you log in on.</p>
       </form>
 
       <form id="promo-form" class="login-card" novalidate hidden>
-        <p class="hint">Adeel Sir ne promo code diya hai? Code, apna naam aur WhatsApp number daalo. Book isi phone par khul jayegi.</p>
-        <div class="field"><label for="promo-code">Promo code</label><input id="promo-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="jaise: ADEEL2026"></div>
-        <div class="field"><label for="promo-name">Tumhara naam</label><input id="promo-name" autocomplete="name"></div>
+        <p class="hint">Got a promo code from Adeel Sir? Enter the code, your name and WhatsApp number. The book opens on this phone.</p>
+        <div class="field"><label for="promo-code">Promo code</label><input id="promo-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="e.g. ADEEL2026"></div>
+        <div class="field"><label for="promo-name">Your name</label><input id="promo-name" autocomplete="name"></div>
         <div class="field"><label for="promo-phone">WhatsApp number</label><input id="promo-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
         <div class="msg bad" id="promo-err" role="alert" hidden></div>
-        <button class="btn btn-sun" type="submit" id="promo-btn">Book kholo</button>
-        <p class="hint">Promo code wali book sirf isi phone aur isi browser par khulegi, aur code ki aakhri date tak chalegi.</p>
+        <button class="btn btn-sun" type="submit" id="promo-btn">Open the book</button>
+        <p class="hint">A promo book opens only on this phone and in this browser, until the code's last date.</p>
       </form>
 
-      <p class="hint">Book nahi li abhi tak? <a href="index.html#pack">Yahan order karo</a> ya <a href="index.html#free-sample">free sample padho</a>.</p>
+      <p class="hint">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.</p>
     </div>
   </div>
 
@@ -94,23 +94,23 @@
     <div class="card login-card">
       <h1 id="blocked-title"></h1>
       <p id="blocked-text"></p>
-      <a class="btn btn-wa" id="blocked-wa" href="#" target="_blank" rel="noopener">Adeel Sir ko WhatsApp karo</a>
-      <button class="btn btn-line" type="button" id="blocked-back">Login page par jao</button>
+      <a class="btn btn-wa" id="blocked-wa" href="#" target="_blank" rel="noopener">WhatsApp Adeel Sir</a>
+      <button class="btn btn-line" type="button" id="blocked-back">Back to login</button>
     </div>
   </div>
 
   <div id="v-library" hidden>
     <div class="wrap">
       <div class="shelf-head">
-        <div><h1 id="hello"></h1><p>Tumhare chapters. Cover par tap karo, book khul jayegi. Jahan chhoda tha, wahin se shuru hogi.</p></div>
+        <div><h1 id="hello"></h1><p>Your chapters. Tap a cover to open the book; it opens where you left off.</p></div>
       </div>
       <div id="promo-note" class="msg warn promo-note" hidden></div>
       <div id="lib"></div>
       <details class="card pw" id="pw-box">
-        <summary>Password badlo</summary>
+        <summary>Change password</summary>
         <form id="pw-form" novalidate>
-          <div class="field"><label for="pw-new">Naya password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="Kam se kam 6 characters"></div>
-          <button class="btn btn-line" type="submit">Password badlo</button>
+          <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters"></div>
+          <button class="btn btn-line" type="submit">Change password</button>
         </form>
         <div class="msg" id="pw-msg" role="status" hidden style="margin-top: 12px"></div>
       </details>
@@ -184,12 +184,12 @@ if (!configured) {
 
 // ---------- login with ID ----------
 const loginErrors = {
-  "auth/invalid-credential": "Login ID ya password galat hai. Dobara check karo.",
-  "auth/wrong-password": "Password galat hai.",
-  "auth/user-not-found": "Yeh login ID nahi mili.",
-  "auth/user-disabled": "Yeh ID band kar di gayi hai. Adeel Sir se baat karo.",
-  "auth/too-many-requests": "Bahut baar galat try hua. Thodi der baad try karo.",
-  "auth/network-request-failed": "Internet nahi chal raha. Connection check karo."
+  "auth/invalid-credential": "Wrong login ID or password. Please check and try again.",
+  "auth/wrong-password": "Wrong password.",
+  "auth/user-not-found": "This login ID was not found.",
+  "auth/user-disabled": "This ID has been blocked. Please contact Adeel Sir.",
+  "auth/too-many-requests": "Too many wrong attempts. Please try again later.",
+  "auth/network-request-failed": "No internet. Please check your connection."
 };
 $("#login-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -197,14 +197,14 @@ $("#login-form").addEventListener("submit", async e => {
   const pw = $("#login-pw").value;
   const err = $("#login-err");
   err.hidden = true;
-  if (!ID_PATTERN.test(id) || !pw) { err.textContent = "Login ID aur password dono daalo."; err.hidden = false; return; }
-  if (!deviceId()) { err.textContent = "Is browser mein login nahi ho sakta. Private/Incognito mode band karke normal Chrome mein kholo."; err.hidden = false; return; }
+  if (!ID_PATTERN.test(id) || !pw) { err.textContent = "Enter both your login ID and password."; err.hidden = false; return; }
+  if (!deviceId()) { err.textContent = "You can't log in from this browser. Turn off Private/Incognito mode and open it in normal Chrome."; err.hidden = false; return; }
   $("#login-btn").disabled = true;
   try {
     if (auth.currentUser) await signOut(auth);
     await signInWithEmailAndPassword(auth, idToEmail(id), pw);
   } catch (ex) {
-    err.textContent = loginErrors[ex.code] || "Login nahi ho paaya. Dobara try karo.";
+    err.textContent = loginErrors[ex.code] || "Could not log in. Please try again.";
     err.hidden = false;
   }
   $("#login-btn").disabled = false;
@@ -220,11 +220,11 @@ $("#promo-form").addEventListener("submit", async e => {
   const code = $("#promo-code").value.trim().toUpperCase();
   const name = $("#promo-name").value.trim();
   const phone = $("#promo-phone").value.replace(/\D/g, "").slice(-10);
-  if (!PROMO_PATTERN.test(code)) return fail("Promo code sahi se daalo.");
-  if (name.length < 2) return fail("Apna naam daalo.");
-  if (phone.length !== 10) return fail("10 digit ka WhatsApp number daalo.");
+  if (!PROMO_PATTERN.test(code)) return fail("Enter a valid promo code.");
+  if (name.length < 2) return fail("Enter your name.");
+  if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
   const mine = deviceId();
-  if (!mine) return fail("Is browser mein book nahi khul sakti. Private/Incognito mode band karke normal Chrome mein kholo.");
+  if (!mine) return fail("The book can't open in this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
 
   busy = true;
   $("#promo-btn").disabled = true;
@@ -235,10 +235,10 @@ $("#promo-form").addEventListener("submit", async e => {
     const ps = await getDoc(doc(db, "promos", code));
     const p = ps.exists() ? ps.data() : null;
     const expires = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
-    if (!p) throw new Error("Yeh promo code sahi nahi hai. Spelling check karo.");
-    if (p.active === false) throw new Error("Yeh promo code band ho chuka hai.");
-    if (!expires || expires < new Date()) throw new Error("Is promo code ki aakhri date nikal chuki hai.");
-    if ((p.used || 0) >= p.maxUses) throw new Error("Is promo code ki limit poori ho chuki hai.");
+    if (!p) throw new Error("This promo code is not valid. Check the spelling.");
+    if (p.active === false) throw new Error("This promo code has been switched off.");
+    if (!expires || expires < new Date()) throw new Error("This promo code has expired.");
+    if ((p.used || 0) >= p.maxUses) throw new Error("This promo code has reached its limit.");
     const existing = await getDoc(doc(db, "users", user.uid));
     if (!existing.exists()) {
       const batch = writeBatch(db);
@@ -261,8 +261,8 @@ $("#promo-form").addEventListener("submit", async e => {
       const has = await getDoc(doc(db, "users", user.uid)).catch(() => null);
       if (!has || !has.exists()) { try { await user.delete(); } catch (e2) { try { await signOut(auth); } catch (e3) {} } }
     }
-    fail(ex.code === "permission-denied" ? "Promo code abhi kaam nahi kar raha (limit ya date poori ho gayi). Adeel Sir se baat karo."
-      : ex.code === "auth/operation-not-allowed" ? "Promo code abhi chalu nahi hai. Adeel Sir se baat karo."
+    fail(ex.code === "permission-denied" ? "This promo code isn't working (limit reached or expired). Please contact Adeel Sir."
+      : ex.code === "auth/operation-not-allowed" ? "Promo codes are not switched on yet. Please contact Adeel Sir."
       : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
       : ex.message);
     show("v-login");
@@ -277,42 +277,42 @@ async function start(user) {
   let snap;
   try { snap = await getDoc(ref); } catch (e) {
     // A network or server problem is not a reason to log the student out: show it and let them retry.
-    blocked("Server se connect nahi ho paaya",
-      e.code === "permission-denied" ? "Online reader abhi setup ho raha hai. Thodi der baad dobara kholo." : "Internet check karke page dobara kholo.",
-      `Hello Adeel Sir, Chemophile online book nahi khul rahi (${e.code || "error"}).`);
+    blocked("Could not reach the server",
+      e.code === "permission-denied" ? "The online reader is still being set up. Please try again later." : "Check your internet and reload the page.",
+      `Hello Adeel Sir, the Chemophile online book is not opening (${e.code || "error"}).`);
     $("#blocked-back").hidden = true;
     return;
   }
   $("#blocked-back").hidden = false;
   if (!snap.exists()) {
     if (user.isAnonymous) { try { await signOut(auth); } catch (e) {} show("v-login"); return; }
-    return kick("Account abhi taiyaar nahi hai", "Is login ID ke saath koi chapter nahi juda hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile login ID "${loginId}" kaam nahi kar rahi.`);
+    return kick("Account not ready", "No chapters are linked to this login ID yet. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile login ID "${loginId}" is not working.`);
   }
   me = snap.data();
   const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
   const mine = deviceId();
   if (!mine) {
-    return kick("Is browser mein nahi chalega", "Private/Incognito mode band karke normal browser mein kholo.", `Hello Adeel Sir, meri Chemophile ${label} browser mein nahi khul rahi.`);
+    return kick("This browser is not supported", "Turn off Private/Incognito mode and open it in a normal browser.", `Hello Adeel Sir, my Chemophile ${label} does not open in my browser.`);
   }
   if (me.active === false) {
-    return kick("Yeh ID band hai", "Tumhari ID abhi band hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ${label} band dikha rahi hai.`);
+    return kick("This ID is blocked", "Your ID is blocked right now. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} shows as blocked.`);
   }
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
   if (expires && expires < new Date()) {
-    return kick("Promo ki muddat khatam", `Yeh promo code ${fmtDate(expires)} tak tha. Poori book ke liye Adeel Sir se order karo.`, `Hello Adeel Sir, mera Chemophile promo code khatam ho gaya. Mujhe book order karni hai.`);
+    return kick("Promo period over", `This promo code was valid until ${fmtDate(expires)}. Order the full book from Adeel Sir.`, `Hello Adeel Sir, my Chemophile promo code has expired. I want to order the book.`);
   }
   if (!me.deviceId) {
     try {
       await updateDoc(ref, { deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp() });
       me.deviceId = mine;
     } catch (e) {
-      return kick("Login nahi ho paaya", "Device register nahi ho paaya. Internet check karke dobara try karo.", `Hello Adeel Sir, meri ID "${loginId}" device par register nahi ho rahi.`);
+      return kick("Could not log in", "Your device could not be registered. Check your internet and try again.", `Hello Adeel Sir, my ID "${loginId}" will not register on my device.`);
     }
   } else if (me.deviceId !== mine) {
     try { await addDoc(collection(db, "users", user.uid, "attempts"), { at: serverTimestamp(), deviceInfo: deviceInfo() }); } catch (e) {}
-    return kick("Yeh ID doosre device par chal rahi hai",
-      `Tumhari ID "${loginId}" pehle se ${me.deviceInfo || "ek aur device"} par lock hai. Ek ID sirf ek device par chalti hai. Naya phone liya hai to Adeel Sir se device reset karwao.`,
-      `Hello Adeel Sir, meri Chemophile ID "${loginId}" ka device reset karna hai. Maine naya phone liya hai.`);
+    return kick("This ID is in use on another device",
+      `Your ID "${loginId}" is already locked to ${me.deviceInfo || "another device"}. One ID works on one device only. If you changed your phone, ask Adeel Sir to reset your device.`,
+      `Hello Adeel Sir, please reset the device for my Chemophile ID "${loginId}". I have a new phone.`);
   }
 
   // Keep watching: if Adeel Sir blocks the ID or resets the device, this device logs out.
@@ -320,8 +320,8 @@ async function start(user) {
   unwatch = onSnapshot(ref, s => {
     const d = s.data();
     if (!d) return;
-    if (d.active === false) return kick("Yeh ID band kar di gayi hai", "Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile ${label} band ho gayi hai.`);
-    if (d.deviceId !== mine) return kick("Device reset ho gaya", "Tumhari ID ka device reset hua hai. Jis phone par padhna hai, usme dobara login karo.", `Hello Adeel Sir, meri Chemophile ID "${loginId}" logout ho gayi.`);
+    if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
+    if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters);
     me = Object.assign(d, { loginId: me.loginId });
     if (changed && !$("#v-library").hidden) renderLibrary();
@@ -342,10 +342,10 @@ async function renderLibrary() {
   const note = $("#promo-note");
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
   note.hidden = !me.promo;
-  if (me.promo) note.textContent = `Promo code ${me.promo} se khula hai${expires ? `, ${fmtDate(expires)} tak` : ""}. Book sirf isi phone par khulegi, isliye browser ka data clear mat karna.`;
+  if (me.promo) note.textContent = `Opened with promo code ${me.promo}${expires ? `, valid until ${fmtDate(expires)}` : ""}. The book opens only on this phone, so don't clear this browser's data.`;
   const keys = me.chapters || [];
   if (!keys.length) {
-    $("#lib").innerHTML = `<div class="card">Abhi tumhare account mein koi chapter nahi hai. Adeel Sir se baat karo.</div>`;
+    $("#lib").innerHTML = `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`;
     return;
   }
   await Promise.all(keys.map(async k => {
@@ -362,10 +362,10 @@ async function renderLibrary() {
     const ready = info && info.pageCount;
     const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${n}`;
     return `<div class="card book">
-      <button class="cv" type="button" ${ready ? `data-read="${k}"` : "disabled"} aria-label="${esc(title)} kholo">${cover}</button>
+      <button class="cv" type="button" ${ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
       <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h2>${esc(title)}</h2>
-      <div class="meta">${ready ? `${info.pageCount} pages` : "Yeh chapter jaldi upload hoga."}</div>
-      ${ready ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Page ${last} se aage padho` : "Book kholo"}</button>` : ""}</div>
+      <div class="meta">${ready ? `${info.pageCount} pages` : "This chapter will be uploaded soon."}</div>
+      ${ready ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Continue from page ${last}` : "Open book"}</button>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = [11, 12].map(cls => {
@@ -382,14 +382,14 @@ $("#pw-form").addEventListener("submit", async e => {
   e.preventDefault();
   const msg = $("#pw-msg"), pw = $("#pw-new").value;
   msg.hidden = false;
-  if (pw.length < 6) { msg.className = "msg bad"; msg.textContent = "Password kam se kam 6 characters ka rakho."; return; }
+  if (pw.length < 6) { msg.className = "msg bad"; msg.textContent = "Use at least 6 characters for the password."; return; }
   try {
     await updatePassword(auth.currentUser, pw);
-    msg.className = "msg good"; msg.textContent = "Password badal gaya. Agli baar naya password use karna.";
+    msg.className = "msg good"; msg.textContent = "Password changed. Use the new password next time.";
     $("#pw-new").value = "";
   } catch (ex) {
     msg.className = "msg bad";
-    msg.textContent = ex.code === "auth/requires-recent-login" ? "Pehle logout karke dobara login karo, phir password badlo." : "Password nahi badal paaya. Dobara try karo.";
+    msg.textContent = ex.code === "auth/requires-recent-login" ? "Log out and log in again, then change your password." : "Could not change the password. Please try again.";
   }
 });
 
@@ -440,7 +440,7 @@ function drawPage(src) {
       ctx.fillStyle = "#d6304f";
       ctx.font = `600 ${Math.round(w * 0.016)}px "Fira Sans", Arial, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(`Sirf ${who}${me.phone ? " (" + me.phone + ")" : ""} ke liye. Share karna mana hai.`, w / 2, h - w * 0.012);
+      ctx.fillText(`Licensed to ${who}${me.phone ? " (" + me.phone + ")" : ""} only. Do not share.`, w / 2, h - w * 0.012);
       ctx.restore();
       resolve(cv);
     };

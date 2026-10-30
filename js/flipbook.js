@@ -91,25 +91,25 @@
       el.setAttribute("aria-label", o.title);
       el.innerHTML = `
         <div class="fb-bar">
-          <button class="fb-btn" type="button" data-fb="close" aria-label="Band karo">✕<span class="fb-lbl"> Band karo</span></button>
+          <button class="fb-btn" type="button" data-fb="close" aria-label="Close">✕<span class="fb-lbl"> Close</span></button>
           <div class="fb-title"><b>${esc(o.title)}</b><span data-fb="count"></span></div>
           ${o.download ? `<a class="fb-btn sun fb-opt" href="${esc(o.download.href)}" download>${esc(o.download.label)}</a>` : ""}
           <button class="fb-btn fb-opt" type="button" data-fb="sound"></button>
           <button class="fb-btn" type="button" data-fb="zoom">Zoom</button>
-          <button class="fb-btn sun" type="button" data-fb="toc">${o.toc.length ? "Topics" : "Page"}</button>
+          <button class="fb-btn sun" type="button" data-fb="toc">${o.toc.length ? "Topics" : "Pages"}</button>
         </div>
-        <div class="fb-stage"><div class="fb-book"></div><div class="fb-hint">Page ke kone ko kheencho ya swipe karo</div>
+        <div class="fb-stage"><div class="fb-book"></div><div class="fb-hint">Drag a page corner or swipe to turn</div>
           <div class="fb-panel" hidden><div class="fb-panel-body">
-            <div class="fb-panel-top"><h2>${o.toc.length ? "Topics" : "Page par jao"}</h2><button class="fb-btn" type="button" data-fb="toc-close">Band karo</button></div>
-            <form class="fb-jump"><input type="number" inputmode="numeric" min="1" max="${this.n}" placeholder="Page number (1–${this.n})" aria-label="Page number"><button class="fb-btn" type="submit">Jao</button></form>
+            <div class="fb-panel-top"><h2>${o.toc.length ? "Topics" : "Go to page"}</h2><button class="fb-btn" type="button" data-fb="toc-close">Close</button></div>
+            <form class="fb-jump"><input type="number" inputmode="numeric" min="1" max="${this.n}" placeholder="Page number (1–${this.n})" aria-label="Page number"><button class="fb-btn" type="submit">Go</button></form>
             <ol class="fb-toc">${o.toc.map(([name, p], i) => `<li><button type="button" data-go="${p}"><span class="n">${i + 1}</span><span>${name}</span><span class="p">p. ${p}</span></button></li>`).join("")}</ol>
           </div></div>
-          <div class="fb-zoom" hidden><button class="fb-btn" type="button" data-fb="zoom-close">Band karo ✕</button></div>
+          <div class="fb-zoom" hidden><button class="fb-btn" type="button" data-fb="zoom-close">Close ✕</button></div>
         </div>
         <div class="fb-nav">
-          <button class="fb-btn" type="button" data-fb="prev" aria-label="Pichla page">‹ Pichla</button>
+          <button class="fb-btn" type="button" data-fb="prev" aria-label="Previous page">‹ Previous</button>
           <input class="fb-range" type="range" min="1" max="${this.n}" value="${this.cur}" aria-label="Page">
-          <button class="fb-btn" type="button" data-fb="next" aria-label="Agla page">Agla ›</button>
+          <button class="fb-btn" type="button" data-fb="next" aria-label="Next page">Next ›</button>
         </div>`;
       document.body.appendChild(el);
       this.prevOverflow = document.body.style.overflow;
@@ -225,7 +225,7 @@
         if (p) p.replaceChildren(node);
       } catch (e) {
         const p = this.pages[i - 1];
-        if (p) p.querySelector(".fb-ph")?.replaceChildren(document.createTextNode(`Page ${i} load nahi hua. Internet check karo.`));
+        if (p) p.querySelector(".fb-ph")?.replaceChildren(document.createTextNode(`Page ${i} could not load. Check your internet.`));
       } finally {
         this.pending.delete(i);
       }
@@ -239,7 +239,7 @@
     }
 
     updateSoundLabel() {
-      this.el.querySelector('[data-fb="sound"]').textContent = this.sound ? "Awaaz: on" : "Awaaz: off";
+      this.el.querySelector('[data-fb="sound"]').textContent = this.sound ? "Sound: on" : "Sound: off";
     }
 
     onClick(e) {

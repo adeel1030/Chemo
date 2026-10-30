@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi-Latn" data-firebase-app="admin">
+<html lang="en" data-firebase-app="admin">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -63,12 +63,12 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
 </header>
 
 <main class="wrap">
-  <div class="center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Load ho raha hai"></div></div>
+  <div class="center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
   <div class="center-screen" id="v-setup" hidden>
     <div class="card login-card">
-      <h1>Firebase setup baaki hai</h1>
-      <p><code>js/firebase-config.js</code> mein Firebase project ki settings aur admin email daalni hain. Steps <code>SETUP.md</code> mein likhe hain.</p>
+      <h1>Firebase is not set up yet</h1>
+      <p>Add the Firebase project settings and admin email to <code>js/firebase-config.js</code>. The steps are in <code>SETUP.md</code>.</p>
     </div>
   </div>
 
@@ -92,62 +92,62 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
 
     <section id="t-students" class="stack">
       <form class="card stack" id="new-form" novalidate style="padding-bottom: 22px">
-        <div class="section-title"><h2>Naya student</h2><span class="hint">Payment milne ke baad ID banao</span></div>
+        <div class="section-title"><h2>New student</h2><span class="hint">Create the ID after payment is received</span></div>
         <div class="grid2">
-          <div class="field"><label for="s-name">Naam</label><input id="s-name" autocomplete="off" placeholder="Rahul Sharma"></div>
+          <div class="field"><label for="s-name">Name</label><input id="s-name" autocomplete="off" placeholder="Rahul Sharma"></div>
           <div class="field"><label for="s-phone">WhatsApp number</label><input id="s-phone" inputmode="tel" autocomplete="off" placeholder="10 digit"></div>
-          <div class="field"><label for="s-id">Login ID</label><input id="s-id" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="rahul11"><span class="hint">Chhote letters aur numbers, 3 se 24 characters</span></div>
-          <div class="field"><label for="s-pw">Password</label><div class="pw-row"><input id="s-pw" autocomplete="off"><button class="btn btn-line btn-sm" type="button" id="gen-pw">Naya banao</button></div></div>
+          <div class="field"><label for="s-id">Login ID</label><input id="s-id" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="rahul11"><span class="hint">Lowercase letters and numbers, 3 to 24 characters</span></div>
+          <div class="field"><label for="s-pw">Password</label><div class="pw-row"><input id="s-pw" autocomplete="off"><button class="btn btn-line btn-sm" type="button" id="gen-pw">New one</button></div></div>
         </div>
         <div>
-          <div class="section-title" style="margin-bottom: 0"><b>Chapters jo kharide hain</b><button class="btn btn-line btn-sm" type="button" id="all-ch">Saare chuno</button></div>
+          <div class="section-title" style="margin-bottom: 0"><b>Chapters bought</b><button class="btn btn-line btn-sm" type="button" id="all-ch">Select all</button></div>
           <div class="chap-picks" id="new-ch"></div>
         </div>
         <div class="msg" id="new-msg" role="status" hidden></div>
-        <div><button class="btn btn-sun" type="submit" id="new-btn">Student ID banao</button></div>
+        <div><button class="btn btn-sun" type="submit" id="new-btn">Create student ID</button></div>
         <div class="creds" id="creds" hidden>
-          <b>Yeh message student ko bhejo (password sirf abhi dikh raha hai):</b>
+          <b>Send this message to the student (the password is shown only now):</b>
           <pre id="creds-text"></pre>
           <div class="actions">
-            <a class="btn btn-wa btn-sm" id="creds-wa" href="#" target="_blank" rel="noopener">WhatsApp par bhejo</a>
-            <button class="btn btn-line btn-sm" type="button" id="creds-copy">Copy karo</button>
+            <a class="btn btn-wa btn-sm" id="creds-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button class="btn btn-line btn-sm" type="button" id="creds-copy">Copy</button>
           </div>
         </div>
       </form>
 
       <div class="card">
-        <div class="section-title"><h2>Saare students <span class="hint" id="stu-count"></span></h2>
-          <div class="field search"><input id="stu-search" type="search" placeholder="Naam, ID ya phone se dhoondo" aria-label="Student dhoondo"></div></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2>
+          <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div></div>
         <div class="students" id="students"></div>
       </div>
     </section>
 
     <section id="t-promos" class="stack" hidden>
       <form class="card stack" id="promo-form" novalidate style="padding-bottom: 22px">
-        <div class="section-title"><h2>Naya promo code</h2><span class="hint">Teachers, schools ya demo ke liye</span></div>
+        <div class="section-title"><h2>New promo code</h2><span class="hint">For teachers, schools or demos</span></div>
         <div class="grid2">
-          <div class="field"><label for="p-code">Code</label><input id="p-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="ADEEL2026"><span class="hint">Bade letters aur numbers, 4 se 20 characters</span></div>
-          <div class="field"><label for="p-note">Kiske liye (sirf aapke liye note)</label><input id="p-note" autocomplete="off" placeholder="DPS teachers demo"></div>
-          <div class="field"><label for="p-max">Kitne log use kar sakte hain</label><input id="p-max" type="number" inputmode="numeric" min="1" max="1000" value="20"></div>
-          <div class="field"><label for="p-till">Aakhri date (is din raat 11:59 tak chalega)</label><input id="p-till" type="date"></div>
+          <div class="field"><label for="p-code">Code</label><input id="p-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="ADEEL2026"><span class="hint">Capital letters and numbers, 4 to 20 characters</span></div>
+          <div class="field"><label for="p-note">Who it is for (a note only you see)</label><input id="p-note" autocomplete="off" placeholder="DPS teachers demo"></div>
+          <div class="field"><label for="p-max">How many people can use it</label><input id="p-max" type="number" inputmode="numeric" min="1" max="1000" value="20"></div>
+          <div class="field"><label for="p-till">Last date (works until 11:59 pm that day)</label><input id="p-till" type="date"></div>
         </div>
         <div>
-          <div class="section-title" style="margin-bottom: 0"><b>Kaunse chapters khulenge</b></div>
+          <div class="section-title" style="margin-bottom: 0"><b>Chapters it opens</b></div>
           <div class="chap-picks" id="p-ch"></div>
         </div>
         <div class="msg" id="p-msg" role="status" hidden></div>
-        <div><button class="btn btn-sun" type="submit" id="p-btn">Promo code banao</button></div>
+        <div><button class="btn btn-sun" type="submit" id="p-btn">Create promo code</button></div>
       </form>
       <div class="card">
-        <div class="section-title"><h2>Saare promo codes</h2></div>
+        <div class="section-title"><h2>All promo codes</h2></div>
         <div class="students" id="promos"></div>
       </div>
     </section>
 
     <section id="t-chapters" class="stack" hidden>
       <div class="card">
-        <div class="section-title"><h2>Chapter ki PDF upload karo</h2></div>
-        <p class="hint">PDF ke har page ki image ban kar online reader mein chali jaati hai. PDF khud kahin save nahi hoti, aur students ko download ka option nahi milta. Laptop ya phone par <b>Chrome</b> mein upload karo, aur upload khatam hone tak yeh page band mat karna. Dobara upload karne se purane pages badal jaate hain.</p>
+        <div class="section-title"><h2>Upload chapter PDFs</h2></div>
+        <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
       </div>
       <div class="chap-rows" id="chap-rows"></div>
     </section>
@@ -174,7 +174,7 @@ else onAuthStateChanged(auth, async user => {
   if (!user) { $("#who").textContent = ""; $("#logout").hidden = true; show("v-login"); return; }
   if ((user.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     await signOut(auth);
-    const err = $("#login-err"); err.textContent = "Yeh admin account nahi hai."; err.hidden = false;
+    const err = $("#login-err"); err.textContent = "This is not the admin account."; err.hidden = false;
     return;
   }
   $("#who").textContent = user.email;
@@ -183,8 +183,8 @@ else onAuthStateChanged(auth, async user => {
   Promise.all([loadStudents(), loadChapters(), loadPromos()]).catch(ex => {
     const m = $("#load-err");
     m.textContent = ex.code === "permission-denied"
-      ? "Data nahi khul raha: Firestore ke Rules publish nahi hue, ya unme admin email galat hai. SETUP.md ka step 6 dekho."
-      : "Data load nahi hua: " + (ex.message || ex.code) + ". Internet check karke page reload karo.";
+      ? "Data can't be read: the Firestore rules are not published, or the admin email in them is wrong. See step 6 in SETUP.md."
+      : "Data did not load: " + (ex.message || ex.code) + ". Check your internet and reload the page.";
     m.hidden = false;
   });
 });
@@ -194,7 +194,7 @@ $("#login-form").addEventListener("submit", async e => {
   const err = $("#login-err"); err.hidden = true;
   $("#login-btn").disabled = true;
   try { await signInWithEmailAndPassword(auth, $("#a-email").value.trim(), $("#a-pw").value); }
-  catch (ex) { err.textContent = "Email ya password galat hai."; err.hidden = false; }
+  catch (ex) { err.textContent = "Wrong email or password."; err.hidden = false; }
   $("#login-btn").disabled = false;
 });
 $("#logout").addEventListener("click", () => signOut(auth));
@@ -208,7 +208,7 @@ document.querySelector(".tabs").addEventListener("click", e => {
 
 // ---------- new student ----------
 const picks = (box, selected = []) => {
-  box.innerHTML = [11, 12].map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">Poori Class ${cls}</button></div>` +
+  box.innerHTML = [11, 12].map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
     CHAPTERS.filter(c => c.cls === cls).map(c => {
       const k = chapterKey(c);
       return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> ${esc(chName(k))}</label>`;
@@ -253,13 +253,13 @@ $("#new-form").addEventListener("submit", async e => {
   const chapters = picked($("#new-ch"));
   const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
   $("#creds").hidden = true;
-  if (!name) return fail("Student ka naam daalo.");
-  if (!ID_PATTERN.test(id)) return fail("Login ID mein sirf chhote letters, numbers, . _ - chalenge, 3 se 24 characters.");
-  if (pw.length < 6) return fail("Password kam se kam 6 characters ka rakho.");
-  if (!chapters.length) return fail("Kam se kam ek chapter chuno.");
+  if (!name) return fail("Enter the student's name.");
+  if (!ID_PATTERN.test(id)) return fail("Login ID: lowercase letters, numbers and . _ - only, 3 to 24 characters.");
+  if (pw.length < 6) return fail("Use at least 6 characters for the password.");
+  if (!chapters.length) return fail("Choose at least one chapter.");
 
   $("#new-btn").disabled = true;
-  msg.className = "msg"; msg.textContent = "ID ban rahi hai…"; msg.hidden = false;
+  msg.className = "msg"; msg.textContent = "Creating ID…"; msg.hidden = false;
   // A second Firebase app creates the student's login, so the admin stays logged in here.
   const sec = initializeApp(firebaseConfig, "create-" + Date.now());
   try {
@@ -270,9 +270,9 @@ $("#new-form").addEventListener("submit", async e => {
       deviceId: null, deviceInfo: null, boundAt: null, createdAt: serverTimestamp()
     });
     await signOut(secAuth);
-    msg.className = "msg good"; msg.textContent = `${name} ki ID ban gayi.`;
+    msg.className = "msg good"; msg.textContent = `ID created for ${name}.`;
     const link = READER_URL || new URL("read.html", location.href).href;
-    const text = `Hello ${name.split(" ")[0]}! Tumhari Chemophile online book ready hai.\n\nLink: ${link}\nLogin ID: ${id}\nPassword: ${pw}\n\nChapters: ${chapters.map(chName).join(", ")}\n\nDhyan do: ID sirf ek phone par chalegi. Jis phone par pehli baar login karoge, ID usi par lock ho jayegi. ID kisi ke saath share mat karna.\n- Adeel Sir`;
+    const text = `Hello ${name.split(" ")[0]}! Your Chemophile online book is ready.\n\nLink: ${link}\nLogin ID: ${id}\nPassword: ${pw}\n\nChapters: ${chapters.map(chName).join(", ")}\n\nPlease note: this ID works on one phone only. It locks to the first phone you log in on. Do not share your ID with anyone.\n- Adeel Sir`;
     $("#creds-text").textContent = text;
     $("#creds-wa").href = `https://wa.me/${phone ? "91" + phone : ""}?text=${encodeURIComponent(text)}`;
     $("#creds").hidden = false;
@@ -282,16 +282,16 @@ $("#new-form").addEventListener("submit", async e => {
     picks($("#new-ch"));
     loadStudents();
   } catch (ex) {
-    fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" pehle se hai. Koi aur ID rakho.`
-      : ex.code === "auth/operation-not-allowed" ? "Firebase mein Email/Password login chalu nahi hai. SETUP.md ka step 3 dekho."
-      : "ID nahi ban paayi: " + (ex.message || ex.code));
+    fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" already exists. Choose another ID.`
+      : ex.code === "auth/operation-not-allowed" ? "Email/Password login is not switched on in Firebase. See step 3 in SETUP.md."
+      : "Could not create the ID: " + (ex.message || ex.code));
   } finally {
     deleteApp(sec).catch(() => {});
     $("#new-btn").disabled = false;
   }
 });
 $("#creds-copy").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText($("#creds-text").textContent); $("#creds-copy").textContent = "Copy ho gaya"; }
+  try { await navigator.clipboard.writeText($("#creds-text").textContent); $("#creds-copy").textContent = "Copied"; }
   catch (e) { const r = document.createRange(); r.selectNodeContents($("#creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
 });
 
@@ -316,24 +316,24 @@ function renderStudents() {
       <div class="stu-top">
         <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">ID <b>${esc(s.loginId)}</b>${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
-          ${s.active === false ? `<span class="pill bad">Band</span>` : `<span class="pill good">Chalu</span>`}
-          ${s.promo ? `<span class="pill warn">Promo ${esc(s.promo)}${s.expiresAt ? " · " + fmtDate(s.expiresAt) + " tak" : ""}</span>` : ""}
-          ${s.deviceId ? `<span class="pill">Locked: ${esc(s.deviceInfo || "device")}</span>` : `<span class="pill warn">Abhi login nahi kiya</span>`}
-          ${s.attempts ? `<span class="pill bad">${s.attempts} baar doosre device se try</span>` : ""}
+          ${s.active === false ? `<span class="pill bad">Blocked</span>` : `<span class="pill good">Active</span>`}
+          ${s.promo ? `<span class="pill warn">Promo ${esc(s.promo)}${s.expiresAt ? " · until " + fmtDate(s.expiresAt) : ""}</span>` : ""}
+          ${s.deviceId ? `<span class="pill">Locked: ${esc(s.deviceInfo || "device")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
+          ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
         </div>
       </div>
-      <div class="sub">Chapters: ${(s.chapters || []).map(k => esc(chName(k))).join(", ") || "koi nahi"}</div>
+      <div class="sub">Chapters: ${(s.chapters || []).map(k => esc(chName(k))).join(", ") || "none"}</div>
       <div class="actions">
-        <button class="btn btn-line btn-sm" type="button" data-act="edit">Chapters badlo</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="edit">Change chapters</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
-        <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Chalu karo" : "Band karo"}</button>
+        <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
       </div>
       <div class="edit" hidden>
         <div class="chap-picks"></div>
-        <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save karo</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Rehne do</button></div>
+        <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Cancel</button></div>
       </div>
       <div class="msg" role="status" hidden></div>
-    </div>`).join("") : `<p class="hint">Koi student nahi mila.</p>`;
+    </div>`).join("") : `<p class="hint">No students found.</p>`;
 }
 $("#stu-search").addEventListener("input", renderStudents);
 $("#students").addEventListener("click", async e => {
@@ -360,7 +360,7 @@ $("#students").addEventListener("click", async e => {
       s.active = active; renderStudents();
     }
   } catch (ex) {
-    note("Save nahi hua: " + (ex.message || ex.code), "bad");
+    note("Not saved: " + (ex.message || ex.code), "bad");
   }
 });
 
@@ -377,17 +377,17 @@ $("#promo-form").addEventListener("submit", async e => {
   const maxUses = parseInt($("#p-max").value, 10);
   const date = $("#p-till").value;
   const chapters = picked($("#p-ch"));
-  if (!/^[A-Z0-9-]{4,20}$/.test(code)) return fail("Code mein sirf bade letters, numbers aur - chalenge, 4 se 20 characters.");
-  if (!(maxUses >= 1 && maxUses <= 1000)) return fail("Kitne log: 1 se 1000 ke beech number daalo.");
-  if (!date) return fail("Aakhri date chuno.");
+  if (!/^[A-Z0-9-]{4,20}$/.test(code)) return fail("Code: capital letters, numbers and - only, 4 to 20 characters.");
+  if (!(maxUses >= 1 && maxUses <= 1000)) return fail("Number of people: enter a number from 1 to 1000.");
+  if (!date) return fail("Choose a last date.");
   const expires = new Date(date + "T23:59:59");
-  if (expires < new Date()) return fail("Aakhri date aaj ya aage ki honi chahiye.");
-  if (!chapters.length) return fail("Kam se kam ek chapter chuno.");
+  if (expires < new Date()) return fail("The last date must be today or later.");
+  if (!chapters.length) return fail("Choose at least one chapter.");
   $("#p-btn").disabled = true;
   try {
-    if ((await getDoc(doc(db, "promos", code))).exists()) throw new Error(`Code "${code}" pehle se bana hua hai. Koi aur naam rakho.`);
+    if ((await getDoc(doc(db, "promos", code))).exists()) throw new Error(`Code "${code}" already exists. Choose another name.`);
     await setDoc(doc(db, "promos", code), { chapters, maxUses, used: 0, active: true, note, expiresAt: Timestamp.fromDate(expires), createdAt: serverTimestamp() });
-    msg.className = "msg good"; msg.textContent = `Promo code ${code} ban gaya.`; msg.hidden = false;
+    msg.className = "msg good"; msg.textContent = `Promo code ${code} created.`; msg.hidden = false;
     $("#p-code").value = ""; $("#p-note").value = "";
     picks($("#p-ch"));
     loadPromos();
@@ -406,30 +406,30 @@ async function loadPromos() {
 }
 function promoMessage(p) {
   const link = READER_URL || new URL("read.html", location.href).href;
-  return `Chemophile online book (Adeel Sir)\n\nLink: ${link}\n"Promo code" dabao aur yeh code daalo: ${p.code}\n\n${p.chapters.length} chapters khulenge, ${fmtDate(p.expiresAt)} tak. Book sirf usi phone par khulegi jis par code daaloge.`;
+  return `Chemophile online book (Adeel Sir)\n\nLink: ${link}\nTap "Promo code" and enter this code: ${p.code}\n\nIt opens ${p.chapters.length} chapters until ${fmtDate(p.expiresAt)}. The book opens only on the phone where you enter the code.`;
 }
 function renderPromos() {
   const now = new Date();
   $("#promos").innerHTML = promos.length ? promos.map(p => {
     const exp = p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
-    const state = p.active === false ? `<span class="pill bad">Band</span>`
-      : exp && exp < now ? `<span class="pill bad">Date nikal gayi</span>`
-      : p.used >= p.maxUses ? `<span class="pill bad">Limit poori</span>`
-      : `<span class="pill good">Chalu</span>`;
+    const state = p.active === false ? `<span class="pill bad">Switched off</span>`
+      : exp && exp < now ? `<span class="pill bad">Expired</span>`
+      : p.used >= p.maxUses ? `<span class="pill bad">Limit reached</span>`
+      : `<span class="pill good">Active</span>`;
     return `<div class="stu" data-code="${esc(p.code)}">
       <div class="stu-top">
-        <div style="min-width:0"><h3>${esc(p.code)}</h3><div class="sub">${p.note ? esc(p.note) + " · " : ""}${exp ? fmtDate(p.expiresAt) + " tak" : ""}</div></div>
-        <div class="pills">${state}<span class="pill"><b>${p.used || 0}</b> / ${p.maxUses} use hue</span></div>
+        <div style="min-width:0"><h3>${esc(p.code)}</h3><div class="sub">${p.note ? esc(p.note) + " · " : ""}${exp ? "until " + fmtDate(p.expiresAt) : ""}</div></div>
+        <div class="pills">${state}<span class="pill"><b>${p.used || 0}</b> / ${p.maxUses} used</span></div>
       </div>
       <div class="sub">Chapters: ${p.chapters.map(k => esc(chName(k))).join(", ")}</div>
       <div class="actions">
-        <a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(promoMessage(p))}" target="_blank" rel="noopener">WhatsApp par bhejo</a>
-        <button class="btn btn-line btn-sm" type="button" data-pact="who">Kisne use kiya</button>
-        <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Chalu karo" : "Band karo"}</button>
+        <a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <button class="btn btn-line btn-sm" type="button" data-pact="who">Who used it</button>
+        <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Switch on" : "Switch off"}</button>
       </div>
       <div class="who-list sub" hidden></div>
     </div>`;
-  }).join("") : `<p class="hint">Abhi koi promo code nahi bana.</p>`;
+  }).join("") : `<p class="hint">No promo codes yet.</p>`;
 }
 $("#promos").addEventListener("click", async e => {
   const b = e.target.closest("[data-pact]");
@@ -444,7 +444,7 @@ $("#promos").addEventListener("click", async e => {
     const box = row.querySelector(".who-list");
     const snap = await getDocs(collection(db, "promos", p.code, "redemptions"));
     const list = snap.docs.map(d => d.data()).sort((a, b) => ((a.at && a.at.seconds) || 0) - ((b.at && b.at.seconds) || 0));
-    box.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Abhi kisi ne use nahi kiya.";
+    box.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Nobody has used it yet.";
     box.hidden = false;
   }
 });
@@ -459,9 +459,9 @@ async function loadChapters() {
     const k = chapterKey(c), u = uploaded.get(k);
     return `<div class="chap-row" data-k="${k}">
       <div style="min-width:0"><h3>Class ${c.cls} · Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
-        <div class="sub status">${u ? `Upload ho gaya: ${u.pageCount} pages · ${fmtDate(u.updatedAt)}` : "Abhi upload nahi hua"}</div>
+        <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages · ${fmtDate(u.updatedAt)}` : "Not uploaded yet"}</div>
         <progress max="100" value="0" hidden></progress></div>
-      <div class="ctl"><input type="file" accept="application/pdf" aria-label="Chapter ${c.n} ki PDF"><button class="btn btn-sun btn-sm" type="button" data-up>${u ? "Dobara upload" : "Upload karo"}</button></div>
+      <div class="ctl"><input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>${u ? "Upload again" : "Upload"}</button></div>
     </div>`;
   }).join("");
 }
@@ -483,7 +483,7 @@ $("#chap-rows").addEventListener("click", async e => {
   const row = b.closest(".chap-row"), k = row.dataset.k, c = findChapter(k);
   const file = row.querySelector("input[type=file]").files[0];
   const status = row.querySelector(".status"), bar = row.querySelector("progress");
-  if (!file) { status.textContent = "Pehle PDF file chuno."; return; }
+  if (!file) { status.textContent = "Choose a PDF file first."; return; }
   b.disabled = true; bar.hidden = false;
   let lock = null;
   try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
@@ -491,7 +491,7 @@ $("#chap-rows").addEventListener("click", async e => {
     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
     const total = pdf.numPages;
     for (let n = 1; n <= total; n++) {
-      status.textContent = `Page ${n} / ${total} upload ho raha hai…`;
+      status.textContent = `Uploading page ${n} / ${total}…`;
       const page = await pdf.getPage(n);
       const scale = 1100 / page.getViewport({ scale: 1 }).width;
       const vp = page.getViewport({ scale });
@@ -505,10 +505,10 @@ $("#chap-rows").addEventListener("click", async e => {
     const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, updatedAt: serverTimestamp() };
     await setDoc(doc(db, "chapters", k), info);
     uploaded.set(k, { ...info, updatedAt: null });
-    status.textContent = `Upload ho gaya: ${total} pages. Students ab padh sakte hain.`;
+    status.textContent = `Uploaded: ${total} pages. Students can read it now.`;
     b.textContent = "Dobara upload";
   } catch (ex) {
-    status.textContent = "Upload ruk gaya: " + (ex.message || ex.code) + ". Dobara try karo.";
+    status.textContent = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
   } finally {
     b.disabled = false;
     if (lock) lock.release().catch(() => {});
