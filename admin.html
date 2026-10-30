@@ -124,6 +124,8 @@ body { background: var(--paper); }
 .chap-row .sub { font-size: .85rem; color: var(--muted); }
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+.chap-row .confirm { grid-column: 1 / -1; }
+.pill.locked { display: inline-flex; flex: none; white-space: nowrap; align-items: center; gap: 4px; padding: 4px 10px; background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; color: var(--good); font-weight: 600; }
 .cls-head { font: 700 1.05rem var(--font-display); margin: 10px 0 0; }
 @media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
 .confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
@@ -897,14 +899,27 @@ async function loadChapters() {
   chaptersLoaded = true;
   $("#chap-rows").innerHTML = CHAPTERS.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k);
-    return `${!i || CHAPTERS[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}</h2>` : ""}<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
-      <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
-        <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages · ${fmtDate(u.updatedAt)}` : "Not uploaded yet"}</div>
-        <progress max="100" value="0" hidden></progress></div>
-      <div class="ctl"><input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn ${u ? "btn-line" : "btn-sun"} btn-sm" type="button" data-up>${u ? "Upload again" : "Upload"}</button></div>
-    </div>`;
+    return `${!i || CHAPTERS[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}</h2>` : ""}${chapRow(c, k, u)}`;
   }).join("");
   renderDash();
+}
+
+// An uploaded chapter is locked: its file picker stays hidden until the admin unlocks it, after a warning.
+const LOCK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+function chapRow(c, k, u) {
+  return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
+    <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
+      <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
+      <progress max="100" value="0" hidden></progress></div>
+    <div class="ctl">${u
+      ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
+      : `<input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
+    ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace chapter ${c.n}" hidden>
+      <p><b>Replace Chapter ${c.n}: ${esc(c.short || c.title)}?</b></p>
+      <p>The new PDF will replace all ${u.pageCount} pages that students are reading now. While it uploads, students may see some old and some new pages. Use only the final, checked PDF.</p>
+      <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-unlock-yes>Yes, unlock</button><button class="btn btn-line btn-sm" type="button" data-unlock-no>Cancel</button></div>
+    </div>` : ""}
+  </div>`;
 }
 
 function pageImage(canvas) {
@@ -918,10 +933,25 @@ function pageImage(canvas) {
   return url;
 }
 
+$("#chap-rows").addEventListener("click", e => {
+  const b = e.target.closest("[data-unlock], [data-unlock-yes], [data-unlock-no], [data-lock]");
+  if (!b) return;
+  const row = b.closest(".chap-row"), k = row.dataset.k, box = row.querySelector(".confirm");
+  if (b.matches("[data-unlock]")) { box.hidden = false; box.querySelector("[data-unlock-no]").focus(); }
+  if (b.matches("[data-unlock-no]")) box.hidden = true;
+  if (b.matches("[data-unlock-yes]")) {
+    box.hidden = true;
+    row.querySelector(".ctl").innerHTML = `<input type="file" accept="application/pdf" aria-label="Replacement PDF"><button class="btn btn-sun btn-sm" type="button" data-up>Upload replacement</button><button class="btn btn-line btn-sm" type="button" data-lock>Cancel</button>`;
+    row.querySelector(".status").textContent = "Unlocked. Choose the new PDF, then tap Upload replacement.";
+    row.querySelector("input[type=file]").focus();
+  }
+  if (b.matches("[data-lock]")) row.outerHTML = chapRow(findChapter(k), k, uploaded.get(k));
+});
 $("#chap-rows").addEventListener("click", async e => {
   const b = e.target.closest("[data-up]");
   if (!b) return;
   const row = b.closest(".chap-row"), k = row.dataset.k, c = findChapter(k);
+  const before = uploaded.get(k);
   const file = row.querySelector("input[type=file]").files[0];
   const status = row.querySelector(".status"), bar = row.querySelector("progress");
   if (!file) { status.textContent = "Choose a PDF file first."; return; }
@@ -945,11 +975,17 @@ $("#chap-rows").addEventListener("click", async e => {
     }
     const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, updatedAt: serverTimestamp() };
     await setDoc(doc(db, "chapters", k), info);
-    uploaded.set(k, { ...info, updatedAt: null });
-    status.textContent = `Uploaded: ${total} pages. Students can read it now.`;
-    b.textContent = "Upload again"; b.className = "btn btn-line btn-sm";
-    row.classList.replace("todo-up", "done");
+    // A shorter replacement leaves the old extra pages behind; remove them.
+    if (before && before.pageCount > total) {
+      const extra = [];
+      for (let n = total + 1; n <= before.pageCount; n++) extra.push(doc(db, "pages", pageId(k, n)));
+      await deleteAll(extra).catch(() => {});
+    }
+    uploaded.set(k, { ...info, updatedAt: Timestamp.now() });
+    row.outerHTML = chapRow(c, k, uploaded.get(k));
+    $(`.chap-row[data-k="${k}"] .status`).textContent = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now.`;
     renderDash();
+    return;
   } catch (ex) {
     status.textContent = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
   } finally {
