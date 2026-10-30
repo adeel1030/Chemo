@@ -82,6 +82,12 @@ service cloud.firestore {
       }
     }
 
+    // Announcements from the admin, shown on top of the reader.
+    match /announcements/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     // Chapter info (title, number of pages uploaded).
     match /chapters/{chapterId} {
       allow read: if signedIn();
