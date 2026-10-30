@@ -57,18 +57,42 @@
   };
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  // A short paper "swish", made with the Web Audio API so no sound file is needed.
-  let audio = null;
+  // A soft paper page turn, made with the Web Audio API so no sound file is needed:
+  // a gentle rustle that swells and fades, then a faint "pat" as the page settles.
+  let audio = null, rustle = null;
+  function makeRustle(ctx) {
+    const sr = ctx.sampleRate, len = Math.floor(sr * 0.42), buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
+    let slow = 0, fast = 0, crinkle = 1, target = 1, peak = 0;
+    for (let i = 0; i < len; i++) {
+      const t = i / len, white = Math.random() * 2 - 1;
+      slow = 0.99 * slow + 0.08 * white; fast = 0.6 * fast + 0.4 * white;   // softer than plain white noise
+      if (i % 300 === 0) target = 0.55 + Math.random() * 0.45;              // paper fibres catching
+      crinkle += (target - crinkle) * 0.01;
+      const env = Math.pow(Math.sin(Math.PI / 2 * Math.min(1, t / 0.32)), 2) * Math.pow(1 - t, 1.6);
+      d[i] = (slow + fast) * env * crinkle;
+      peak = Math.max(peak, Math.abs(d[i]));
+    }
+    for (let i = 0; i < len; i++) d[i] *= 0.9 / peak;
+    return buf;
+  }
   function swish() {
     try {
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      const len = Math.floor(audio.sampleRate * 0.28), buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
-      const src = audio.createBufferSource(), f = audio.createBiquadFilter(), g = audio.createGain();
-      f.type = "bandpass"; f.Q.value = 0.8;
-      f.frequency.setValueAtTime(900, audio.currentTime); f.frequency.linearRampToValueAtTime(3200, audio.currentTime + 0.25);
-      g.gain.value = 0.18;
-      src.buffer = buf; src.connect(f); f.connect(g); g.connect(audio.destination); src.start();
+      if (audio.state === "suspended") audio.resume();
+      rustle = rustle || makeRustle(audio);
+      const now = audio.currentTime, rate = 0.9 + Math.random() * 0.2;
+      const src = audio.createBufferSource(), hp = audio.createBiquadFilter(), lp = audio.createBiquadFilter(), g = audio.createGain();
+      src.buffer = rustle; src.playbackRate.value = rate;
+      hp.type = "highpass"; hp.frequency.value = 380;
+      lp.type = "lowpass"; lp.Q.value = 0.5;
+      lp.frequency.setValueAtTime(2600, now); lp.frequency.exponentialRampToValueAtTime(1300, now + 0.4);
+      g.gain.value = 0.11;
+      src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(audio.destination); src.start(now);
+      // The page landing: a very quiet low thud near the end.
+      const at = now + 0.3 / rate, o = audio.createOscillator(), og = audio.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(150, at); o.frequency.exponentialRampToValueAtTime(90, at + 0.08);
+      og.gain.setValueAtTime(0.0001, at); og.gain.exponentialRampToValueAtTime(0.035, at + 0.01); og.gain.exponentialRampToValueAtTime(0.0001, at + 0.1);
+      o.connect(og); og.connect(audio.destination); o.start(at); o.stop(at + 0.12);
     } catch (e) {}
   }
 
