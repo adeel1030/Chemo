@@ -88,7 +88,7 @@ Students list mein har student ke liye yeh options hain:
 ## 10. Promo code (teachers, schools ya demo ke liye)
 
 1. Admin panel mein **Promo codes** tab kholo.
-2. Code ka naam (jaise `DPS2026`), note (sirf aapke liye, jaise "DPS teachers"), kitne log use kar sakte hain, aakhri date aur chapters chuno.
+2. Code ka naam (jaise `DPS2026`), kiske liye hai (jaise "DPS School teachers", yeh WhatsApp message mein "Special offer for DPS School teachers" ban kar jaata hai), kitne log use kar sakte hain, aakhri date aur chapters chuno.
 3. **Promo code banao** dabao, phir **WhatsApp par bhejo** se code teachers ko bhej do.
 4. Teacher website par **Login → Promo code** mein code, apna naam aur number daalta hai. Book usi phone par khul jaati hai. Har page par uska naam aur number watermark mein hota hai, aur download ka koi option nahi hota.
 

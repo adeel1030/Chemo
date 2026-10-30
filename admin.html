@@ -132,7 +132,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
         <div class="section-title"><h2>New promo code</h2><span class="hint">For teachers, schools or demos</span></div>
         <div class="grid2">
           <div class="field"><label for="p-code">Code</label><input id="p-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="ADEEL2026"><span class="hint">Capital letters and numbers, 4 to 20 characters</span></div>
-          <div class="field"><label for="p-note">Who it is for (a note only you see)</label><input id="p-note" autocomplete="off" placeholder="DPS teachers demo"></div>
+          <div class="field"><label for="p-note">Who it is for</label><input id="p-note" autocomplete="off" placeholder="DPS School teachers"><span class="hint">Shown in the message: "Special offer for DPS School teachers"</span></div>
           <div class="field"><label for="p-max">How many people can use it</label><input id="p-max" type="number" inputmode="numeric" min="1" max="1000" value="20"></div>
           <div class="field"><label for="p-till">Last date (works until 11:59 pm that day)</label><input id="p-till" type="date"></div>
         </div>
@@ -448,7 +448,7 @@ $("#promo-form").addEventListener("submit", async e => {
     if ((await getDoc(doc(db, "promos", code))).exists()) throw new Error(`Code "${code}" already exists. Choose another name.`);
     await setDoc(doc(db, "promos", code), { chapters, maxUses, used: 0, active: true, note, expiresAt: Timestamp.fromDate(expires), createdAt: serverTimestamp() });
     msg.className = "msg good"; msg.textContent = `Promo code ${code} created.`; msg.hidden = false;
-    const text = promoMessage({ code, chapters, expiresAt: Timestamp.fromDate(expires) });
+    const text = promoMessage({ code, note, chapters, maxUses, used: 0, expiresAt: Timestamp.fromDate(expires) });
     $("#p-creds-text").textContent = text;
     $("#p-creds-wa").href = waLink("", text);
     $("#p-creds-copy").textContent = "Copy";
@@ -469,8 +469,37 @@ async function loadPromos() {
     .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
   renderPromos();
 }
+// What the code opens, without chapter names: "Class 11 full book (all 9 chapters)" or "Class 12, 3 chapters".
+function bookSummary(keys) {
+  return [11, 12].map(cls => {
+    const n = keys.filter(k => k.startsWith(cls + "-")).length, all = CHAPTERS.filter(c => c.cls === cls).length;
+    return !n ? "" : n === all ? `Class ${cls} full book (all ${n} chapters)` : `Class ${cls}, ${n} chapter${n > 1 ? "s" : ""}`;
+  }).filter(Boolean).join(" + ");
+}
 function promoMessage(p) {
-  return `Hello! Your Chemophile online book is ready.\n\nLink: ${readerLink()}\nPromo code: ${p.code}\nValid until: ${fmtDate(p.expiresAt)}, 11:59 pm\n\nHow to open the book:\n1. Open the link on your phone.\n2. Tap "Promo code".\n3. Enter the code ${p.code}, your name and your WhatsApp number.\n4. Tap "Open the book".\n\nNext time, just open the same link on the same phone. You don't need the code again.\n\nPlease note: the book opens only on the phone where you enter the code. Don't clear that browser's data, or you will need the code again. Please share the code only with the people it is meant for.\n- Adeel Sir`;
+  const left = p.maxUses - (p.used || 0), who = p.note ? `for ${p.note}` : "just for you";
+  return `🎁 *Special offer ${who}*
+
+I have opened my Chemophile Chemistry book for you, free, for a limited time.
+
+📖 *What you get:* ${bookSummary(p.chapters)}
+Visual Hinglish notes with diagrams, solved examples, English exam answers and a 40-mark test in every chapter. It reads like a real book on your phone: just swipe to turn the pages.
+
+⏳ ${left > 0 ? `*Only ${left} ${left === 1 ? "place" : "places"}${p.used ? " left" : ""}*, and the offer ends` : "The offer ends"} on *${fmtDate(p.expiresAt)}, 11:59 pm*.
+
+*Your code:* ${p.code}
+*Link:* ${readerLink()}
+
+*How to open it:*
+1. Open the link on your phone.
+2. Tap "Promo code".
+3. Enter ${p.code}, your name and your WhatsApp number.
+4. Tap "Open the book".
+
+Next time, just open the same link on the same phone. The book stays there till the last date.
+
+${p.note ? `This code is made only for ${p.note}, so please keep it within the group.` : "This code is made just for you, so please keep it to yourself."}
+- Adeel Sir`;
 }
 $("#p-creds-copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText($("#p-creds-text").textContent); $("#p-creds-copy").textContent = "Copied"; }
