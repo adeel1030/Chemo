@@ -11,41 +11,118 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/app.css">
 <style>
-/* Layout: one admin desk with two tabs. Students: add form on top, then a searchable list. Chapters: one upload row per chapter. */
-.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); margin-block: 24px 18px; }
-.tabs button { font: 700 .95rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 9px 18px; border-radius: 999px; cursor: pointer; }
-.tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
+/* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
+body { background: var(--paper); }
+.admin-head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--night-3); color: var(--night-fg); border-bottom: 3px solid var(--sun); }
+.admin-head .bar { display: flex; align-items: center; gap: 12px; min-height: 58px; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+.badge-admin { white-space: nowrap; font: 700 .7rem var(--font-body); letter-spacing: .12em; text-transform: uppercase; background: var(--sun); color: var(--sun-ink); border-radius: 6px; padding: 3px 8px; }
+.admin-head .brand { display: flex; align-items: center; gap: 10px; }
+@media (max-width: 560px) { .admin-head .who { display: none; } }
+
+.desk { display: grid; grid-template-columns: minmax(0, 1fr); }
+.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.nav-btn { display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--night-muted); font: 600 .72rem var(--font-body); padding: 7px 4px; border-radius: 10px; cursor: pointer; position: relative; }
+.nav-btn svg { width: 22px; height: 22px; }
+.nav-btn[aria-current="page"] { color: var(--sun); background: rgba(255,255,255,.07); }
+.nav-btn .dot { position: absolute; top: 4px; right: calc(50% - 20px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bad); color: #fff; font: 700 .68rem/18px var(--font-body); }
+.side-foot { display: none; }
+.content { min-width: 0; padding: 20px max(16px, env(safe-area-inset-right, 0px)) calc(96px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.content > section, .content > .msg { max-width: 1060px; margin-inline: auto; }
+@media (min-width: 900px) {
+  .desk { grid-template-columns: 232px minmax(0, 1fr); min-height: calc(100vh - 61px); background: linear-gradient(90deg, var(--night-3) 232px, transparent 232px); }
+  .side { position: sticky; top: 61px; inset: auto; height: calc(100vh - 61px); display: flex; flex-direction: column; gap: 4px; padding: 18px 12px; border-top: 0; }
+  .nav-btn { display: flex; align-items: center; gap: 12px; font-size: .95rem; padding: 11px 14px; text-align: left; }
+  .nav-btn .dot { position: static; margin-left: auto; }
+  .side-foot { display: block; margin-top: auto; padding: 12px 14px; font-size: .8rem; color: var(--night-muted); }
+  .side-foot a { color: var(--night-muted); }
+  .content { padding: 28px 32px 48px; }
+}
+
+.page-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.page-head h1 { font-size: 1.75rem; }
+.page-head p { color: var(--muted); font-size: .92rem; margin-top: 2px; }
+.stack { display: grid; gap: 16px; }
+.card h2 { font-size: 1.2rem; }
+.section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+
+/* overview */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 4px; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.stat:hover { border-color: var(--accent); }
+.stat .n { font: 800 2rem/1 var(--font-display); }
+.stat .l { font-size: .85rem; color: var(--muted); }
+.stat.alert .n { color: var(--bad); }
+.stat.good .n { color: var(--good); }
+.dash-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .dash-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); } }
+.todo { display: grid; gap: 8px; }
+.todo-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--paper); font-size: .92rem; }
+.todo-item .ic { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--muted); }
+.todo-item.bad .ic { background: var(--bad); }
+.todo-item.warn .ic { background: #e0a800; }
+.todo-item span { flex: 1; min-width: 0; }
+.quick { display: grid; gap: 10px; }
+.quick .btn { justify-content: flex-start; }
+.recent { display: grid; gap: 6px; font-size: .9rem; }
+.recent div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.recent span:last-child { color: var(--muted); white-space: nowrap; }
+.meter { height: 10px; border-radius: 5px; background: var(--paper); overflow: hidden; margin-top: 8px; }
+.meter i { display: block; height: 100%; background: var(--good); border-radius: 5px; }
+
+/* forms */
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 640px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
 .pw-row { display: flex; gap: 8px; }
 .pw-row input { flex: 1; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.panel > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 16px 20px; font: 700 1.05rem var(--font-body); }
+.panel > summary::-webkit-details-marker { display: none; }
+.panel > summary .plus { width: 28px; height: 28px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; font-size: 1.2rem; line-height: 1; transition: transform .2s; }
+.panel[open] > summary .plus { transform: rotate(45deg); }
+.panel > summary .hint { margin-left: auto; font-weight: 400; }
+.panel > form { padding: 0 20px 22px; border-top: 1px solid var(--line); padding-top: 18px; }
 .chap-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 4px 14px; margin-top: 8px; }
 .chap-picks label { display: flex; gap: 8px; align-items: center; font-size: .92rem; padding: 4px 0; cursor: pointer; }
 .chap-picks input { width: 18px; height: 18px; accent-color: var(--good); }
 .pick-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-.section-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.section-title h2 { font-size: 1.35rem; }
-.stack { display: grid; gap: 16px; padding-bottom: 48px; }
-.creds { display: grid; gap: 10px; }
+.creds { display: grid; gap: 10px; border: 2px dashed var(--good); border-radius: 12px; padding: 14px; }
 .creds pre { margin: 0; white-space: pre-wrap; font: .95rem/1.5 var(--font-body); background: var(--paper); border-radius: 10px; padding: 12px; user-select: all; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.search { max-width: 360px; }
+
+/* lists */
+.list-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.search { flex: 1 1 260px; max-width: 380px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 5px 12px; font: 600 .82rem var(--font-body); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--sun); }
+.chip b { font-weight: 700; opacity: .7; margin-left: 2px; }
 .students { display: grid; gap: 10px; }
 .stu { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 10px; background: var(--surface); }
-.stu-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
-.stu h3 { font-size: 1.1rem; }
+.stu-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+@media (max-width: 640px) { .stu-top { grid-template-columns: auto minmax(0, 1fr); } .stu-top .pills { grid-column: 1 / -1; justify-content: flex-start; } .stu .actions .spacer { display: none; } }
+.avatar { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font: 800 1rem var(--font-display); background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.avatar.promo { background: var(--warn-bg); color: var(--fg); }
+.avatar.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.stu h3 { font-size: 1.08rem; }
 .stu .sub { font-size: .86rem; color: var(--muted); }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { font-size: .78rem; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); }
+.stu details.chs summary { cursor: pointer; font-size: .86rem; color: var(--muted); }
+.stu details.chs div { font-size: .86rem; color: var(--muted); margin-top: 4px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.pill { font-size: .78rem; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); white-space: nowrap; }
 .pill.good { border-color: var(--good); color: var(--good); }
 .pill.bad { border-color: var(--bad); color: var(--bad); }
 .pill.warn { background: var(--warn-bg); border-color: transparent; }
+.stu .actions .spacer { flex: 1; }
+.empty { text-align: center; padding: 28px 12px; color: var(--muted); }
 .chap-rows { display: grid; gap: 10px; }
 .chap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
-.chap-row h3 { font-size: 1.05rem; }
+.chap-row.done { border-left: 4px solid var(--good); }
+.chap-row.todo-up { border-left: 4px solid var(--bad); }
+.chap-row h3 { font-size: 1.02rem; }
 .chap-row .sub { font-size: .85rem; color: var(--muted); }
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+.cls-head { font: 700 1.05rem var(--font-display); margin: 10px 0 0; }
 @media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
 .confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
 .confirm p { margin: 0; font-size: .92rem; }
@@ -53,13 +130,14 @@
 .confirm input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--bad); }
 .confirm .btn-danger { background: color-mix(in srgb, var(--bad) 16%, transparent); font-weight: 700; }
 progress { width: 100%; height: 10px; accent-color: var(--accent); }
+.lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 </style>
 </head>
 <body>
 
-<header class="app-head">
-  <div class="wrap">
-    <a class="brand" href="index.html">Chemophile<small>Admin</small></a>
+<header class="admin-head">
+  <div class="bar">
+    <a class="brand" href="index.html">Chemophile</a><span class="badge-admin">Admin panel</span>
     <div class="head-actions">
       <span class="who" id="who"></span>
       <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
@@ -67,19 +145,20 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
   </div>
 </header>
 
-<main class="wrap">
-  <div class="center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
+<main>
+  <div class="wrap center-screen" id="v-loading"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-  <div class="center-screen" id="v-setup" hidden>
+  <div class="wrap center-screen" id="v-setup" hidden>
     <div class="card login-card">
       <h1>Firebase is not set up yet</h1>
       <p>Add the Firebase project settings and admin email to <code>js/firebase-config.js</code>. The steps are in <code>SETUP.md</code>.</p>
     </div>
   </div>
 
-  <div class="center-screen" id="v-login" hidden>
+  <div class="wrap center-screen" id="v-login" hidden>
     <form class="card login-card" id="login-form" novalidate>
-      <h1>Admin login</h1>
+      <div class="lock" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <div><h1>Admin login</h1><p class="hint">Only for Adeel Sir. Students log in on the reader page.</p></div>
       <div class="field"><label for="a-email">Admin email</label><input id="a-email" type="email" autocomplete="username"></div>
       <div class="field"><label for="a-pw">Password</label><input id="a-pw" type="password" autocomplete="current-password"></div>
       <div class="msg bad" id="login-err" role="alert" hidden></div>
@@ -87,17 +166,39 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
     </form>
   </div>
 
-  <div id="v-admin" hidden>
-    <div class="msg bad" id="load-err" role="alert" hidden style="margin-top: 18px"></div>
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" aria-selected="true" data-tab="t-students">Students</button>
-      <button type="button" role="tab" aria-selected="false" data-tab="t-promos">Promo codes</button>
-      <button type="button" role="tab" aria-selected="false" data-tab="t-chapters">Chapters upload</button>
-    </div>
+  <div class="desk" id="v-admin" hidden>
+    <nav class="side" aria-label="Admin sections">
+      <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview<span class="dot" id="dot-home" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
+      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>Promo codes</button>
+      <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
+      <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
+    </nav>
 
-    <section id="t-students" class="stack">
-      <form class="card stack" id="new-form" novalidate style="padding-bottom: 22px">
-        <div class="section-title"><h2>New student</h2><span class="hint">Create the ID after payment is received</span></div>
+    <div class="content">
+    <div class="msg bad" id="load-err" role="alert" hidden style="margin-bottom: 16px"></div>
+
+    <section id="t-home" class="stack">
+      <div class="page-head"><div><h1 id="hello">Overview</h1><p id="today"></p></div></div>
+      <div class="stats" id="stats"></div>
+      <div class="dash-grid">
+        <div class="card"><div class="section-title"><h2>Needs your attention</h2></div><div class="todo" id="todo"></div></div>
+        <div class="stack">
+          <div class="card quick"><h2>Quick actions</h2>
+            <button class="btn btn-sun" type="button" data-go="new-student">+ New student ID</button>
+            <button class="btn btn-line" type="button" data-go="new-promo">+ New promo code</button>
+            <button class="btn btn-line" type="button" data-go="t-chapters">Upload a chapter</button>
+          </div>
+          <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="t-students" class="stack" hidden>
+      <div class="page-head"><div><h1>Students</h1><p>Create an ID after payment, then manage chapters, devices and access.</p></div></div>
+      <details class="panel" id="new-box">
+        <summary><span class="plus" aria-hidden="true">+</span>New student ID<span class="hint">After payment is received</span></summary>
+      <form class="stack" id="new-form" novalidate>
         <div class="grid2">
           <div class="field"><label for="s-name">Name</label><input id="s-name" autocomplete="off" placeholder="Rahul Sharma"></div>
           <div class="field"><label for="s-phone">WhatsApp number</label><input id="s-phone" inputmode="tel" autocomplete="off" placeholder="10 digit"></div>
@@ -111,7 +212,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
         <div class="msg" id="new-msg" role="status" hidden></div>
         <div><button class="btn btn-sun" type="submit" id="new-btn">Create student ID</button></div>
         <div class="creds" id="creds" hidden>
-          <b>Send this message to the student (the password is shown only now):</b>
+          <b>Send this message to the student:</b>
           <pre id="creds-text"></pre>
           <div class="actions">
             <a class="btn btn-wa btn-sm" id="creds-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
@@ -119,17 +220,23 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
           </div>
         </div>
       </form>
+      </details>
 
       <div class="card">
-        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2>
-          <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2></div>
+        <div class="list-tools">
+          <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div>
+          <div class="chips" id="stu-filters" role="group" aria-label="Show"></div>
+        </div>
         <div class="students" id="students"></div>
       </div>
     </section>
 
     <section id="t-promos" class="stack" hidden>
-      <form class="card stack" id="promo-form" novalidate style="padding-bottom: 22px">
-        <div class="section-title"><h2>New promo code</h2><span class="hint">For teachers, schools or demos</span></div>
+      <div class="page-head"><div><h1>Promo codes</h1><p>Free, time-limited access for teachers, schools or demos.</p></div></div>
+      <details class="panel" id="promo-box">
+        <summary><span class="plus" aria-hidden="true">+</span>New promo code<span class="hint">For teachers, schools or demos</span></summary>
+      <form class="stack" id="promo-form" novalidate>
         <div class="grid2">
           <div class="field"><label for="p-code">Code</label><input id="p-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="ADEEL2026"><span class="hint">Capital letters and numbers, 4 to 20 characters</span></div>
           <div class="field"><label for="p-note">Who it is for</label><input id="p-note" autocomplete="off" placeholder="DPS School teachers"><span class="hint">Shown in the message: "Special offer for DPS School teachers"</span></div>
@@ -151,19 +258,22 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
           </div>
         </div>
       </form>
+      </details>
       <div class="card">
-        <div class="section-title"><h2>All promo codes</h2></div>
+        <div class="section-title"><h2>All promo codes <span class="hint" id="promo-count"></span></h2></div>
         <div class="students" id="promos"></div>
       </div>
     </section>
 
     <section id="t-chapters" class="stack" hidden>
+      <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div></div>
       <div class="card">
-        <div class="section-title"><h2>Upload chapter PDFs</h2></div>
         <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
+        <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
       </div>
       <div class="chap-rows" id="chap-rows"></div>
     </section>
+    </div>
   </div>
 </main>
 
@@ -212,11 +322,60 @@ $("#login-form").addEventListener("submit", async e => {
 });
 $("#logout").addEventListener("click", () => signOut(auth));
 
-document.querySelector(".tabs").addEventListener("click", e => {
-  const b = e.target.closest("[data-tab]");
+// ---------- overview ----------
+let studentsLoaded = false, promosLoaded = false, chaptersLoaded = false;
+function renderDash() {
+  if (!studentsLoaded || !promosLoaded || !chaptersLoaded) return;
+  const now = new Date(), soon = new Date(Date.now() + 3 * 864e5);
+  const ids = students.filter(s => !s.promo), promoUsers = students.filter(s => s.promo);
+  const alerts = students.filter(s => s.attempts > 0), waiting = ids.filter(s => !s.deviceId && s.active !== false);
+  const blocked = students.filter(s => s.active === false), live = promos.filter(p => promoState(p, now) === "active");
+  const missing = CHAPTERS.filter(c => !uploaded.has(chapterKey(c)));
+  const h = now.getHours();
+  $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, Adeel Sir`;
+  $("#today").textContent = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const stat = (n, l, go, cls = "", filter = "") => `<button class="stat ${cls}" type="button" data-go="${go}"${filter ? ` data-filter="${filter}"` : ""}><span class="n">${n}</span><span class="l">${l}</span></button>`;
+  $("#stats").innerHTML = [
+    stat(ids.length, "Student IDs", "t-students", "", "all"),
+    stat(ids.filter(s => s.active !== false && s.deviceId).length, "Logged in and reading", "t-students", "good", "active"),
+    stat(alerts.length, "Other-device tries", "t-students", alerts.length ? "alert" : "", "alerts"),
+    stat(blocked.length, "Blocked", "t-students", "", "blocked"),
+    stat(live.length, `Live promo codes · ${promoUsers.length} ${promoUsers.length === 1 ? "user" : "users"}`, "t-promos"),
+    stat(`${CHAPTERS.length - missing.length}/${CHAPTERS.length}`, "Chapters uploaded", "t-chapters", missing.length ? "" : "good"),
+  ].join("");
+  const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
+  const todo = [
+    ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
+    ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} not uploaded yet. Students can't read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters")] : []),
+    ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
+    ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
+    ...(waiting.length ? [item("", `${waiting.length} ${waiting.length === 1 ? "student has" : "students have"} not logged in yet.`, "See", "t-students", ` data-filter="waiting"`)] : []),
+  ];
+  $("#todo").innerHTML = todo.length ? todo.join("") : `<p class="empty">All good. Nothing needs you right now.</p>`;
+  $("#recent").innerHTML = students.slice(0, 5).map(s => `<div><span>${esc(s.name)}${s.promo ? ` <span class="hint">(promo)</span>` : ""}</span><span>${fmtDate(s.createdAt)}</span></div>`).join("") || `<p class="hint">No students yet.</p>`;
+  const alertDot = $("#dot-home"); alertDot.hidden = !alerts.length; alertDot.textContent = alerts.length;
+  const chDot = $("#dot-ch"); chDot.hidden = !missing.length; chDot.textContent = missing.length;
+  $("#chap-progress").textContent = `${CHAPTERS.length - missing.length} of ${CHAPTERS.length} chapters uploaded.${missing.length ? " Students can read a chapter only after it is uploaded." : " Everything is uploaded."}`;
+  $("#chap-meter").style.width = Math.round(((CHAPTERS.length - missing.length) / CHAPTERS.length) * 100) + "%";
+}
+
+// ---------- navigation ----------
+const TABS = ["t-home", "t-students", "t-promos", "t-chapters"];
+function go(tab) {
+  document.querySelectorAll(".nav-btn").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
+  TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
+  window.scrollTo(0, 0);
+}
+$(".side").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) go(b.dataset.tab); });
+// Buttons on the overview: open a form, or a list already filtered.
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
   if (!b) return;
-  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["t-students", "t-promos", "t-chapters"].forEach(t => { $("#" + t).hidden = t !== b.dataset.tab; });
+  const to = b.dataset.go;
+  if (to === "new-student") { go("t-students"); $("#new-box").open = true; $("#s-name").focus(); return; }
+  if (to === "new-promo") { go("t-promos"); $("#promo-box").open = true; $("#p-code").focus(); return; }
+  if (to === "t-students") { stuFilter = b.dataset.filter || "all"; $("#stu-search").value = b.dataset.q || ""; renderStudents(); }
+  go(to);
 });
 
 // ---------- new student ----------
@@ -347,28 +506,44 @@ async function loadStudents() {
   // Saved passwords (needs the latest Firestore rules; without them the messages just leave the password out).
   try { (await getDocs(collection(db, "secrets"))).forEach(d => { const s = students.find(x => x.uid === d.id); if (s) s.password = d.data().password; }); }
   catch (e) {}
+  studentsLoaded = true;
+  if (!students.length) $("#new-box").open = true;
   renderStudents();
 }
+const FILTERS = [
+  ["all", "All", () => true],
+  ["active", "Active", s => s.active !== false],
+  ["waiting", "Not logged in", s => !s.deviceId],
+  ["alerts", "Other-device tries", s => s.attempts > 0],
+  ["blocked", "Blocked", s => s.active === false],
+  ["promo", "Promo", s => !!s.promo],
+];
+let stuFilter = "all";
+const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
 function renderStudents() {
   const q = $("#stu-search").value.trim().toLowerCase();
-  const list = students.filter(s => !q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q)));
+  const test = FILTERS.find(f => f[0] === stuFilter)[2];
+  const list = students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
   $("#stu-count").textContent = `(${students.length})`;
+  $("#stu-filters").innerHTML = FILTERS.map(([k, label, f]) => `<button class="chip" type="button" data-filter="${k}" aria-pressed="${k === stuFilter}">${label} <b>${students.filter(f).length}</b></button>`).join("");
   $("#students").innerHTML = list.length ? list.map(s => `
     <div class="stu" data-uid="${s.uid}">
       <div class="stu-top">
-        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">ID <b>${esc(s.loginId)}</b>${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · ${fmtDate(s.createdAt)}` : ""}</div></div>
+        <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
+        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
           ${s.active === false ? `<span class="pill bad">Blocked</span>` : `<span class="pill good">Active</span>`}
-          ${s.promo ? `<span class="pill warn">Promo ${esc(s.promo)}${s.expiresAt ? " · until " + fmtDate(s.expiresAt) : ""}</span>` : ""}
-          ${s.deviceId ? `<span class="pill">Locked: ${esc(s.deviceInfo || "device")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
+          ${s.promo && s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
+          ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
         </div>
       </div>
-      <div class="sub">Chapters: ${(s.chapters || []).map(k => esc(chName(k))).join(", ") || "none"}</div>
+      <details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>
       <div class="actions">
         <a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>
         <button class="btn btn-line btn-sm" type="button" data-act="edit">Change chapters</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
+        <span class="spacer"></span>
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
         <button class="btn btn-danger btn-sm" type="button" data-act="del">Delete</button>
       </div>
@@ -384,9 +559,11 @@ function renderStudents() {
         <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Cancel</button></div>
       </div>
       <div class="msg" role="status" hidden></div>
-    </div>`).join("") : `<p class="hint">No students found.</p>`;
+    </div>`).join("") : `<p class="empty">${students.length ? "No students match this search." : "No students yet. Create the first ID above."}</p>`;
+  renderDash();
 }
 $("#stu-search").addEventListener("input", renderStudents);
+$("#stu-filters").addEventListener("click", e => { const b = e.target.closest("[data-filter]"); if (b) { stuFilter = b.dataset.filter; renderStudents(); } });
 $("#students").addEventListener("click", async e => {
   const b = e.target.closest("[data-act]");
   if (!b) return;
@@ -467,7 +644,13 @@ async function loadPromos() {
   const snap = await getDocs(collection(db, "promos"));
   promos = snap.docs.map(d => ({ code: d.id, ...d.data() }))
     .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+  promosLoaded = true;
   renderPromos();
+}
+// "active" while it can still be entered; otherwise why not.
+function promoState(p, now = new Date()) {
+  const exp = p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
+  return p.active === false ? "off" : exp && exp < now ? "expired" : (p.used || 0) >= p.maxUses ? "full" : "active";
 }
 // What the code opens, without chapter names: "Class 11 full book (all 9 chapters)" or "Class 12, 3 chapters".
 function bookSummary(keys) {
@@ -494,22 +677,21 @@ $("#p-creds-copy").addEventListener("click", async () => {
   catch (e) { const r = document.createRange(); r.selectNodeContents($("#p-creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
 });
 function renderPromos() {
-  const now = new Date();
+  const LABEL = { active: `<span class="pill good">Active</span>`, off: `<span class="pill bad">Switched off</span>`, expired: `<span class="pill bad">Expired</span>`, full: `<span class="pill bad">Limit reached</span>` };
+  $("#promo-count").textContent = `(${promos.length})`;
   $("#promos").innerHTML = promos.length ? promos.map(p => {
-    const exp = p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
-    const state = p.active === false ? `<span class="pill bad">Switched off</span>`
-      : exp && exp < now ? `<span class="pill bad">Expired</span>`
-      : p.used >= p.maxUses ? `<span class="pill bad">Limit reached</span>`
-      : `<span class="pill good">Active</span>`;
+    const st = promoState(p), pct = Math.min(100, Math.round(((p.used || 0) / p.maxUses) * 100));
     return `<div class="stu" data-code="${esc(p.code)}">
       <div class="stu-top">
-        <div style="min-width:0"><h3>${esc(p.code)}</h3><div class="sub">${p.note ? esc(p.note) + " · " : ""}${exp ? "until " + fmtDate(p.expiresAt) : ""}</div></div>
-        <div class="pills">${state}<span class="pill"><b>${p.used || 0}</b> / ${p.maxUses} used</span></div>
+        <div class="avatar promo" aria-hidden="true">%</div>
+        <div style="min-width:0"><h3>${esc(p.code)}</h3><div class="sub">${p.note ? esc(p.note) + " · " : ""}${p.expiresAt ? "until " + fmtDate(p.expiresAt) : ""}</div></div>
+        <div class="pills">${LABEL[st]}<span class="pill"><b>${p.used || 0}</b> / ${p.maxUses} used</span></div>
       </div>
-      <div class="sub">Chapters: ${p.chapters.map(k => esc(chName(k))).join(", ")}</div>
+      <div><div class="sub">${esc(bookSummary(p.chapters))}</div><div class="meter" title="${p.used || 0} of ${p.maxUses} places used"><i style="width: ${pct}%"></i></div></div>
       <div class="actions">
         <a class="btn btn-wa btn-sm" href="${waLink("", promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
         <button class="btn btn-line btn-sm" type="button" data-pact="who">Who used it</button>
+        <span class="spacer"></span>
         <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Switch on" : "Switch off"}</button>
         <button class="btn btn-danger btn-sm" type="button" data-pact="del">Delete</button>
       </div>
@@ -522,7 +704,8 @@ function renderPromos() {
       </div>
       <div class="msg" role="status" hidden></div>
     </div>`;
-  }).join("") : `<p class="hint">No promo codes yet.</p>`;
+  }).join("") : `<p class="empty">No promo codes yet. Make one above for a school or a group of teachers.</p>`;
+  renderDash();
 }
 $("#promos").addEventListener("click", async e => {
   const b = e.target.closest("[data-pact]");
@@ -577,15 +760,17 @@ const uploaded = new Map();
 async function loadChapters() {
   const snap = await getDocs(collection(db, "chapters"));
   snap.docs.forEach(d => uploaded.set(d.id, d.data()));
-  $("#chap-rows").innerHTML = CHAPTERS.map(c => {
+  chaptersLoaded = true;
+  $("#chap-rows").innerHTML = CHAPTERS.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k);
-    return `<div class="chap-row" data-k="${k}">
-      <div style="min-width:0"><h3>Class ${c.cls} · Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
+    return `${!i || CHAPTERS[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}</h2>` : ""}<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
+      <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
         <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages · ${fmtDate(u.updatedAt)}` : "Not uploaded yet"}</div>
         <progress max="100" value="0" hidden></progress></div>
-      <div class="ctl"><input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>${u ? "Upload again" : "Upload"}</button></div>
+      <div class="ctl"><input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn ${u ? "btn-line" : "btn-sun"} btn-sm" type="button" data-up>${u ? "Upload again" : "Upload"}</button></div>
     </div>`;
   }).join("");
+  renderDash();
 }
 
 function pageImage(canvas) {
@@ -628,7 +813,9 @@ $("#chap-rows").addEventListener("click", async e => {
     await setDoc(doc(db, "chapters", k), info);
     uploaded.set(k, { ...info, updatedAt: null });
     status.textContent = `Uploaded: ${total} pages. Students can read it now.`;
-    b.textContent = "Dobara upload";
+    b.textContent = "Upload again"; b.className = "btn btn-line btn-sm";
+    row.classList.replace("todo-up", "done");
+    renderDash();
   } catch (ex) {
     status.textContent = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
   } finally {
