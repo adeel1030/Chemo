@@ -70,8 +70,12 @@ PDF ke har page ki image ban kar Firebase mein jaati hai. PDF file khud kahin sa
 2. Naam, WhatsApp number, login ID aur password bharo (password apne aap ban jaata hai), aur kharide hue chapters tick karo.
 3. **Student ID banao** dabao, phir **WhatsApp par bhejo** dabao. Student ko link, ID aur password chala jayega.
 
+Password admin ke liye Firebase mein save rehta hai (sirf admin dekh sakta hai). Student khud password badle to woh bhi wahan update ho jaata hai.
+
 Students list mein har student ke liye yeh options hain:
 
+- **Send on WhatsApp again**: student ko link, login ID, password aur chapters dobara bhejta hai. Chapters badalne ke baad bhi isse naya message bhej sakte ho.
+- **Change password**: student ka password badlo (student bhool gaya ho to). Naya password apne aap banta hai, chaho to khud likh do. Save karne ke baad **Send on WhatsApp again** se bhej do. Purana password usi waqt kaam karna band kar deta hai.
 - **Chapters badlo**: naye chapters jodo, jaise jab student aur chapters kharide.
 - **Device reset**: student ne phone badla ho to. Reset ke baad jis device par woh pehle login karega, ID usi par lock ho jayegi.
 - **Band karo**: ID turant band ho jaati hai. Jo bhi device us waqt khula hai, woh bhi logout ho jaata hai.

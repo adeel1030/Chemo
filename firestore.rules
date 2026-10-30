@@ -52,6 +52,15 @@ service cloud.firestore {
       }
     }
 
+    // The password each student was last given, so the admin can send it again or change it.
+    // Only the admin can read it. A student may save their own copy when they change their password in the reader.
+    match /secrets/{uid} {
+      allow read, write: if isAdmin();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['password', 'at'])
+        && request.resource.data.password is string;
+    }
+
     // Promo codes made by the admin. Anyone signed in may look up one code by its exact name (not list them),
     // and may raise its use count by one only while creating their own promo account in the same write.
     match /promos/{code} {
