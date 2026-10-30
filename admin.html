@@ -477,28 +477,16 @@ function bookSummary(keys) {
   }).filter(Boolean).join(" + ");
 }
 function promoMessage(p) {
-  const left = p.maxUses - (p.used || 0), who = p.note ? `for ${p.note}` : "just for you";
-  return `🎁 *Special offer ${who}*
+  const left = p.maxUses - (p.used || 0);
+  return `🎁 *Special offer ${p.note ? "for " + p.note : "just for you"}*
 
-I have opened my Chemophile Chemistry book for you, free, for a limited time.
+Free access to my Chemophile Chemistry book: *${bookSummary(p.chapters)}*
 
-📖 *What you get:* ${bookSummary(p.chapters)}
-Visual Hinglish notes with diagrams, solved examples, English exam answers and a 40-mark test in every chapter. It reads like a real book on your phone: just swipe to turn the pages.
-
-⏳ ${left > 0 ? `*Only ${left} ${left === 1 ? "place" : "places"}${p.used ? " left" : ""}*, and the offer ends` : "The offer ends"} on *${fmtDate(p.expiresAt)}, 11:59 pm*.
-
-*Your code:* ${p.code}
+*Code:* ${p.code}
 *Link:* ${readerLink()}
+Open the link → tap "Promo code" → enter the code, your name and number → tap "Open the book".
 
-*How to open it:*
-1. Open the link on your phone.
-2. Tap "Promo code".
-3. Enter ${p.code}, your name and your WhatsApp number.
-4. Tap "Open the book".
-
-Next time, just open the same link on the same phone. The book stays there till the last date.
-
-${p.note ? `This code is made only for ${p.note}, so please keep it within the group.` : "This code is made just for you, so please keep it to yourself."}
+⏳ ${left > 0 ? `Only ${left} ${left === 1 ? "place" : "places"}${p.used ? " left" : ""} · ` : ""}Ends ${fmtDate(p.expiresAt)}
 - Adeel Sir`;
 }
 $("#p-creds-copy").addEventListener("click", async () => {
