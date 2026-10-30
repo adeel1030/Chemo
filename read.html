@@ -539,11 +539,19 @@ async function renderLibrary() {
   note.hidden = !me.admin;
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
   const keys = me.chapters || [];
+  // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
+  let loadErr = null;
   await Promise.all(keys.map(async k => {
     if (chapterInfo.has(k)) return;
     try { const s = await getDoc(doc(db, "chapters", k)); chapterInfo.set(k, s.exists() ? s.data() : null); }
-    catch (e) { chapterInfo.set(k, null); }
+    catch (e) { loadErr = e; console.error("chapter", k, e); }
   }));
+  if (loadErr) {
+    note.hidden = false; note.className = "msg bad";
+    note.innerHTML = `${loadErr.code === "resource-exhausted" ? "Too many readers right now, so your chapters couldn't load. Please try again in a few hours."
+      : loadErr.code === "permission-denied" ? "Your chapters couldn't be checked. Log out and log in again; if it stays, WhatsApp Adeel Sir."
+      : "Your chapters couldn't load. Check your internet."} <button class="btn btn-line btn-sm" type="button" id="lib-retry" style="margin-left: 6px">Try again</button>`;
+  } else note.className = "msg warn";
   const ready = keys.filter(k => progress(k).ready);
   const pages = ready.reduce((n, k) => n + progress(k).total, 0);
   $("#hero-stats").innerHTML = [
@@ -580,7 +588,7 @@ async function renderLibrary() {
     const [cls, n] = k.split("-");
     const title = c.title || (info && info.title) || `Chapter ${n}`;
     const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
-    const status = !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
+    const status = !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${pr.ready ? "" : " soon"}">
       <button class="cv" type="button" ${pr.ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
       <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h3>${esc(title)}</h3>
@@ -607,6 +615,7 @@ async function renderLibrary() {
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
+$("#v-library").addEventListener("click", e => { if (e.target.closest("#lib-retry")) renderLibrary(); });
 $("#lib-chips").addEventListener("click", e => { const b = e.target.closest("[data-cls]"); if (b) { libCls = b.dataset.cls; renderLibrary(); } });
 $("#logout-2").addEventListener("click", () => $("#logout").click());
 $("#v-library").addEventListener("click", e => {
