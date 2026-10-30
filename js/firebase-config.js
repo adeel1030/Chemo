@@ -11,7 +11,7 @@ export const firebaseConfig = {
 };
 
 // The email Adeel Sir uses to log in to admin.html. Must match ADMIN_EMAIL in firestore.rules.
-export const ADMIN_EMAIL = "";
+export const ADMIN_EMAIL = "maproductsindia@gmail.com";
 
 // Student login IDs are turned into emails behind the scenes: "rahul11" -> "rahul11@<LOGIN_DOMAIN>".
 // No mail is ever sent to these addresses. Don't change this after students are created.
