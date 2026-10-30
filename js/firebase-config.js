@@ -18,5 +18,5 @@ export const ADMIN_EMAIL = "maproductsindia@gmail.com";
 export const LOGIN_DOMAIN = "students.chemophile.app";
 
 // Full address of read.html once the site is live, used in the message sent to students.
-// Example: "https://adeel1030.github.io/Chemo/read.html"
-export const READER_URL = "https://adeel1030.github.io/Chemo/read.html";
+// Example: "https://chemophile.maproductsindia.com/read.html"
+export const READER_URL = "https://chemophile.maproductsindia.com/read.html";

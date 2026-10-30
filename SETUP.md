@@ -53,12 +53,15 @@ Yahi rules tay karte hain ki student sirf apne kharide hue chapters padh sake, s
 
 1. GitHub par `adeel1030/Chemo` repo kholo aur **Settings → Pages** mein jao.
 2. **Source** mein **Deploy from a branch** chuno. Branch mein `ccr-6ada8f89-5gh1t1` (abhi website ka saara code isi branch par hai) aur folder `/ (root)` chuno, phir **Save** dabao.
-3. Kuch minute baad site `https://adeel1030.github.io/Chemo/` par khulegi.
-4. `js/firebase-config.js` mein `READER_URL` ke aage `https://adeel1030.github.io/Chemo/read.html` likho. Yeh link student ko jaane wale message mein aata hai.
+3. **Custom domain** mein `chemophile.maproductsindia.com` likho, Save dabao, aur certificate banne ke baad **Enforce HTTPS** tick karo.
+4. Domain ki DNS settings (jahan `maproductsindia.com` liya hai) mein ek **CNAME** record banao: Name `chemophile`, Value `adeel1030.github.io`.
+5. Kuch minute baad site `https://chemophile.maproductsindia.com/` par khulegi.
+6. Firebase console mein **Authentication → Settings → Authorized domains → Add domain** mein `chemophile.maproductsindia.com` jodo.
+7. `js/firebase-config.js` mein `READER_URL` ke aage `https://chemophile.maproductsindia.com/read.html` likho (yeh pehle se likha hai). Yeh link student ko jaane wale message mein aata hai.
 
 ## 8. Chapters upload karo
 
-1. `https://adeel1030.github.io/Chemo/admin.html` kholo aur admin email-password se login karo.
+1. `https://chemophile.maproductsindia.com/admin.html` kholo aur admin email-password se login karo.
 2. **Chapters upload** tab kholo.
 3. Class 11 aur Class 12 ke har chapter ke saamne uski PDF chuno aur **Upload karo** dabao. Ek chapter mein 1–2 minute lagte hain. Upload khatam hone tak page band mat karna, aur Chrome use karna.
 
