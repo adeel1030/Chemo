@@ -52,7 +52,7 @@ service cloud.firestore {
       }
     }
 
-    // The password each student was last given, so the admin can send it again or change it.
+    // The password each student was last given, so the admin can send it again.
     // Only the admin can read it. A student may save their own copy when they change their password in the reader.
     match /secrets/{uid} {
       allow read, write: if isAdmin();
