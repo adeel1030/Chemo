@@ -47,7 +47,8 @@
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
 @media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
-.pw-edit { display: grid; gap: 8px; max-width: 440px; }
+.pw-edit { display: grid; gap: 12px; max-width: 440px; }
+.pw-edit .sub { margin: 0; }
 .confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
 .confirm p { margin: 0; font-size: .92rem; }
 .confirm label { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; cursor: pointer; }
@@ -367,8 +368,15 @@ function renderStudents() {
         <button class="btn btn-danger btn-sm" type="button" data-act="del">Delete</button>
       </div>
       <form class="pw-edit" hidden>
-        <label class="sub" for="pw-${s.uid}">${s.password ? `Current password: <b>${esc(s.password)}</b>. ` : ""}New password</label>
-        <div class="pw-row"><input id="pw-${s.uid}" type="text" autocomplete="off" spellcheck="false" minlength="6"><button class="btn btn-line btn-sm" type="button" data-act="pw-gen">New</button></div>
+        ${s.password ? `<p class="sub">Current password: <b>${esc(s.password)}</b></p>` : `<div class="field">
+          <label for="pwo-${s.uid}">Current password</label>
+          <input class="pw-old" id="pwo-${s.uid}" type="text" autocomplete="off" spellcheck="false">
+          <span class="sub">This ID was made before passwords were saved. Find its password in the WhatsApp message you sent ${esc(s.name)} when you made the ID.</span>
+        </div>`}
+        <div class="field">
+          <label for="pw-${s.uid}">New password</label>
+          <div class="pw-row"><input class="pw-new" id="pw-${s.uid}" type="text" autocomplete="off" spellcheck="false" minlength="6"><button class="btn btn-line btn-sm" type="button" data-act="pw-gen">New</button></div>
+        </div>
         <div class="actions"><button class="btn btn-sun btn-sm" type="submit" data-act="pw-save">Save password</button><button class="btn btn-line btn-sm" type="button" data-act="pw-no">Cancel</button></div>
       </form>
       <div class="confirm" role="alertdialog" aria-label="Delete ${esc(s.name)}" hidden>
@@ -389,10 +397,9 @@ $("#stu-search").addEventListener("input", renderStudents);
 $("#students").addEventListener("submit", e => e.preventDefault());
 
 // Firebase lets only the student themself change their password, so log in as them in a second app with the
-// saved password, change it there, and log that app out. The admin stays logged in here.
-async function changePassword(s, pw) {
-  const old = s.password || ((await getDoc(doc(db, "secrets", s.uid))).data() || {}).password;
-  if (!old) throw new Error(`No password is saved for ${s.loginId}, because the ID was made before passwords were saved. Delete the student and make a new ID if they forgot it.`);
+// saved password (or, for older IDs, the one the admin types in), change it there, and log that app out.
+// The admin stays logged in here.
+async function changePassword(s, pw, old) {
   const sec = initializeApp(firebaseConfig, "pw-" + Date.now());
   try {
     const secAuth = initializeAuth(sec, { persistence: inMemoryPersistence });
@@ -427,15 +434,17 @@ $("#students").addEventListener("click", async e => {
       await updateDoc(ref, { active });
       s.active = active; renderStudents();
     }
-    if (b.dataset.act === "pw") { const f = row.querySelector(".pw-edit"); f.querySelector("input").value = genPassword(); f.hidden = false; f.querySelector("input").select(); }
-    if (b.dataset.act === "pw-gen") row.querySelector(".pw-edit input").value = genPassword();
+    if (b.dataset.act === "pw") { const f = row.querySelector(".pw-edit"); f.querySelector(".pw-new").value = genPassword(); f.hidden = false; (f.querySelector(".pw-old") || f.querySelector(".pw-new")).focus(); }
+    if (b.dataset.act === "pw-gen") row.querySelector(".pw-new").value = genPassword();
     if (b.dataset.act === "pw-no") row.querySelector(".pw-edit").hidden = true;
     if (b.dataset.act === "pw-save") {
       e.preventDefault();
-      const pw = row.querySelector(".pw-edit input").value.trim();
-      if (pw.length < 6) return note("Use at least 6 characters for the password.", "bad");
+      const pw = row.querySelector(".pw-new").value.trim();
+      const old = s.password || (row.querySelector(".pw-old") || {}).value?.trim();
+      if (!old) return note("Enter the current password. It is in the WhatsApp message you sent when you made this ID.", "bad");
+      if (pw.length < 6) return note("Use at least 6 characters for the new password.", "bad");
       b.disabled = true;
-      await changePassword(s, pw);
+      await changePassword(s, pw, old);
       s.password = pw; renderStudents();
       const r = $(`.stu[data-uid="${s.uid}"]`), m = r.querySelector(".msg");
       m.className = "msg good"; m.hidden = false;
@@ -450,9 +459,10 @@ $("#students").addEventListener("click", async e => {
     }
   } catch (ex) {
     b.disabled = false;
-    note(ex.code === "auth/invalid-credential" || ex.code === "auth/wrong-password"
-      ? "The saved password does not match this ID any more, so it cannot be changed from here. Delete the student and make a new ID, or remove this ID in Firebase console (Authentication → Users) first."
-      : "Not saved: " + (ex.message || ex.code), "bad");
+    const wrong = ex.code === "auth/invalid-credential" || ex.code === "auth/wrong-password";
+    note(!wrong ? "Not saved: " + (ex.message || ex.code)
+      : s.password ? "The saved password does not match this ID any more, so it cannot be changed from here. Delete the student and make a new ID."
+      : "The current password is wrong. Check the WhatsApp message you sent when you made this ID. If the student changed it, ask them for it, or delete the student and make a new ID.", "bad");
   }
 });
 
