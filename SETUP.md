@@ -78,8 +78,7 @@ Password admin ke liye Firebase mein save rehta hai (sirf admin dekh sakta hai).
 Students list mein har student ke liye yeh options hain:
 
 - **Send on WhatsApp again**: student ko link, login ID, password aur chapters dobara bhejta hai. Chapters badalne ke baad bhi isse naya message bhej sakte ho.
-- **Change password**: student ka password badlo (student bhool gaya ho to). Naya password apne aap banta hai, chaho to khud likh do. Save karne ke baad **Send on WhatsApp again** se bhej do. Purana password usi waqt kaam karna band kar deta hai.
-  Jo IDs password save hone se pehle bani thi, unke liye **Current password** bhi daalna padta hai. Woh aapke us WhatsApp message mein milega jo ID banate waqt bheja tha. Ek baar badalne ke baad woh bhi save ho jaata hai.
+- Password sirf student khud badal sakta hai: reader mein login karke neeche **Change password** se. Badla hua password aapke **Send on WhatsApp again** wale message mein apne aap aa jaata hai.
 - **Chapters badlo**: naye chapters jodo, jaise jab student aur chapters kharide.
 - **Device reset**: student ne phone badla ho to. Reset ke baad jis device par woh pehle login karega, ID usi par lock ho jayegi.
 - **Band karo**: ID turant band ho jaati hai. Jo bhi device us waqt khula hai, woh bhi logout ho jaata hai.
