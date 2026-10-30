@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi-Latn">
+<html lang="hi-Latn" data-firebase-app="admin">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -83,6 +83,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
   </div>
 
   <div id="v-admin" hidden>
+    <div class="msg bad" id="load-err" role="alert" hidden style="margin-top: 18px"></div>
     <div class="tabs" role="tablist">
       <button type="button" role="tab" aria-selected="true" data-tab="t-students">Students</button>
       <button type="button" role="tab" aria-selected="false" data-tab="t-promos">Promo codes</button>
@@ -179,9 +180,13 @@ else onAuthStateChanged(auth, async user => {
   $("#who").textContent = user.email;
   $("#logout").hidden = false;
   show("v-admin");
-  loadStudents();
-  loadChapters();
-  loadPromos();
+  Promise.all([loadStudents(), loadChapters(), loadPromos()]).catch(ex => {
+    const m = $("#load-err");
+    m.textContent = ex.code === "permission-denied"
+      ? "Data nahi khul raha: Firestore ke Rules publish nahi hue, ya unme admin email galat hai. SETUP.md ka step 6 dekho."
+      : "Data load nahi hua: " + (ex.message || ex.code) + ". Internet check karke page reload karo.";
+    m.hidden = false;
+  });
 });
 
 $("#login-form").addEventListener("submit", async e => {

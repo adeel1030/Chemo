@@ -5,7 +5,10 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebas
 import { firebaseConfig, LOGIN_DOMAIN } from "./firebase-config.js";
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
-export const app = configured ? initializeApp(firebaseConfig) : null;
+// admin.html sets <html data-firebase-app="admin"> so the admin login is kept apart from the student login.
+// Otherwise both pages share one session in the same browser and each logs the other out.
+const appName = document.documentElement.dataset.firebaseApp;
+export const app = configured ? (appName ? initializeApp(firebaseConfig, appName) : initializeApp(firebaseConfig)) : null;
 export const auth = configured ? getAuth(app) : null;
 export const db = configured ? getFirestore(app) : null;
 

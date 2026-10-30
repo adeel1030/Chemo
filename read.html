@@ -275,8 +275,16 @@ async function start(user) {
   const loginId = user.isAnonymous ? "promo" : emailToId(user.email || "");
   const ref = doc(db, "users", user.uid);
   let snap;
-  try { snap = await getDoc(ref); } catch (e) { snap = null; }
-  if (!snap || !snap.exists()) {
+  try { snap = await getDoc(ref); } catch (e) {
+    // A network or server problem is not a reason to log the student out: show it and let them retry.
+    blocked("Server se connect nahi ho paaya",
+      e.code === "permission-denied" ? "Online reader abhi setup ho raha hai. Thodi der baad dobara kholo." : "Internet check karke page dobara kholo.",
+      `Hello Adeel Sir, Chemophile online book nahi khul rahi (${e.code || "error"}).`);
+    $("#blocked-back").hidden = true;
+    return;
+  }
+  $("#blocked-back").hidden = false;
+  if (!snap.exists()) {
     if (user.isAnonymous) { try { await signOut(auth); } catch (e) {} show("v-login"); return; }
     return kick("Account abhi taiyaar nahi hai", "Is login ID ke saath koi chapter nahi juda hai. Adeel Sir se baat karo.", `Hello Adeel Sir, meri Chemophile login ID "${loginId}" kaam nahi kar rahi.`);
   }
