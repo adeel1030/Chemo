@@ -142,6 +142,14 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
         </div>
         <div class="msg" id="p-msg" role="status" hidden></div>
         <div><button class="btn btn-sun" type="submit" id="p-btn">Create promo code</button></div>
+        <div class="creds" id="p-creds" hidden>
+          <b>Send this message to the teachers or the school:</b>
+          <pre id="p-creds-text"></pre>
+          <div class="actions">
+            <a class="btn btn-wa btn-sm" id="p-creds-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button class="btn btn-line btn-sm" type="button" id="p-creds-copy">Copy</button>
+          </div>
+        </div>
       </form>
       <div class="card">
         <div class="section-title"><h2>All promo codes</h2></div>
@@ -423,6 +431,7 @@ $("#promo-form").addEventListener("submit", async e => {
   e.preventDefault();
   const msg = $("#p-msg");
   const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
+  $("#p-creds").hidden = true;
   const code = $("#p-code").value.trim().toUpperCase();
   const note = $("#p-note").value.trim();
   const maxUses = parseInt($("#p-max").value, 10);
@@ -439,6 +448,11 @@ $("#promo-form").addEventListener("submit", async e => {
     if ((await getDoc(doc(db, "promos", code))).exists()) throw new Error(`Code "${code}" already exists. Choose another name.`);
     await setDoc(doc(db, "promos", code), { chapters, maxUses, used: 0, active: true, note, expiresAt: Timestamp.fromDate(expires), createdAt: serverTimestamp() });
     msg.className = "msg good"; msg.textContent = `Promo code ${code} created.`; msg.hidden = false;
+    const text = promoMessage({ code, chapters, expiresAt: Timestamp.fromDate(expires) });
+    $("#p-creds-text").textContent = text;
+    $("#p-creds-wa").href = waLink("", text);
+    $("#p-creds-copy").textContent = "Copy";
+    $("#p-creds").hidden = false;
     $("#p-code").value = ""; $("#p-note").value = "";
     picks($("#p-ch"));
     loadPromos();
@@ -456,8 +470,12 @@ async function loadPromos() {
   renderPromos();
 }
 function promoMessage(p) {
-  return `Chemophile online book (Adeel Sir)\n\nLink: ${readerLink()}\nTap "Promo code" and enter this code: ${p.code}\n\nIt opens ${p.chapters.length} chapters until ${fmtDate(p.expiresAt)}. The book opens only on the phone where you enter the code.`;
+  return `Hello! Your Chemophile online book is ready.\n\nLink: ${readerLink()}\nPromo code: ${p.code}\nValid until: ${fmtDate(p.expiresAt)}, 11:59 pm\n\nHow to open the book:\n1. Open the link on your phone.\n2. Tap "Promo code".\n3. Enter the code ${p.code}, your name and your WhatsApp number.\n4. Tap "Open the book".\n\nNext time, just open the same link on the same phone. You don't need the code again.\n\nPlease note: the book opens only on the phone where you enter the code. Don't clear that browser's data, or you will need the code again. Please share the code only with the people it is meant for.\n- Adeel Sir`;
 }
+$("#p-creds-copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("#p-creds-text").textContent); $("#p-creds-copy").textContent = "Copied"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#p-creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
+});
 function renderPromos() {
   const now = new Date();
   $("#promos").innerHTML = promos.length ? promos.map(p => {
@@ -473,7 +491,7 @@ function renderPromos() {
       </div>
       <div class="sub">Chapters: ${p.chapters.map(k => esc(chName(k))).join(", ")}</div>
       <div class="actions">
-        <a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <a class="btn btn-wa btn-sm" href="${waLink("", promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
         <button class="btn btn-line btn-sm" type="button" data-pact="who">Who used it</button>
         <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Switch on" : "Switch off"}</button>
         <button class="btn btn-danger btn-sm" type="button" data-pact="del">Delete</button>
