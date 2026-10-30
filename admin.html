@@ -20,7 +20,9 @@ body { background: var(--paper); }
 @media (max-width: 560px) { .admin-head .who { display: none; } }
 
 .desk { display: grid; grid-template-columns: minmax(0, 1fr); }
-.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+.nav-btn .long { display: none; }
+@media (min-width: 900px) { .nav-btn .long { display: inline; } .nav-btn .short { display: none; } }
 .nav-btn { display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--night-muted); font: 600 .72rem var(--font-body); padding: 7px 4px; border-radius: 10px; cursor: pointer; position: relative; }
 .nav-btn svg { width: 22px; height: 22px; }
 .nav-btn[aria-current="page"] { color: var(--sun); background: rgba(255,255,255,.07); }
@@ -130,6 +132,10 @@ body { background: var(--paper); }
 .confirm input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--bad); }
 .confirm .btn-danger { background: color-mix(in srgb, var(--bad) 16%, transparent); font-weight: 700; }
 progress { width: 100%; height: 10px; accent-color: var(--accent); }
+.news-text { white-space: pre-wrap; font-size: .95rem; }
+textarea { font: 1rem/1.5 var(--font-body); padding: 11px 14px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); width: 100%; min-height: 110px; resize: vertical; }
+textarea:focus { border-color: var(--accent); outline: none; }
+.field select { appearance: auto; }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 </style>
 </head>
@@ -170,8 +176,9 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
     <nav class="side" aria-label="Admin sections">
       <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview<span class="dot" id="dot-home" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
-      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>Promo codes</button>
+      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
     </nav>
 
@@ -187,6 +194,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
           <div class="card quick"><h2>Quick actions</h2>
             <button class="btn btn-sun" type="button" data-go="new-student">+ New student ID</button>
             <button class="btn btn-line" type="button" data-go="new-promo">+ New promo code</button>
+            <button class="btn btn-line" type="button" data-go="new-news">+ New announcement</button>
             <button class="btn btn-line" type="button" data-go="t-chapters">Upload a chapter</button>
           </div>
           <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
@@ -266,6 +274,28 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
       </div>
     </section>
 
+    <section id="t-news" class="stack" hidden>
+      <div class="page-head"><div><h1>Announcements</h1><p>A message on top of the reader, for students, promo users or everyone.</p></div></div>
+      <details class="panel" id="news-box">
+        <summary><span class="plus" aria-hidden="true">+</span>New announcement<span class="hint">Shows the next time they open the reader</span></summary>
+      <form class="stack" id="news-form" novalidate>
+        <div class="field"><label for="n-title">Heading (optional)</label><input id="n-title" autocomplete="off" maxlength="80" placeholder="New chapter uploaded!"></div>
+        <div class="field"><label for="n-text">Message</label><textarea id="n-text" maxlength="600" placeholder="Chapter 9 Amines is now in your library. Happy reading!"></textarea></div>
+        <div class="grid2">
+          <div class="field"><label for="n-who">Who sees it</label><select id="n-who"><option value="all">Everyone</option><option value="students">Students with a login ID</option><option value="promo">Promo code users</option></select></div>
+          <div class="field"><label for="n-cls">Which class</label><select id="n-cls"><option value="0">Class 11 and 12</option><option value="11">Only Class 11 readers</option><option value="12">Only Class 12 readers</option></select></div>
+          <div class="field"><label for="n-till">Show until (optional)</label><input id="n-till" type="date"><span class="hint">Empty means it stays until you switch it off.</span></div>
+        </div>
+        <div class="msg" id="n-msg" role="status" hidden></div>
+        <div><button class="btn btn-sun" type="submit" id="n-btn">Post announcement</button></div>
+      </form>
+      </details>
+      <div class="card">
+        <div class="section-title"><h2>All announcements <span class="hint" id="news-count"></span></h2></div>
+        <div class="students" id="news"></div>
+      </div>
+    </section>
+
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div></div>
       <div class="card">
@@ -309,6 +339,7 @@ else onAuthStateChanged(auth, async user => {
   $("#who").textContent = user.email;
   $("#logout").hidden = false;
   show("v-admin");
+  loadNews().catch(() => { $("#news").innerHTML = `<p class="msg bad">Announcements can't be read yet. Paste the latest Firestore rules (see SETUP.md, step 6).</p>`; });
   Promise.all([loadStudents(), loadChapters(), loadPromos()]).catch(ex => {
     const m = $("#load-err");
     m.textContent = ex.code === "permission-denied"
@@ -371,7 +402,7 @@ function renderDash() {
 }
 
 // ---------- navigation ----------
-const TABS = ["t-home", "t-students", "t-promos", "t-chapters"];
+const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-news"];
 function go(tab) {
   document.querySelectorAll(".nav-btn").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
   TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
@@ -384,6 +415,7 @@ document.addEventListener("click", e => {
   if (!b) return;
   const to = b.dataset.go;
   if (to === "new-student") { go("t-students"); $("#new-box").open = true; $("#s-name").focus(); return; }
+  if (to === "new-news") { go("t-news"); $("#news-box").open = true; $("#n-title").focus(); return; }
   if (to === "new-promo") { go("t-promos"); $("#promo-box").open = true; $("#p-code").focus(); return; }
   if (to === "t-students") { stuFilter = b.dataset.filter || "all"; $("#stu-search").value = b.dataset.q || ""; renderStudents(); }
   go(to);
@@ -513,7 +545,7 @@ let students = [];
 async function loadStudents() {
   const snap = await getDocs(collection(db, "users"));
   students = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
-    .sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+    .sort((a, b) => ((b.createdAt && b.createdAt.toMillis()) || 0) - ((a.createdAt && a.createdAt.toMillis()) || 0));
   await Promise.all(students.map(async s => {
     try { s.attempts = (await getCountFromServer(collection(db, "users", s.uid, "attempts"))).data().count; }
     catch (e) { s.attempts = 0; }
@@ -773,6 +805,71 @@ $("#promos").addEventListener("click", async e => {
       who.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Nobody has used it yet.";
       who.hidden = false;
     }
+  } catch (ex) {
+    b.disabled = false;
+    const m = row.querySelector(".msg"); m.className = "msg bad"; m.textContent = "Not saved: " + (ex.message || ex.code); m.hidden = false;
+  }
+});
+
+// ---------- announcements ----------
+const WHO = { all: "Everyone", students: "Login ID students", promo: "Promo users" };
+let news = [];
+async function loadNews() {
+  const snap = await getDocs(collection(db, "announcements"));
+  news = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => ((b.createdAt && b.createdAt.toMillis()) || 0) - ((a.createdAt && a.createdAt.toMillis()) || 0));
+  if (!news.length) $("#news-box").open = true;
+  renderNews();
+}
+function renderNews() {
+  $("#news-count").textContent = `(${news.length})`;
+  $("#news").innerHTML = news.length ? news.map(n => {
+    const live = n.active !== false && !isOver(n);
+    return `<div class="stu" data-nid="${n.id}">
+      <div class="stu-top">
+        <div class="avatar" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg></div>
+        <div style="min-width:0"><h3>${esc(n.title || "Announcement")}</h3><div class="sub">Posted ${fmtDate(n.createdAt)}${n.expiresAt ? ` · until ${fmtDate(n.expiresAt)}` : ""}</div></div>
+        <div class="pills">${live ? `<span class="pill good">Showing</span>` : `<span class="pill bad">${n.active === false ? "Switched off" : "Ended"}</span>`}<span class="pill">${WHO[n.audience] || "Everyone"}</span>${n.cls ? `<span class="pill">Class ${n.cls}</span>` : ""}</div>
+      </div>
+      <p class="news-text">${esc(n.text)}</p>
+      <div class="actions"><span class="spacer"></span>
+        <button class="btn ${n.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-nact="toggle">${n.active === false ? "Switch on" : "Switch off"}</button>
+        <button class="btn btn-danger btn-sm" type="button" data-nact="del">Delete</button>
+      </div>
+      <div class="confirm" role="alertdialog" aria-label="Delete announcement" hidden>
+        <p><b>Delete this announcement?</b> It disappears from every reader. This cannot be undone.</p>
+        <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-nact="del-yes">Yes, delete</button><button class="btn btn-line btn-sm" type="button" data-nact="del-no">Cancel</button></div>
+      </div>
+      <div class="msg" role="status" hidden></div>
+    </div>`;
+  }).join("") : `<p class="empty">No announcements yet.</p>`;
+}
+$("#news-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("#n-msg"), fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
+  const title = $("#n-title").value.trim(), text = $("#n-text").value.trim(), till = $("#n-till").value;
+  if (!text) return fail("Write the message.");
+  if (till && new Date(till + "T23:59:59") < new Date()) return fail("The last date must be today or later.");
+  $("#n-btn").disabled = true;
+  try {
+    await setDoc(doc(collection(db, "announcements")), { title, text, audience: $("#n-who").value, cls: Number($("#n-cls").value), active: true, expiresAt: endOfDay(till), createdAt: serverTimestamp() });
+    msg.className = "msg good"; msg.textContent = "Posted. Readers see it the next time they open their library."; msg.hidden = false;
+    $("#n-title").value = ""; $("#n-text").value = ""; $("#n-till").value = ""; $("#n-who").value = "all"; $("#n-cls").value = "0";
+    await loadNews();
+  } catch (ex) {
+    fail(ex.code === "permission-denied" ? "Not posted: paste the latest Firestore rules first (SETUP.md, step 6)." : "Not posted: " + (ex.message || ex.code));
+  }
+  $("#n-btn").disabled = false;
+});
+$("#news").addEventListener("click", async e => {
+  const b = e.target.closest("[data-nact]");
+  if (!b) return;
+  const row = b.closest(".stu"), n = news.find(x => x.id === row.dataset.nid), box = row.querySelector(".confirm");
+  try {
+    if (b.dataset.nact === "toggle") { const active = n.active === false; await updateDoc(doc(db, "announcements", n.id), { active }); n.active = active; renderNews(); }
+    if (b.dataset.nact === "del") { box.hidden = false; box.querySelector("[data-nact=del-no]").focus(); }
+    if (b.dataset.nact === "del-no") box.hidden = true;
+    if (b.dataset.nact === "del-yes") { b.disabled = true; await deleteAll([doc(db, "announcements", n.id)]); news = news.filter(x => x !== n); renderNews(); }
   } catch (ex) {
     b.disabled = false;
     const m = row.querySelector(".msg"); m.className = "msg bad"; m.textContent = "Not saved: " + (ex.message || ex.code); m.hidden = false;

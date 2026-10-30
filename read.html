@@ -12,8 +12,37 @@
 <link rel="stylesheet" href="css/app.css">
 <style>
 /* Layout: login card (ID or promo code) → bookshelf of the student's chapters → full-screen flipbook. */
+/* Login: a dark welcome panel with the book covers, and the login card beside it (below it on phones). */
+.auth { min-height: calc(100vh - 58px); display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
+.auth-hero { background: radial-gradient(circle at 85% 5%, rgba(255, 210, 74, .22), transparent 45%), radial-gradient(circle at 0% 100%, rgba(183, 176, 255, .18), transparent 50%), var(--night); color: var(--night-fg); padding: 26px max(20px, env(safe-area-inset-left, 0px)) 64px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; overflow: hidden; }
+.auth-eyebrow { font: 700 .74rem var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--sun); }
+.auth-hero h1 { font-size: clamp(1.7rem, 1.2rem + 2.6vw, 3.2rem); margin-top: 6px; }
+.auth-hero h1 span { color: var(--sun); }
+.auth-hero .lede { color: var(--night-muted); margin-top: 8px; max-width: 34ch; }
+.perks { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; font-size: .92rem; }
+.perks li { display: flex; gap: 10px; align-items: center; }
+.perks svg { flex: none; color: var(--sun); }
+.fan { position: relative; width: 120px; height: 150px; }
+.fan img { position: absolute; top: 10px; left: 22px; width: 76px; border-radius: 5px; box-shadow: 0 10px 24px rgba(0, 0, 0, .4); }
+.fan img:nth-child(1) { transform: rotate(-14deg) translateX(-22px); }
+.fan img:nth-child(3) { transform: rotate(12deg) translateX(22px); }
+.fan img:nth-child(2) { z-index: 1; top: 0; }
+.auth-card { position: relative; z-index: 2; width: min(460px, calc(100% - 32px)); justify-self: center; margin: -40px 0 32px; display: grid; gap: 16px; box-shadow: 0 18px 40px rgba(20, 18, 70, .14); }
+.auth-top { display: flex; gap: 14px; align-items: center; }
+.auth-top h2 { font-size: 1.5rem; }
+.auth-foot { border-top: 1px dashed var(--line); padding-top: 14px; text-align: center; }
+@media (max-width: 520px) { .perks { display: none; } }
+@media (min-width: 900px) {
+  .auth { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-content: stretch; }
+  .auth-hero { grid-template-columns: minmax(0, 1fr); align-content: center; padding: 56px 56px; }
+  .fan { width: 300px; height: 280px; margin-top: 18px; }
+  .fan img { width: 150px; left: 70px; top: 26px; }
+  .fan img:nth-child(1) { transform: rotate(-12deg) translateX(-70px); }
+  .fan img:nth-child(3) { transform: rotate(10deg) translateX(70px); }
+  .auth-card { margin: 0; align-self: center; }
+}
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
-.tabs button { font: 700 .92rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 9px 10px; border-radius: 999px; cursor: pointer; }
+.tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 .92rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 10px; border-radius: 999px; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
 .shelf-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; padding-block: 28px 8px; }
 .shelf-head h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem); }
@@ -28,6 +57,17 @@
 .book .meta { font-size: .84rem; color: var(--muted); margin-top: 4px; }
 .book .btn { margin-top: 10px; }
 .promo-note { margin-top: 8px; }
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 52px; }
+.pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); padding: 8px; border-radius: 8px; cursor: pointer; display: grid; }
+/* Announcements from Adeel Sir, on top of the library. */
+.news { display: grid; gap: 10px; margin-top: 12px; }
+.news-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--sun); border-radius: var(--radius); padding: 14px 14px 14px 16px; }
+.news-card .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--night); color: var(--sun); display: grid; place-items: center; }
+.news-card h3 { font: 700 1rem var(--font-body); }
+.news-card p { white-space: pre-wrap; font-size: .95rem; margin-top: 2px; overflow-wrap: anywhere; }
+.news-card .when { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+.news-card .x { border: 0; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; padding: 4px 6px; border-radius: 8px; cursor: pointer; }
 .pw { margin-block: 16px 40px; }
 .pw summary { cursor: pointer; font-weight: 600; }
 .pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
@@ -53,40 +93,51 @@
     <div class="card login-card">
       <h1>The online reader is being set up</h1>
       <p>The online reader is not switched on yet. Please try again later, or ask Adeel Sir on WhatsApp.</p>
-      <a class="btn btn-wa" id="setup-wa" href="#" target="_blank" rel="noopener">WhatsApp par poochho</a>
+      <a class="btn btn-wa" id="setup-wa" href="#" target="_blank" rel="noopener">Ask on WhatsApp</a>
       <a class="btn btn-line" href="index.html#free-sample">Read the free sample meanwhile</a>
     </div>
   </div>
 
-  <div class="wrap center-screen" id="v-login" hidden>
-    <div class="card login-card">
-      <div class="seal">Adeel<br>Sir</div>
-      <h1>Read your chapters</h1>
+  <div class="auth" id="v-login" hidden>
+    <div class="auth-hero">
+      <div>
+        <div class="auth-eyebrow">Chemophile online book</div>
+        <h1>Your chemistry book, <span>on your phone.</span></h1>
+        <p class="lede">Class 11 and 12 Chemistry by Adeel Sir, explained in easy Hinglish.</p>
+        <ul class="perks">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Turn the pages like a real book</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Diagrams, solved examples and exam answers</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Opens right where you left off</li>
+        </ul>
+      </div>
+      <div class="fan" aria-hidden="true"><img src="assets/thumbs/ch4-1.webp" alt="" width="360" height="509"><img src="assets/thumbs/ch1-1.webp" alt="" width="360" height="509"><img src="assets/thumbs/c12-ch1-1.webp" alt="" width="360" height="509"></div>
+    </div>
+
+    <div class="card auth-card">
+      <div class="auth-top"><div class="seal">Adeel<br>Sir</div><div><h2>Welcome back</h2><p class="hint">Log in to read your chapters.</p></div></div>
       <div class="tabs" role="tablist" aria-label="How to sign in">
-        <button type="button" role="tab" aria-selected="true" data-tab="login-form">Login ID</button>
-        <button type="button" role="tab" aria-selected="false" data-tab="promo-form">Promo code</button>
+        <button type="button" role="tab" aria-selected="true" data-tab="login-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Login ID</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="promo-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/></svg>Promo code</button>
       </div>
 
       <form id="login-form" class="login-card" novalidate>
-        <p class="hint">Enter the login ID and password Adeel Sir sent you after your order.</p>
         <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. rahul11"></div>
-        <div class="field"><label for="login-pw">Password</label><input id="login-pw" type="password" autocomplete="current-password"></div>
+        <div class="field"><label for="login-pw">Password</label><div class="pw-wrap"><input id="login-pw" type="password" autocomplete="current-password"><button class="pw-eye" type="button" id="pw-eye" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="msg bad" id="login-err" role="alert" hidden></div>
         <button class="btn btn-sun" type="submit" id="login-btn">Log in</button>
-        <p class="hint">One ID works on one phone or tablet only. It locks to the first device you log in on.</p>
+        <p class="hint">Use the ID and password Adeel Sir sent you on WhatsApp. One ID works on one phone only.</p>
       </form>
 
       <form id="promo-form" class="login-card" novalidate hidden>
-        <p class="hint">Got a promo code from Adeel Sir? Enter the code, your name and WhatsApp number. The book opens on this phone.</p>
         <div class="field"><label for="promo-code">Promo code</label><input id="promo-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="e.g. ADEEL2026"></div>
         <div class="field"><label for="promo-name">Your name</label><input id="promo-name" autocomplete="name"></div>
         <div class="field"><label for="promo-phone">WhatsApp number</label><input id="promo-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
         <div class="msg bad" id="promo-err" role="alert" hidden></div>
         <button class="btn btn-sun" type="submit" id="promo-btn">Open the book</button>
-        <p class="hint">A promo book opens only on this phone and in this browser, until the code's last date.</p>
+        <p class="hint">The book opens on this phone, in this browser, until the code's last date.</p>
       </form>
 
-      <p class="hint">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.</p>
+      <p class="hint auth-foot">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.</p>
     </div>
   </div>
 
@@ -105,6 +156,7 @@
         <div><h1 id="hello"></h1><p>Your chapters. Tap a cover to open the book; it opens where you left off.</p></div>
       </div>
       <div id="promo-note" class="msg warn promo-note" hidden></div>
+      <div id="news" class="news"></div>
       <div id="logout-confirm" class="card promo-note" role="alertdialog" aria-labelledby="logout-q" hidden>
         <p id="logout-q"><b>Log out of this promo book?</b></p>
         <p class="hint" style="margin-top: 6px">To open it again you will have to enter the promo code again, which uses one more place on the code. If the code has reached its limit or expired by then, the book will not open.</p>
@@ -131,7 +183,7 @@
 <script src="js/flipbook.js"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, getDocs, query, where, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -174,7 +226,13 @@ async function kick(title, text, waText) {
   try { await signOut(auth); } catch (e) {}
 }
 
-$("#setup-wa").href = wa("Hello Adeel Sir, Chemophile online reader kab chalu hoga?");
+$("#setup-wa").href = wa("Hello Adeel Sir, when will the Chemophile online reader start?");
+$("#pw-eye").addEventListener("click", () => {
+  const i = $("#login-pw"), show = i.type === "password";
+  i.type = show ? "text" : "password";
+  $("#pw-eye").setAttribute("aria-pressed", String(show));
+  $("#pw-eye").setAttribute("aria-label", show ? "Hide password" : "Show password");
+});
 $("#blocked-back").addEventListener("click", () => show("v-login"));
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]");
@@ -189,7 +247,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -376,10 +434,41 @@ async function start(user) {
   renderLibrary();
 }
 
+// ---------- announcements ----------
+let newsCache = null;
+const linkify = t => esc(t).replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+async function showNews() {
+  const box = $("#news");
+  try {
+    if (!newsCache) newsCache = (await getDocs(query(collection(db, "announcements"), where("active", "==", true)))).docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { box.innerHTML = ""; return; }
+  if (!me) return;
+  const now = new Date(), who = me.promo ? "promo" : "students", keys = me.chapters || [];
+  const list = newsCache.filter(n =>
+    !(n.expiresAt && n.expiresAt.toDate && n.expiresAt.toDate() < now)
+    && (me.admin || !n.audience || n.audience === "all" || n.audience === who)
+    && (me.admin || !n.cls || keys.some(k => k.startsWith(n.cls + "-")))
+    && store.get("chemophile-news-hide-" + n.id) !== "1"
+  ).sort((a, b) => ((b.createdAt && b.createdAt.toMillis()) || 0) - ((a.createdAt && a.createdAt.toMillis()) || 0));
+  box.innerHTML = list.map(n => `<div class="news-card" data-nid="${n.id}">
+    <div class="ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg></div>
+    <div style="min-width:0">${n.title ? `<h3>${esc(n.title)}</h3>` : ""}<p>${linkify(n.text)}</p><div class="when">Adeel Sir${n.createdAt ? " · " + fmtDate(n.createdAt.toDate()) : ""}</div></div>
+    <button class="x" type="button" aria-label="Hide this announcement">×</button>
+  </div>`).join("");
+}
+$("#news").addEventListener("click", e => {
+  const b = e.target.closest(".x");
+  if (!b) return;
+  const card = b.closest(".news-card");
+  store.set("chemophile-news-hide-" + card.dataset.nid, "1");
+  card.remove();
+});
+
 // ---------- library ----------
 const chapterInfo = new Map();
 async function renderLibrary() {
   show("v-library");
+  showNews();
   $("#hello").textContent = `Hello ${(me.name || "").split(" ")[0] || me.loginId}!`;
   const note = $("#promo-note");
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;

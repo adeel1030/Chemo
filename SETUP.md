@@ -103,6 +103,13 @@ Dhyan rakhne wali baatein:
 - Code hamesha ke liye hatana ho to **Delete** dabao. Warning mein ek tick ka option aata hai: tick karoge to jin logon ne yeh code lagaya hai unki book bhi turant band ho jayegi. Tick nahi karoge to woh aakhri date tak padhte rahenge. Code ki "Kisne use kiya" list bhi delete ho jaati hai.
 - Promo wali book sirf usi phone ke usi browser mein rehti hai. Agar user browser ka data clear kar de, to use dobara code lagana padega, aur isse code ka ek use aur gina jayega.
 
+## 11. Announcements (sabko ek message)
+
+1. Admin panel mein **Announcements** (phone par **News**) kholo.
+2. Heading (chaho to), message, **Who sees it** (sab, sirf ID wale students, ya sirf promo users), **Which class** aur chaho to aakhri date chuno.
+3. **Post announcement** dabao. Students ko reader kholte hi library ke upar yeh message dikhega. Message mein link ho to woh click ho jaata hai.
+4. Student × dabakar message apne phone se hata sakta hai. Aap **Switch off** se sabse hata sakte ho, ya **Delete** kar sakte ho.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**
