@@ -47,6 +47,11 @@
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
 @media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
+.confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
+.confirm p { margin: 0; font-size: .92rem; }
+.confirm label { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; cursor: pointer; }
+.confirm input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--bad); }
+.confirm .btn-danger { background: color-mix(in srgb, var(--bad) 16%, transparent); font-weight: 700; }
 progress { width: 100%; height: 10px; accent-color: var(--accent); }
 </style>
 </head>
@@ -159,7 +164,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc } from "./js/fb.js";
 
@@ -282,7 +287,7 @@ $("#new-form").addEventListener("submit", async e => {
     picks($("#new-ch"));
     loadStudents();
   } catch (ex) {
-    fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" already exists. Choose another ID.`
+    fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" already exists (it may belong to a deleted student). Choose another ID.`
       : ex.code === "auth/operation-not-allowed" ? "Email/Password login is not switched on in Firebase. See step 3 in SETUP.md."
       : "Could not create the ID: " + (ex.message || ex.code));
   } finally {
@@ -294,6 +299,21 @@ $("#creds-copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText($("#creds-text").textContent); $("#creds-copy").textContent = "Copied"; }
   catch (e) { const r = document.createRange(); r.selectNodeContents($("#creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
 });
+
+// ---------- deleting ----------
+// A student's records: the log of tries from other devices, then the user document itself.
+async function studentRefs(uid) {
+  const tries = await getDocs(collection(db, "users", uid, "attempts"));
+  return [...tries.docs.map(d => d.ref), doc(db, "users", uid)];
+}
+// Firestore takes at most 500 writes in one batch.
+async function deleteAll(refs) {
+  for (let i = 0; i < refs.length; i += 400) {
+    const batch = writeBatch(db);
+    refs.slice(i, i + 400).forEach(r => batch.delete(r));
+    await batch.commit();
+  }
+}
 
 // ---------- students list ----------
 let students = [];
@@ -327,6 +347,14 @@ function renderStudents() {
         <button class="btn btn-line btn-sm" type="button" data-act="edit">Change chapters</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
+        <button class="btn btn-danger btn-sm" type="button" data-act="del">Delete</button>
+      </div>
+      <div class="confirm" role="alertdialog" aria-label="Delete ${esc(s.name)}" hidden>
+        <p><b>Delete ${esc(s.name)} for ever?</b></p>
+        <p>${s.promo
+          ? `Their book closes right away on their phone, and this cannot be undone. The promo code's used count does not go down, so their place on code ${esc(s.promo)} stays used.`
+          : `Their book closes right away on every device, and this cannot be undone. The login ID <b>${esc(s.loginId)}</b> cannot be given to anyone again, so a new ID is needed if they come back. To stop access only for a while, use <b>Block</b> instead.`}</p>
+        <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-act="del-yes">Yes, delete</button><button class="btn btn-line btn-sm" type="button" data-act="del-no">Cancel</button></div>
       </div>
       <div class="edit" hidden>
         <div class="chap-picks"></div>
@@ -359,7 +387,15 @@ $("#students").addEventListener("click", async e => {
       await updateDoc(ref, { active });
       s.active = active; renderStudents();
     }
+    if (b.dataset.act === "del") { const c = row.querySelector(".confirm"); c.hidden = false; c.querySelector("[data-act=del-no]").focus(); }
+    if (b.dataset.act === "del-no") row.querySelector(".confirm").hidden = true;
+    if (b.dataset.act === "del-yes") {
+      b.disabled = true;
+      await deleteAll(await studentRefs(s.uid));
+      students = students.filter(x => x !== s); renderStudents();
+    }
   } catch (ex) {
+    b.disabled = false;
     note("Not saved: " + (ex.message || ex.code), "bad");
   }
 });
@@ -426,8 +462,16 @@ function renderPromos() {
         <a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
         <button class="btn btn-line btn-sm" type="button" data-pact="who">Who used it</button>
         <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Switch on" : "Switch off"}</button>
+        <button class="btn btn-danger btn-sm" type="button" data-pact="del">Delete</button>
       </div>
       <div class="who-list sub" hidden></div>
+      <div class="confirm" role="alertdialog" aria-label="Delete code ${esc(p.code)}" hidden>
+        <p><b>Delete promo code ${esc(p.code)} for ever?</b></p>
+        <p>Nobody will be able to enter this code any more, and its "Who used it" list is deleted too. This cannot be undone.</p>
+        <label hidden><input type="checkbox" class="del-users"> <span></span></label>
+        <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-pact="del-yes">Yes, delete</button><button class="btn btn-line btn-sm" type="button" data-pact="del-no">Cancel</button></div>
+      </div>
+      <div class="msg" role="status" hidden></div>
     </div>`;
   }).join("") : `<p class="hint">No promo codes yet.</p>`;
 }
@@ -435,17 +479,46 @@ $("#promos").addEventListener("click", async e => {
   const b = e.target.closest("[data-pact]");
   if (!b) return;
   const row = b.closest(".stu"), p = promos.find(x => x.code === row.dataset.code);
-  if (b.dataset.pact === "toggle") {
-    const active = p.active === false;
-    await updateDoc(doc(db, "promos", p.code), { active });
-    p.active = active; renderPromos();
-  }
-  if (b.dataset.pact === "who") {
-    const box = row.querySelector(".who-list");
-    const snap = await getDocs(collection(db, "promos", p.code, "redemptions"));
-    const list = snap.docs.map(d => d.data()).sort((a, b) => ((a.at && a.at.seconds) || 0) - ((b.at && b.at.seconds) || 0));
-    box.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Nobody has used it yet.";
-    box.hidden = false;
+  const box = row.querySelector(".confirm");
+  const promoUsers = () => getDocs(query(collection(db, "users"), where("promo", "==", p.code)));
+  try {
+    if (b.dataset.pact === "del") {
+      // Say how many people have the book open with this code, and let the admin remove them too.
+      const n = (await promoUsers()).size, opt = box.querySelector("label");
+      opt.hidden = !n;
+      opt.querySelector(".del-users").checked = false;
+      opt.querySelector("span").textContent = `Also remove the ${n === 1 ? "1 person" : n + " people"} who opened the book with this code. Their book closes right away. If you leave this unticked, they keep reading until ${fmtDate(p.expiresAt)}.`;
+      box.hidden = false;
+      box.querySelector("[data-pact=del-no]").focus();
+    }
+    if (b.dataset.pact === "del-no") box.hidden = true;
+    if (b.dataset.pact === "del-yes") {
+      b.disabled = true;
+      const refs = [];
+      if (box.querySelector(".del-users").checked) {
+        for (const u of (await promoUsers()).docs) refs.push(...await studentRefs(u.id));
+      }
+      const reds = await getDocs(collection(db, "promos", p.code, "redemptions"));
+      refs.push(...reds.docs.map(d => d.ref), doc(db, "promos", p.code));
+      await deleteAll(refs);
+      promos = promos.filter(x => x !== p); renderPromos();
+      loadStudents();
+    }
+    if (b.dataset.pact === "toggle") {
+      const active = p.active === false;
+      await updateDoc(doc(db, "promos", p.code), { active });
+      p.active = active; renderPromos();
+    }
+    if (b.dataset.pact === "who") {
+      const who = row.querySelector(".who-list");
+      const snap = await getDocs(collection(db, "promos", p.code, "redemptions"));
+      const list = snap.docs.map(d => d.data()).sort((a, b) => ((a.at && a.at.seconds) || 0) - ((b.at && b.at.seconds) || 0));
+      who.innerHTML = list.length ? list.map(r => `${esc(r.name)} · ${esc(r.phone)}${r.at ? " · " + fmtDate(r.at) : ""}${r.deviceInfo ? " · " + esc(r.deviceInfo) : ""}`).join("<br>") : "Nobody has used it yet.";
+      who.hidden = false;
+    }
+  } catch (ex) {
+    b.disabled = false;
+    const m = row.querySelector(".msg"); m.className = "msg bad"; m.textContent = "Not saved: " + (ex.message || ex.code); m.hidden = false;
   }
 });
 
