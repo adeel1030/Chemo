@@ -8,7 +8,7 @@
 //   }).open();
 (function () {
   const CSS = `
-  .fb { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); overflow: hidden; color: #f3f2ff;
+  .fb { position: fixed; inset: 0; z-index: 70; overscroll-behavior: contain; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); overflow: hidden; color: #f3f2ff;
     background: radial-gradient(70% 60% at 50% 45%, #2c2577, #15134a 70%), #15134a; font-family: "Fira Sans", "Segoe UI", Roboto, system-ui, sans-serif;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -22,7 +22,7 @@
   .fb-btn.sun { background: #ffd24a; color: #2a2100; }
   .fb-btn:focus-visible, .fb-range:focus-visible { outline: 3px solid #ffd24a; outline-offset: 2px; }
   .fb-stage { position: relative; display: grid; place-items: center; min-height: 0; padding: 4px 8px; overflow: hidden; }
-  .fb-book { margin: 0 auto; }
+  .fb-book { margin: 0 auto; touch-action: none; cursor: pointer; }
   .fb-page { background: #fff; overflow: hidden; }
   .fb-page > img, .fb-page > canvas { width: 100%; height: 100%; display: block; object-fit: contain; pointer-events: none; }
   .fb-ph { width: 100%; height: 100%; display: grid; place-items: center; align-content: center; gap: 10px; color: #6b6990; font-size: .9rem; background: #f6f6fb; }
@@ -77,7 +77,7 @@
           <button class="fb-btn" type="button" data-fb="zoom">Zoom</button>
           <button class="fb-btn sun" type="button" data-fb="toc">${o.toc.length ? "Topics" : "Pages"}</button>
         </div>
-        <div class="fb-stage"><div class="fb-book"></div><div class="fb-hint">Drag a page corner or swipe to turn</div>
+        <div class="fb-stage"><div class="fb-book"></div><div class="fb-hint">Swipe, or tap the right or left side to turn</div>
           <div class="fb-panel" hidden><div class="fb-panel-body">
             <div class="fb-panel-top"><h2>${o.toc.length ? "Topics" : "Go to page"}</h2><button class="fb-btn" type="button" data-fb="toc-close">Close</button></div>
             <form class="fb-jump"><input type="number" inputmode="numeric" min="1" max="${this.n}" placeholder="Page number (1–${this.n})" aria-label="Page number"><button class="fb-btn" type="submit">Go</button></form>
@@ -112,13 +112,41 @@
       });
       this.onKey = e => {
         if (e.key === "Escape") { if (!this.$zoom.hidden) this.$zoom.hidden = true; else if (!this.$panel.hidden) this.$panel.hidden = true; else this.close(); }
-        if (e.key === "ArrowRight") this.flip && this.flip.flipNext();
-        if (e.key === "ArrowLeft") this.flip && this.flip.flipPrev();
+        if (e.key === "ArrowRight") this.turn(1);
+        if (e.key === "ArrowLeft") this.turn(-1);
         if ((e.ctrlKey || e.metaKey) && ["s", "p"].includes(e.key.toLowerCase())) e.preventDefault();
       };
       document.addEventListener("keydown", this.onKey);
+      // Swipes and taps are read here rather than by the page-flip library, which drops slow or short swipes:
+      // any clear sideways swipe turns the page, and a tap on the right or left half turns forward or back.
+      const stage = q(".fb-stage");
+      stage.addEventListener("pointerdown", e => {
+        if (e.button > 0 || !e.target.closest(".fb-book")) return;
+        this.ptr = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      });
+      stage.addEventListener("pointerup", e => {
+        const p = this.ptr; this.ptr = null;
+        if (!p || p.id !== e.pointerId) return;
+        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) return this.turn(dx < 0 ? 1 : -1);
+        if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+          const r = q(".fb-book").getBoundingClientRect();
+          this.turn(e.clientX > r.left + r.width / 2 ? 1 : -1);
+        }
+      });
+      stage.addEventListener("pointercancel", () => { this.ptr = null; });
+      // Phones resize the screen a little when the address bar shows or hides; only rebuild for a real change
+      // (rotation, a new window size), and never in the middle of a page turn.
       let t = null;
-      this.onResize = () => { clearTimeout(t); t = setTimeout(() => this.build(), 250); };
+      this.onResize = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          const w = stage.clientWidth, h = stage.clientHeight;
+          if (Math.abs(w - this.sw) < 40 && Math.abs(h - this.sh) < 140) return;
+          if (this.state !== "read") return this.onResize();
+          this.build();
+        }, 250);
+      };
       window.addEventListener("resize", this.onResize);
       setTimeout(() => { const h = q(".fb-hint"); if (h) h.style.opacity = "0"; }, 3500);
       this.build();
@@ -129,7 +157,8 @@
     // (Re)creates the book for the current screen size. Two facing pages when the screen is wide, one when narrow.
     build() {
       const stage = this.el.querySelector(".fb-stage");
-      const W = stage.clientWidth - 16, H = stage.clientHeight - 8;
+      this.sw = stage.clientWidth; this.sh = stage.clientHeight;
+      const W = this.sw - 16, H = this.sh - 8;
       const ratio = 595 / 842;
       const spread = W > H && W >= 700;
       let pw = Math.floor(Math.min(spread ? W / 2 : W, H * ratio));
@@ -154,10 +183,16 @@
       }
       this.flip = new St.PageFlip(book, {
         width: pw, height: ph, size: "fixed", showCover: true, usePortrait: !spread,
-        mobileScrollSupport: false, flippingTime: 650, maxShadowOpacity: 0.45, drawShadow: true, startPage: this.cur - 1
+        mobileScrollSupport: false, useMouseEvents: false, flippingTime: 600, maxShadowOpacity: 0.45, drawShadow: true, startPage: this.cur - 1
       });
       this.flip.loadFromHTML(this.pages);
+      this.state = "read"; this.queued = 0;
       this.flip.on("flip", e => this.setPage(e.data + 1));
+      // A turn asked for during an animation runs right after it, instead of being lost.
+      this.flip.on("changeState", e => {
+        this.state = e.data;
+        if (e.data === "read" && this.queued) { const d = this.queued; this.queued = 0; this.turn(d); }
+      });
       this.setPage(this.flip.getCurrentPageIndex() + 1);
     }
 
@@ -208,6 +243,12 @@
       }
     }
 
+    turn(dir) {
+      if (!this.flip) return;
+      if (this.state !== "read") { this.queued = dir; return; }
+      if (dir > 0) this.flip.flipNext(); else this.flip.flipPrev();
+    }
+
     go(n) {
       n = Math.min(Math.max(1, n), this.n);
       if (!this.flip) return;
@@ -224,8 +265,8 @@
       if (!b) return;
       const a = b.dataset.fb;
       if (a === "close") this.close();
-      if (a === "prev") this.flip && this.flip.flipPrev();
-      if (a === "next") this.flip && this.flip.flipNext();
+      if (a === "prev") this.turn(-1);
+      if (a === "next") this.turn(1);
       if (a === "toc") this.$panel.hidden = false;
       if (a === "toc-close") this.$panel.hidden = true;
       if (a === "zoom") this.zoom();

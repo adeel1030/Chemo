@@ -65,6 +65,8 @@ Yahi rules tay karte hain ki student sirf apne kharide hue chapters padh sake, s
 2. **Chapters upload** tab kholo.
 3. Class 11 aur Class 12 ke har chapter ke saamne uski PDF chuno aur **Upload karo** dabao. Ek chapter mein 1–2 minute lagte hain. Upload khatam hone tak page band mat karna, aur Chrome use karna.
 
+Upload hone ke baad chapter **Uploaded and locked** dikhta hai, taaki galti se dobara upload na ho. Badalna ho to **Unlock to replace** dabao, warning padh kar **Yes, unlock** dabao, nayi PDF chuno aur **Upload replacement** dabao. Nayi file purane saare pages ki jagah le leti hai.
+
 PDF ke har page ki image ban kar Firebase mein jaati hai. PDF file khud kahin save nahi hoti, aur students ko download ka koi option nahi milta.
 
 ## 9. Student ki ID banao (har order ke baad)
