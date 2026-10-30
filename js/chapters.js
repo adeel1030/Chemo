@@ -278,13 +278,13 @@ CLASS_12.forEach(c => { c.cls = 12; CHAPTERS.push(c); });
 
 // Free sample books (whole PDFs, free to download). Their pages are also in assets/samples/<class>/NN.webp.
 const SAMPLE_BOOKS = {
-  11: { title: "Chemophile Part 1 (Class 11): Free sample", pdf: "samples/Chemophile-Class-11-Free-Sample.pdf", pages: 25, sizeMB: 4.3 },
-  12: { title: "Chemophile Part 2 (Class 12): Free sample", pdf: "samples/Chemophile-Class-12-Free-Sample.pdf", pages: 27, sizeMB: 4.4 }
+  11: { title: "Chemophile Part 1 (Class 11): free sample", pdf: "samples/Chemophile-Class-11-Free-Sample.pdf", pages: 25, sizeMB: 4.3 },
+  12: { title: "Chemophile Part 2 (Class 12): free sample", pdf: "samples/Chemophile-Class-12-Free-Sample.pdf", pages: 27, sizeMB: 4.4 }
 };
 const pad2 = n => String(n).padStart(2, "0");
 const sampleImg = (cls, p, thumb) => `assets/samples/${cls}/${thumb ? "t" : ""}${pad2(p)}.webp`;
 const assetName = c => c.cls === 11 ? `ch${c.n}` : `c12-ch${c.n}`;
 const coverOf = c => `assets/thumbs/${assetName(c)}-1.webp`;
 // Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
-const samplePagesOf = c => [[1, "Cover"], [3, "Is chapter mein kya hai"], [4, "Topic 1 ka pehla page"], [5, "Page 5"], [6, "Page 6"]]
+const samplePagesOf = c => [[1, "Cover"], [3, "Contents"], [4, "Topic 1, first page"], [5, "Page 5"], [6, "Page 6"]]
   .map(([p, label]) => [`assets/thumbs/${assetName(c)}-${p}.webp`, `assets/pages/${assetName(c)}-${p}.webp`, label]);
