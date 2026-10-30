@@ -44,18 +44,49 @@
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 .92rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 10px; border-radius: 999px; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
-.shelf-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; padding-block: 28px 8px; }
-.shelf-head h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem); }
-.shelf-head p { color: var(--muted); }
-.lib-group { font: 700 .8rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 18px; }
-.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; padding-block: 12px 24px; }
-.book { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
-.book .cv { width: 92px; aspect-ratio: 595 / 842; border-radius: 6px; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .9rem var(--font-display); text-align: center; padding: 0; border: 0; box-shadow: 0 6px 14px rgba(20,18,70,.2); overflow: hidden; cursor: pointer; }
-.book .cv img { width: 100%; height: 100%; object-fit: cover; }
-.book .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.book h2 { font-size: 1.12rem; margin-top: 2px; }
-.book .meta { font-size: .84rem; color: var(--muted); margin-top: 4px; }
-.book .btn { margin-top: 10px; }
+/* Library: a welcome band with the student's numbers, then Continue reading, the chapters, and the account card. */
+.portal-hero { background: radial-gradient(circle at 90% 0%, rgba(255, 210, 74, .2), transparent 45%), var(--night); color: var(--night-fg); padding-block: 26px 58px; }
+.hero-in { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: end; justify-content: space-between; }
+.portal-hero h1 { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.5rem); margin-top: 4px; }
+.portal-hero .lede { color: var(--night-muted); margin-top: 6px; }
+.hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-stats div { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); border-radius: 12px; padding: 10px 14px; min-width: 96px; }
+.hero-stats b { display: block; font: 800 1.35rem/1.1 var(--font-display); color: var(--sun); }
+.hero-stats span { font-size: .78rem; color: var(--night-muted); }
+.portal { margin-top: 20px; display: grid; gap: 16px; padding-bottom: 40px; }
+.portal.lift { margin-top: -38px; }
+.portal > div:empty { display: none; }
+.continue { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px; box-shadow: 0 14px 34px rgba(20, 18, 70, .12); }
+.continue .cv { width: 96px; }
+.continue .tag { font: 700 .74rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.continue h2 { font-size: 1.25rem; margin-top: 2px; }
+.bar { height: 8px; border-radius: 4px; background: var(--paper); overflow: hidden; margin-top: 8px; }
+.bar i { display: block; height: 100%; background: var(--sun); border-radius: 4px; }
+.bar.done i { background: var(--good); }
+.lib-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 8px; }
+.lib-tools h2 { font-size: 1.35rem; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 .86rem var(--font-body); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--sun); }
+.lib-group { font: 700 .8rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; padding-block: 10px 6px; }
+.book { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; align-items: start; padding: 14px; }
+.cv { width: 84px; aspect-ratio: 595 / 842; border-radius: 6px; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 .9rem var(--font-display); text-align: center; padding: 0; border: 0; box-shadow: 0 6px 14px rgba(20,18,70,.22); overflow: hidden; cursor: pointer; }
+.cv img { width: 100%; height: 100%; object-fit: cover; }
+.cv:disabled { cursor: default; }
+.book.soon { opacity: .62; }
+.book .ch { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.book h3 { font: 700 1.08rem/1.2 var(--font-display); margin-top: 2px; }
+.meta { font-size: .82rem; color: var(--muted); margin-top: 6px; }
+.book .btn, .continue .btn { margin-top: 10px; }
+.upsell { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; background: var(--warn-bg); border: 1px solid transparent; }
+.upsell h3 { font: 700 1.1rem var(--font-display); }
+.upsell .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct { display: grid; gap: 14px; }
+.acct dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 10px 20px; margin: 0; }
+.acct dt { font-size: .76rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+.acct dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.acct .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .promo-note { margin-top: 8px; }
 .pw-wrap { position: relative; }
 .pw-wrap input { padding-right: 52px; }
@@ -68,7 +99,7 @@
 .news-card p { white-space: pre-wrap; font-size: .95rem; margin-top: 2px; overflow-wrap: anywhere; }
 .news-card .when { font-size: .78rem; color: var(--muted); margin-top: 6px; }
 .news-card .x { border: 0; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; padding: 4px 6px; border-radius: 8px; cursor: pointer; }
-.pw { margin-block: 16px 40px; }
+.pw { border-top: 1px dashed var(--line); padding-top: 12px; }
 .pw summary { cursor: pointer; font-weight: 600; }
 .pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
 .pw .field { flex: 1 1 220px; }
@@ -151,13 +182,14 @@
   </div>
 
   <div id="v-library" hidden>
-    <div class="wrap">
-      <div class="shelf-head">
-        <div><h1 id="hello"></h1><p>Your chapters. Tap a cover to open the book; it opens where you left off.</p></div>
+    <section class="portal-hero">
+      <div class="wrap hero-in">
+        <div><div class="auth-eyebrow">Your Chemophile library</div><h1 id="hello"></h1><p class="lede" id="hero-sub"></p></div>
+        <div class="hero-stats" id="hero-stats"></div>
       </div>
-      <div id="promo-note" class="msg warn promo-note" hidden></div>
-      <div id="news" class="news"></div>
-      <div id="logout-confirm" class="card promo-note" role="alertdialog" aria-labelledby="logout-q" hidden>
+    </section>
+    <div class="wrap portal">
+      <div id="logout-confirm" class="card" role="alertdialog" aria-labelledby="logout-q" hidden>
         <p id="logout-q"><b>Log out of this promo book?</b></p>
         <p class="hint" style="margin-top: 6px">To open it again you will have to enter the promo code again, which uses one more place on the code. If the code has reached its limit or expired by then, the book will not open.</p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px">
@@ -165,15 +197,29 @@
           <button class="btn btn-line btn-sm" type="button" id="logout-no">Stay logged in</button>
         </div>
       </div>
+      <div id="continue"></div>
+      <div id="promo-note" class="msg warn" hidden></div>
+      <div id="news" class="news"></div>
+      <div id="upsell"></div>
+      <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
       <div id="lib"></div>
-      <details class="card pw" id="pw-box">
-        <summary>Change password</summary>
-        <form id="pw-form" novalidate>
-          <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters"></div>
-          <button class="btn btn-line" type="submit">Change password</button>
-        </form>
-        <div class="msg" id="pw-msg" role="status" hidden style="margin-top: 12px"></div>
-      </details>
+      <div class="card acct" id="acct-card">
+        <h2>My account</h2>
+        <dl id="acct"></dl>
+        <p class="hint" id="acct-tip"></p>
+        <div class="actions">
+          <a class="btn btn-wa btn-sm" id="help-wa" href="#" target="_blank" rel="noopener">Need help? WhatsApp Adeel Sir</a>
+          <button class="btn btn-line btn-sm" type="button" id="logout-2">Log out</button>
+        </div>
+        <details class="pw" id="pw-box">
+          <summary>Change password</summary>
+          <form id="pw-form" novalidate>
+            <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters"></div>
+            <button class="btn btn-line" type="submit">Change password</button>
+          </form>
+          <div class="msg" id="pw-msg" role="status" hidden style="margin-top: 12px"></div>
+        </details>
+      </div>
     </div>
   </div>
 </main>
@@ -289,6 +335,7 @@ $("#logout").addEventListener("click", () => {
   if (me && me.promo) {
     if ($("#v-library").hidden) renderLibrary();
     $("#logout-confirm").hidden = false;
+    $("#logout-confirm").scrollIntoView({ block: "center", behavior: "smooth" });
     $("#logout-no").focus();
     return;
   }
@@ -466,47 +513,103 @@ $("#news").addEventListener("click", e => {
 
 // ---------- library ----------
 const chapterInfo = new Map();
+let libCls = "all";
+// "Neha Gupta" → "Neha", but "Mr Verma" → "Mr Verma".
+const firstName = () => {
+  const w = (me.name || "").trim().split(/\s+/).filter(Boolean);
+  if (!w.length) return me.loginId;
+  return /^(mr|mrs|ms|miss|dr|prof|sir)\.?$/i.test(w[0]) && w[1] ? `${w[0]} ${w[1]}` : w[0];
+};
+// How far the student has read a chapter, from the last page they were on in this browser.
+function progress(k) {
+  const info = chapterInfo.get(k), total = info && info.pageCount, last = Number(store.get(`chemophile-last-${k}`)) || 0;
+  if (!total) return { ready: false };
+  const pct = last > 1 ? Math.min(100, Math.round((last / total) * 100)) : 0;
+  return { ready: true, total, last, pct, done: last >= total };
+}
 async function renderLibrary() {
   show("v-library");
   showNews();
-  $("#hello").textContent = `Hello ${(me.name || "").split(" ")[0] || me.loginId}!`;
-  const note = $("#promo-note");
+  const now = new Date(), h = now.getHours();
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  note.hidden = !me.promo && !expires && !me.admin;
+  const daysLeft = expires ? Math.max(0, Math.ceil((expires - now) / 864e5)) : null;
+  $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, ${firstName()}`;
+  $("#hero-sub").textContent = me.admin ? "Admin preview: every chapter, on any device." : me.promo ? `Special access with promo code ${me.promo}. Happy reading!` : "Pick up where you left off, or start a new chapter.";
+  const note = $("#promo-note");
+  note.hidden = !me.admin;
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
-  else if (me.promo) note.textContent = `Opened with promo code ${me.promo}${expires ? `, valid until ${fmtDate(expires)}` : ""}. The book opens only on this phone, so don't clear this browser's data.`;
-  else if (expires) note.textContent = `Your access is valid until ${fmtDate(expires)}.`;
   const keys = me.chapters || [];
-  if (!keys.length) {
-    $("#lib").innerHTML = `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`;
-    return;
-  }
   await Promise.all(keys.map(async k => {
     if (chapterInfo.has(k)) return;
     try { const s = await getDoc(doc(db, "chapters", k)); chapterInfo.set(k, s.exists() ? s.data() : null); }
     catch (e) { chapterInfo.set(k, null); }
   }));
+  const ready = keys.filter(k => progress(k).ready);
+  const pages = ready.reduce((n, k) => n + progress(k).total, 0);
+  $("#hero-stats").innerHTML = [
+    [keys.length, keys.length === 1 ? "chapter" : "chapters"],
+    [pages, "pages to read"],
+    ...(expires ? [[daysLeft, daysLeft === 1 ? "day left" : "days left"]] : []),
+  ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
+
+  // Continue reading: the chapter opened last, else the first one that is ready.
+  const recent = store.get("chemophile-recent");
+  const pick = ready.includes(recent) ? recent : ready.find(k => !progress(k).done) || ready[0];
+  if (pick) {
+    const c = findChapter(pick) || {}, pr = progress(pick), started = pr.last > 1;
+    $("#continue").innerHTML = `<div class="card continue">
+      <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : ""}</button>
+      <div style="min-width:0"><div class="tag">${started ? "Continue reading" : "Start reading"}</div>
+        <h2>${esc(c.title || pick)}</h2>
+        <div class="meta">Class ${c.cls} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
+        ${started ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
+        <button class="btn btn-sun btn-sm" type="button" data-read="${pick}">${started ? `Continue from page ${pr.last}` : "Open the book"}</button></div>
+    </div>`;
+  } else $("#continue").innerHTML = "";
+  $(".portal").classList.toggle("lift", !!pick);
+
+  $("#upsell").innerHTML = me.promo ? `<div class="card upsell"><div><h3>Enjoying the book?</h3><p class="hint">This promo ends${expires ? ` on ${fmtDate(expires)}` : " soon"}. Get your own ID to keep reading, or order the paperback.</p></div>
+    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices</a><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I read the Chemophile book with promo code ${me.promo}. I want to buy it.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>` : "";
+
+  const classes = [11, 12].filter(cls => keys.some(k => k.startsWith(cls + "-")));
+  if (!classes.includes(Number(libCls))) libCls = "all";
+  $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), `Class ${c}`])]
+    .map(([v, l]) => `<button class="chip" type="button" data-cls="${v}" aria-pressed="${libCls === v}">${l}</button>`).join("") : "";
   const card = k => {
-    const c = findChapter(k) || {};
-    const info = chapterInfo.get(k);
+    const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k);
     const [cls, n] = k.split("-");
     const title = c.title || (info && info.title) || `Chapter ${n}`;
-    const last = store.get(`chemophile-last-${k}`);
-    const ready = info && info.pageCount;
-    const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${n}`;
-    return `<div class="card book">
-      <button class="cv" type="button" ${ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
-      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h2>${esc(title)}</h2>
-      <div class="meta">${ready ? `${info.pageCount} pages` : "This chapter will be uploaded soon."}</div>
-      ${ready ? `<button class="btn btn-sun btn-sm" type="button" data-read="${k}">${last > 1 ? `Continue from page ${last}` : "Open book"}</button>` : ""}</div>
+    const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
+    const status = !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
+    return `<div class="card book${pr.ready ? "" : " soon"}">
+      <button class="cv" type="button" ${pr.ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
+      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h3>${esc(title)}</h3>
+        <div class="meta">${status}</div>
+        ${pr.ready && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
+        ${pr.ready ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>` : ""}</div>
     </div>`;
   };
-  $("#lib").innerHTML = [11, 12].map(cls => {
-    const list = keys.filter(k => k.startsWith(cls + "-"));
-    return list.length ? `<div class="lib-group">Class ${cls}</div><div class="lib">${list.map(card).join("")}</div>` : "";
-  }).join("");
+  $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
+    : classes.filter(cls => libCls === "all" || String(cls) === libCls).map(cls => {
+      const list = keys.filter(k => k.startsWith(cls + "-"));
+      return `${classes.length > 1 && libCls === "all" ? `<div class="lib-group">Class ${cls}</div>` : ""}<div class="lib">${list.map(card).join("")}</div>`;
+    }).join("");
+
+  const rows = me.admin ? [["Logged in as", "Adeel Sir (admin)"]] : [
+    ["Name", me.name || "-"],
+    me.promo ? ["Promo code", me.promo] : ["Login ID", me.loginId],
+    ["WhatsApp", me.phone || "-"],
+    ["This device", me.deviceInfo || "This phone"],
+    ["Access until", expires ? fmtDate(expires) : "No end date"],
+  ];
+  $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
+  $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
+    : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
+  $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
-$("#lib").addEventListener("click", e => {
+$("#lib-chips").addEventListener("click", e => { const b = e.target.closest("[data-cls]"); if (b) { libCls = b.dataset.cls; renderLibrary(); } });
+$("#logout-2").addEventListener("click", () => $("#logout").click());
+$("#v-library").addEventListener("click", e => {
   const b = e.target.closest("[data-read]");
   if (b) openBook(b.dataset.read);
 });
@@ -532,6 +635,7 @@ $("#pw-form").addEventListener("submit", async e => {
 function openBook(k) {
   const info = chapterInfo.get(k);
   if (!info || !info.pageCount) return;
+  store.set("chemophile-recent", k);
   const c = findChapter(k) || {};
   book = new Flipbook({
     title: c.short || c.title || info.title || k,
