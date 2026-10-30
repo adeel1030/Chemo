@@ -2,12 +2,12 @@
 // Fill these in once, following SETUP.md. These values are safe to keep public:
 // who can read what is enforced by firestore.rules, not by hiding this file.
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyDXGPdjkkxQJzytZBr3qrF71cifqKxnpOQ",
+  authDomain: "chemophile-ec269.firebaseapp.com",
+  projectId: "chemophile-ec269",
+  storageBucket: "chemophile-ec269.firebasestorage.app",
+  messagingSenderId: "865237485759",
+  appId: "1:865237485759:web:120759e2fadee101679e0a"
 };
 
 // The email Adeel Sir uses to log in to admin.html. Must match ADMIN_EMAIL in firestore.rules.
@@ -19,4 +19,4 @@ export const LOGIN_DOMAIN = "students.chemophile.app";
 
 // Full address of read.html once the site is live, used in the message sent to students.
 // Example: "https://adeel1030.github.io/Chemo/read.html"
-export const READER_URL = "";
+export const READER_URL = "https://adeel1030.github.io/Chemo/read.html";
