@@ -8,7 +8,7 @@
 //   }).open();
 (function () {
   const CSS = `
-  .fb { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; color: #f3f2ff;
+  .fb { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); overflow: hidden; color: #f3f2ff;
     background: radial-gradient(70% 60% at 50% 45%, #2c2577, #15134a 70%), #15134a; font-family: "Fira Sans", "Segoe UI", Roboto, system-ui, sans-serif;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
