@@ -339,15 +339,27 @@ else onAuthStateChanged(auth, async user => {
   $("#who").textContent = user.email;
   $("#logout").hidden = false;
   show("v-admin");
-  loadNews().catch(() => { $("#news").innerHTML = `<p class="msg bad">Announcements can't be read yet. Paste the latest Firestore rules (see SETUP.md, step 6).</p>`; });
-  Promise.all([loadStudents(), loadChapters(), loadPromos()]).catch(ex => {
-    const m = $("#load-err");
-    m.textContent = ex.code === "permission-denied"
-      ? "Data can't be read: the Firestore rules are not published, or the admin email in them is wrong. See step 6 in SETUP.md."
-      : "Data did not load: " + (ex.message || ex.code) + ". Check your internet and reload the page.";
-    m.hidden = false;
+  // Load each part on its own, so one failure doesn't hide the rest, and say exactly what Firebase answered.
+  const fails = [];
+  const run = (name, load, onFail) => load().catch(ex => {
+    console.error(name, ex);
+    fails.push(`${name}: ${why(ex)}`);
+    const m = $("#load-err"); m.innerHTML = fails.map(esc).join("<br>") + `<br><button class="btn btn-line btn-sm" type="button" onclick="location.reload()" style="margin-top: 8px">Reload</button>`; m.hidden = false;
+    if (onFail) onFail(ex);
   });
+  run("Students", loadStudents);
+  run("Promo codes", loadPromos);
+  run("Chapters", loadChapters, ex => { $("#chap-rows").innerHTML = `<p class="msg bad">Couldn't check which chapters are uploaded. ${esc(why(ex))}</p>`; });
+  run("Announcements", loadNews, ex => { $("#news").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
 });
+// Firestore error codes, in words the admin can act on. Nothing is deleted in any of these cases.
+function why(ex) {
+  const c = ex && ex.code;
+  return c === "permission-denied" ? "Firebase refused to share the data (permission-denied). The Firestore rules are not published, have a mistake, or have a different admin email. Paste the full rules again (SETUP.md, step 6)."
+    : c === "resource-exhausted" ? "Firebase's free daily limit is used up (resource-exhausted). Your data is safe; the limit resets around 1:30 pm India time. Firebase console → Usage shows it."
+    : c === "unavailable" || c === "deadline-exceeded" ? "No connection to Firebase. Check the internet and reload."
+    : `Firebase error (${c || (ex && ex.message) || ex}). Reload the page; if it stays, send this text to the developer.`;
+}
 
 $("#login-form").addEventListener("submit", async e => {
   e.preventDefault();
