@@ -204,6 +204,7 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
           <div class="field"><label for="s-phone">WhatsApp number</label><input id="s-phone" inputmode="tel" autocomplete="off" placeholder="10 digit"></div>
           <div class="field"><label for="s-id">Login ID</label><input id="s-id" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="rahul11"><span class="hint">Lowercase letters and numbers, 3 to 24 characters</span></div>
           <div class="field"><label for="s-pw">Password</label><div class="pw-row"><input id="s-pw" autocomplete="off"><button class="btn btn-line btn-sm" type="button" id="gen-pw">New one</button></div></div>
+          <div class="field"><label for="s-till">Access until</label><input id="s-till" type="date"><span class="hint">The ID stops working after 11:59 pm that day. Leave it empty for no end date.</span></div>
         </div>
         <div>
           <div class="section-title" style="margin-bottom: 0"><b>Chapters bought</b><button class="btn btn-line btn-sm" type="button" id="all-ch">Select all</button></div>
@@ -291,6 +292,11 @@ const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => {
 const fmtDate = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
 const chName = k => { const c = findChapter(k); return c ? `Ch ${c.n} ${c.short || c.title}` : k; };
 const allKeys = () => CHAPTERS.map(chapterKey);
+// Access dates: a "YYYY-MM-DD" date input means "until 11:59 pm that day".
+const endOfDay = v => v ? Timestamp.fromDate(new Date(v + "T23:59:59")) : null;
+const toInput = ts => { if (!ts || !ts.toDate) return ""; const d = ts.toDate(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const isOver = s => !!(s.expiresAt && s.expiresAt.toDate && s.expiresAt.toDate() < new Date());
+const inAYear = () => { const d = new Date(Date.now() + 365 * 864e5); return toInput({ toDate: () => d }); };
 
 if (!configured || !ADMIN_EMAIL) show("v-setup");
 else onAuthStateChanged(auth, async user => {
@@ -331,6 +337,9 @@ function renderDash() {
   const alerts = students.filter(s => s.attempts > 0), waiting = ids.filter(s => !s.deviceId && s.active !== false);
   const blocked = students.filter(s => s.active === false), live = promos.filter(p => promoState(p, now) === "active");
   const missing = CHAPTERS.filter(c => !uploaded.has(chapterKey(c)));
+  const week = new Date(Date.now() + 7 * 864e5);
+  const ending = ids.filter(s => s.active !== false && !isOver(s) && s.expiresAt && s.expiresAt.toDate() < week);
+  const over = ids.filter(isOver);
   const h = now.getHours();
   $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, Adeel Sir`;
   $("#today").textContent = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -346,6 +355,8 @@ function renderDash() {
   const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
   const todo = [
     ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
+    ...ending.map(s => item("warn", `<b>${esc(s.name)}</b>'s access ends on ${fmtDate(s.expiresAt)}.`, "Renew", "t-students", ` data-filter="all" data-q="${esc(s.loginId)}"`)),
+    ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access has" : "students' access has"} ended. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
     ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} not uploaded yet. Students can't read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters")] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
@@ -407,6 +418,7 @@ function genPassword() {
   return [...a].map(x => chars[x % chars.length]).join("");
 }
 $("#s-pw").value = genPassword();
+$("#s-till").value = inAYear();
 $("#gen-pw").addEventListener("click", () => { $("#s-pw").value = genPassword(); });
 $("#s-name").addEventListener("input", () => {
   if ($("#s-id").dataset.touched) return;
@@ -423,12 +435,14 @@ $("#new-form").addEventListener("submit", async e => {
   const id = $("#s-id").value.trim().toLowerCase();
   const pw = $("#s-pw").value.trim();
   const chapters = picked($("#new-ch"));
+  const till = $("#s-till").value;
   const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
   $("#creds").hidden = true;
   if (!name) return fail("Enter the student's name.");
   if (!ID_PATTERN.test(id)) return fail("Login ID: lowercase letters, numbers and . _ - only, 3 to 24 characters.");
   if (pw.length < 6) return fail("Use at least 6 characters for the password.");
   if (!chapters.length) return fail("Choose at least one chapter.");
+  if (till && new Date(till + "T23:59:59") < new Date()) return fail("The access date must be today or later.");
 
   $("#new-btn").disabled = true;
   msg.className = "msg"; msg.textContent = "Creating ID…"; msg.hidden = false;
@@ -439,18 +453,19 @@ $("#new-form").addEventListener("submit", async e => {
     const cred = await createUserWithEmailAndPassword(secAuth, idToEmail(id), pw);
     await setDoc(doc(db, "users", cred.user.uid), {
       name, phone, loginId: id, chapters, active: true,
-      deviceId: null, deviceInfo: null, boundAt: null, createdAt: serverTimestamp()
+      deviceId: null, deviceInfo: null, boundAt: null, expiresAt: endOfDay(till), createdAt: serverTimestamp()
     });
     await setDoc(doc(db, "secrets", cred.user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
     await signOut(secAuth);
     msg.className = "msg good"; msg.textContent = `ID created for ${name}.`;
-    const text = studentMessage({ name, loginId: id, chapters }, pw);
+    const text = studentMessage({ name, loginId: id, chapters, expiresAt: endOfDay(till) }, pw);
     $("#creds-text").textContent = text;
     $("#creds-wa").href = waLink(phone, text);
     $("#creds").hidden = false;
     ["s-name", "s-phone", "s-id"].forEach(i => { $("#" + i).value = ""; });
     delete $("#s-id").dataset.touched;
     $("#s-pw").value = genPassword();
+    $("#s-till").value = inAYear();
     picks($("#new-ch"));
     loadStudents();
   } catch (ex) {
@@ -490,7 +505,7 @@ const waLink = (phone, text) => `https://wa.me/${phone ? "91" + phone : ""}?text
 function studentMessage(s, pw = s.password) {
   const hi = `Hello ${(s.name || "").split(" ")[0]}!`, chapters = (s.chapters || []).map(chName).join(", ");
   if (s.promo) return `${hi} Your Chemophile online book (promo code ${s.promo}).\n\nLink: ${readerLink()}\nChapters: ${chapters}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}\n\nOpen the link on the same phone and browser where you entered the code. You don't need to enter the code again.\n- Adeel Sir`;
-  return `${hi} Your Chemophile online book ${pw ? "is ready" : "details"}.\n\nLink: ${readerLink()}\nLogin ID: ${s.loginId}\nPassword: ${pw || "the same password I sent you earlier"}\n\nChapters: ${chapters}\n\nPlease note: this ID works on one phone only. It locks to the first phone you log in on. Do not share your ID with anyone.\n- Adeel Sir`;
+  return `${hi} Your Chemophile online book ${pw ? "is ready" : "details"}.\n\nLink: ${readerLink()}\nLogin ID: ${s.loginId}\nPassword: ${pw || "the same password I sent you earlier"}\n\nChapters: ${chapters}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}\n\nPlease note: this ID works on one phone only. It locks to the first phone you log in on. Do not share your ID with anyone.\n- Adeel Sir`;
 }
 
 // ---------- students list ----------
@@ -516,6 +531,7 @@ const FILTERS = [
   ["waiting", "Not logged in", s => !s.deviceId],
   ["alerts", "Other-device tries", s => s.attempts > 0],
   ["blocked", "Blocked", s => s.active === false],
+  ["expired", "Expired", isOver],
   ["promo", "Promo", s => !!s.promo],
 ];
 let stuFilter = "all";
@@ -532,8 +548,8 @@ function renderStudents() {
         <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
         <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
-          ${s.active === false ? `<span class="pill bad">Blocked</span>` : `<span class="pill good">Active</span>`}
-          ${s.promo && s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
+          ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) ? "" : `<span class="pill good">Active</span>`}
+          ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
           ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
         </div>
@@ -541,7 +557,7 @@ function renderStudents() {
       <details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>
       <div class="actions">
         <a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>
-        <button class="btn btn-line btn-sm" type="button" data-act="edit">Change chapters</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="edit">${isOver(s) ? "Renew" : "Chapters & date"}</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <span class="spacer"></span>
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
@@ -555,6 +571,7 @@ function renderStudents() {
         <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-act="del-yes">Yes, delete</button><button class="btn btn-line btn-sm" type="button" data-act="del-no">Cancel</button></div>
       </div>
       <div class="edit" hidden>
+        <div class="field" style="max-width: 280px"><label for="till-${s.uid}">Access until</label><input class="till" id="till-${s.uid}" type="date"><span class="hint">Empty means no end date.</span></div>
         <div class="chap-picks"></div>
         <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Cancel</button></div>
       </div>
@@ -571,12 +588,20 @@ $("#students").addEventListener("click", async e => {
   const note = (t, cls = "good") => { const m = row.querySelector(".msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; };
   const ref = doc(db, "users", s.uid);
   try {
-    if (b.dataset.act === "edit") { picks(row.querySelector(".edit .chap-picks"), s.chapters || []); row.querySelector(".edit").hidden = false; }
+    if (b.dataset.act === "edit") {
+      picks(row.querySelector(".edit .chap-picks"), s.chapters || []);
+      // Renewing an expired ID starts from a year ahead.
+      row.querySelector(".edit .till").value = isOver(s) ? inAYear() : toInput(s.expiresAt);
+      row.querySelector(".edit").hidden = false;
+    }
     if (b.dataset.act === "cancel") row.querySelector(".edit").hidden = true;
     if (b.dataset.act === "save") {
       const chapters = picked(row.querySelector(".edit .chap-picks"));
-      await updateDoc(ref, { chapters });
-      s.chapters = chapters; renderStudents();
+      const till = row.querySelector(".edit .till").value;
+      if (till && new Date(till + "T23:59:59") < new Date()) return note("The access date must be today or later.", "bad");
+      const expiresAt = endOfDay(till);
+      await updateDoc(ref, { chapters, expiresAt });
+      s.chapters = chapters; s.expiresAt = expiresAt; renderStudents();
     }
     if (b.dataset.act === "reset") {
       await updateDoc(ref, { deviceId: null, deviceInfo: null, boundAt: null });

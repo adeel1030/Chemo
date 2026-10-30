@@ -69,8 +69,10 @@ PDF ke har page ki image ban kar Firebase mein jaati hai. PDF file khud kahin sa
 
 ## 9. Student ki ID banao (har order ke baad)
 
+Admin email-password se `read.html` par bhi login ho sakta hai: wahan saare chapters dikhte hain, kisi bhi number ke devices par, bina device lock aur bina aakhri date ke. Admin panel bhi kitne bhi devices par ek saath khul sakta hai.
+
 1. Payment milne ke baad **Students** tab kholo.
-2. Naam, WhatsApp number, login ID aur password bharo (password apne aap ban jaata hai), aur kharide hue chapters tick karo.
+2. Naam, WhatsApp number, login ID, password (apne aap ban jaata hai) aur **Access until** (aakhri date, pehle se ek saal aage bhari hoti hai; khaali chhodo to koi aakhri date nahi) bharo, aur kharide hue chapters tick karo.
 3. **Student ID banao** dabao, phir **WhatsApp par bhejo** dabao. Student ko link, ID aur password chala jayega.
 
 Password admin ke liye Firebase mein save rehta hai (sirf admin dekh sakta hai). Student khud password badle to woh bhi wahan update ho jaata hai.
@@ -79,7 +81,7 @@ Students list mein har student ke liye yeh options hain:
 
 - **Send on WhatsApp again**: student ko link, login ID, password aur chapters dobara bhejta hai. Chapters badalne ke baad bhi isse naya message bhej sakte ho.
 - Password sirf student khud badal sakta hai: reader mein login karke neeche **Change password** se. Badla hua password aapke **Send on WhatsApp again** wale message mein apne aap aa jaata hai.
-- **Chapters badlo**: naye chapters jodo, jaise jab student aur chapters kharide.
+- **Chapters & date**: naye chapters jodo, ya **Access until** (aakhri date) badlo. Date nikalne ke baad ID band ho jaati hai aur student ko "Your access has ended" dikhta hai. Aisi ID par button **Renew** ban jaata hai; dabane par date apne aap ek saal aage ho jaati hai, Save karo.
 - **Device reset**: student ne phone badla ho to. Reset ke baad jis device par woh pehle login karega, ID usi par lock ho jayegi.
 - **Band karo**: ID turant band ho jaati hai. Jo bhi device us waqt khula hai, woh bhi logout ho jaata hai.
 - **Delete**: student ko hamesha ke liye hata deta hai. Pehle ek warning aati hai, **Yes, delete** dabane par hi delete hota hai. Uski book har device par turant band ho jaati hai. Woh login ID dobara kisi ko nahi di ja sakti, isliye wapas aaye to nayi ID banani padegi. Kuch din ke liye rokna ho to **Band karo** (Block) use karo.
