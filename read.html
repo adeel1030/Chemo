@@ -132,7 +132,9 @@
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, findChapter, esc } from "./js/fb.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc } from "./js/fb.js";
+import { ADMIN_EMAIL } from "./js/firebase-config.js";
+const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
 const $ = s => document.querySelector(s);
 const VIEWS = ["v-loading", "v-setup", "v-login", "v-blocked", "v-library"];
@@ -160,6 +162,11 @@ function blocked(title, text, waText) {
   $("#blocked-text").textContent = text;
   $("#blocked-wa").href = wa(waText);
   show("v-blocked");
+}
+function expired(expires, label) {
+  return me.promo
+    ? kick("Promo period over", `This promo code was valid until ${fmtDate(expires)}. Order the full book from Adeel Sir.`, `Hello Adeel Sir, my Chemophile promo code has expired. I want to order the book.`)
+    : kick("Your access has ended", `Your ID was valid until ${fmtDate(expires)}. Contact Adeel Sir to renew it.`, `Hello Adeel Sir, my Chemophile ${label} has expired. I want to renew it.`);
 }
 async function kick(title, text, waText) {
   if (unwatch) { unwatch(); unwatch = null; }
@@ -205,12 +212,14 @@ $("#login-form").addEventListener("submit", async e => {
   const pw = $("#login-pw").value;
   const err = $("#login-err");
   err.hidden = true;
-  if (!ID_PATTERN.test(id) || !pw) { err.textContent = "Enter both your login ID and password."; err.hidden = false; return; }
-  if (!deviceId()) { err.textContent = "You can't log in from this browser. Turn off Private/Incognito mode and open it in normal Chrome."; err.hidden = false; return; }
+  // Adeel Sir can log in here with the admin email to see every chapter, on any number of devices.
+  const admin = isAdminEmail(id);
+  if ((!admin && !ID_PATTERN.test(id)) || !pw) { err.textContent = "Enter both your login ID and password."; err.hidden = false; return; }
+  if (!admin && !deviceId()) { err.textContent = "You can't log in from this browser. Turn off Private/Incognito mode and open it in normal Chrome."; err.hidden = false; return; }
   $("#login-btn").disabled = true;
   try {
     if (auth.currentUser) await signOut(auth);
-    await signInWithEmailAndPassword(auth, idToEmail(id), pw);
+    await signInWithEmailAndPassword(auth, admin ? id : idToEmail(id), pw);
   } catch (ex) {
     err.textContent = loginErrors[ex.code] || "Could not log in. Please try again.";
     err.hidden = false;
@@ -291,6 +300,15 @@ $("#promo-form").addEventListener("submit", async e => {
 // ---------- device lock ----------
 async function start(user) {
   show("v-loading");
+  if (isAdminEmail(user.email)) {
+    // Admin preview: every chapter, no device lock, no expiry.
+    if (unwatch) { unwatch(); unwatch = null; }
+    me = { name: "Adeel Sir", loginId: "admin", chapters: CHAPTERS.map(chapterKey), admin: true };
+    $("#who").textContent = "Adeel Sir · admin preview";
+    $("#logout").hidden = false;
+    $("#pw-box").hidden = true;
+    return renderLibrary();
+  }
   const loginId = user.isAnonymous ? "promo" : emailToId(user.email || "");
   const ref = doc(db, "users", user.uid);
   let snap;
@@ -317,9 +335,7 @@ async function start(user) {
     return kick("This ID is blocked", "Your ID is blocked right now. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} shows as blocked.`);
   }
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  if (expires && expires < new Date()) {
-    return kick("Promo period over", `This promo code was valid until ${fmtDate(expires)}. Order the full book from Adeel Sir.`, `Hello Adeel Sir, my Chemophile promo code has expired. I want to order the book.`);
-  }
+  if (expires && expires < new Date()) return expired(expires, label);
   if (!me.deviceId) {
     try {
       await updateDoc(ref, { deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp() });
@@ -345,7 +361,10 @@ async function start(user) {
     }
     if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
     if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
-    const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters);
+    const till = d.expiresAt && d.expiresAt.toDate ? d.expiresAt.toDate() : null;
+    if (till && till < new Date()) return expired(till, label);
+    const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters)
+      || (d.expiresAt && d.expiresAt.seconds) !== (me.expiresAt && me.expiresAt.seconds);
     me = Object.assign(d, { loginId: me.loginId });
     if (changed && !$("#v-library").hidden) renderLibrary();
   });
@@ -364,8 +383,10 @@ async function renderLibrary() {
   $("#hello").textContent = `Hello ${(me.name || "").split(" ")[0] || me.loginId}!`;
   const note = $("#promo-note");
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  note.hidden = !me.promo;
-  if (me.promo) note.textContent = `Opened with promo code ${me.promo}${expires ? `, valid until ${fmtDate(expires)}` : ""}. The book opens only on this phone, so don't clear this browser's data.`;
+  note.hidden = !me.promo && !expires && !me.admin;
+  if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
+  else if (me.promo) note.textContent = `Opened with promo code ${me.promo}${expires ? `, valid until ${fmtDate(expires)}` : ""}. The book opens only on this phone, so don't clear this browser's data.`;
+  else if (expires) note.textContent = `Your access is valid until ${fmtDate(expires)}.`;
   const keys = me.chapters || [];
   if (!keys.length) {
     $("#lib").innerHTML = `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`;
