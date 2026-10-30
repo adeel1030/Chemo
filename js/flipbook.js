@@ -51,61 +51,7 @@
   @media (prefers-reduced-motion: reduce) { .fb-spin { animation-duration: 3s; } }
   `;
   let styled = false;
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  };
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-
-  // A paper page turn, made with the Web Audio API so no sound file is needed. It has three parts, like a real page:
-  // the crinkle of paper as it lifts, the soft whoosh of air as it turns, and a light flap as it lands.
-  let audio = null, turns = [];
-  function makeTurn(ctx) {
-    const sr = ctx.sampleRate, len = Math.floor(sr * 0.52), buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
-    const rnd = () => Math.random() * 2 - 1;
-    // Crinkle: many tiny clicks, dense as the page lifts and lands. Each click is a few ms of decaying noise.
-    const crinkle = new Float32Array(len);
-    const density = t => 0.35 * Math.exp(-Math.pow((t - 0.06) / 0.05, 2)) + 0.12 * Math.exp(-Math.pow((t - 0.24) / 0.1, 2)) + 0.3 * Math.exp(-Math.pow((t - 0.4) / 0.035, 2));
-    for (let i = 0; i < len; i++) {
-      if (Math.random() > density(i / len) * 0.06) continue;
-      const amp = Math.pow(Math.random(), 2.2), size = Math.floor(sr * (0.0008 + Math.random() * 0.004));
-      for (let j = 0; j < size && i + j < len; j++) crinkle[i + j] += rnd() * amp * Math.exp(-5 * j / size);
-    }
-    // Shape the crinkle to the papery band (about 1.5 to 5 kHz).
-    const w0 = 2 * Math.PI * 2800 / sr, al = Math.sin(w0) / (2 * 0.7), a0 = 1 + al, c = -2 * Math.cos(w0);
-    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-    for (let i = 0; i < len; i++) {
-      const x = crinkle[i], y = (al * x - al * x2 - c * y1 - (1 - al) * y2) / a0;
-      x2 = x1; x1 = x; y2 = y1; y1 = y; crinkle[i] = y;
-    }
-    // Whoosh: soft low noise that swells while the page is in the air. Flap: a short, dull slap at the end.
-    let air = 0, flap = 0, peak = 0;
-    for (let i = 0; i < len; i++) {
-      const t = i / len;
-      air = 0.97 * air + 0.03 * rnd();
-      const swell = Math.pow(Math.sin(Math.PI * Math.min(1, t / 0.42)), 2);
-      flap = 0.82 * flap + 0.18 * rnd();
-      const slap = t > 0.39 ? Math.exp(-(t - 0.39) * 60) : 0;
-      d[i] = crinkle[i] * 1.6 + air * swell * 3.2 + flap * slap * 0.9;
-      peak = Math.max(peak, Math.abs(d[i]));
-    }
-    for (let i = 0; i < len; i++) d[i] *= 0.9 / peak;
-    return buf;
-  }
-  function swish() {
-    try {
-      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      if (audio.state === "suspended") audio.resume();
-      // A few different turns, picked at random, so no two pages sound exactly the same.
-      if (!turns.length) for (let i = 0; i < 4; i++) turns.push(makeTurn(audio));
-      const now = audio.currentTime, src = audio.createBufferSource(), lp = audio.createBiquadFilter(), g = audio.createGain();
-      src.buffer = turns[Math.floor(Math.random() * turns.length)];
-      src.playbackRate.value = 0.93 + Math.random() * 0.14;
-      lp.type = "lowpass"; lp.frequency.value = 6500;
-      g.gain.value = 0.11;
-      src.connect(lp); lp.connect(g); g.connect(audio.destination); src.start(now);
-    } catch (e) {}
-  }
 
   class Flipbook {
     constructor(o) {
@@ -113,7 +59,6 @@
       this.n = this.o.pageCount;
       this.cur = Math.min(Math.max(1, this.o.start), this.n);
       this.loaded = new Map(); // page → element
-      this.sound = store.get("chemophile-sound") !== "off";
     }
 
     open() {
@@ -129,7 +74,6 @@
           <button class="fb-btn" type="button" data-fb="close" aria-label="Close">✕<span class="fb-lbl"> Close</span></button>
           <div class="fb-title"><b>${esc(o.title)}</b><span data-fb="count"></span></div>
           ${o.download ? `<a class="fb-btn sun fb-opt" href="${esc(o.download.href)}" download>${esc(o.download.label)}</a>` : ""}
-          <button class="fb-btn fb-opt" type="button" data-fb="sound"></button>
           <button class="fb-btn" type="button" data-fb="zoom">Zoom</button>
           <button class="fb-btn sun" type="button" data-fb="toc">${o.toc.length ? "Topics" : "Pages"}</button>
         </div>
@@ -156,7 +100,6 @@
       this.$range = q(".fb-range");
       this.$panel = q(".fb-panel");
       this.$zoom = q(".fb-zoom");
-      this.updateSoundLabel();
       el.addEventListener("click", e => this.onClick(e));
       el.addEventListener("contextmenu", e => e.preventDefault());
       el.addEventListener("dragstart", e => e.preventDefault());
@@ -215,7 +158,6 @@
       });
       this.flip.loadFromHTML(this.pages);
       this.flip.on("flip", e => this.setPage(e.data + 1));
-      this.flip.on("changeState", e => { if (e.data === "flipping" && this.sound) swish(); });
       this.setPage(this.flip.getCurrentPageIndex() + 1);
     }
 
@@ -273,9 +215,6 @@
       this.setPage(this.flip.getCurrentPageIndex() + 1);
     }
 
-    updateSoundLabel() {
-      this.el.querySelector('[data-fb="sound"]').textContent = this.sound ? "Sound: on" : "Sound: off";
-    }
 
     onClick(e) {
       const go = e.target.closest("[data-go]");
@@ -289,7 +228,6 @@
       if (a === "next") this.flip && this.flip.flipNext();
       if (a === "toc") this.$panel.hidden = false;
       if (a === "toc-close") this.$panel.hidden = true;
-      if (a === "sound") { this.sound = !this.sound; store.set("chemophile-sound", this.sound ? "on" : "off"); this.updateSoundLabel(); if (this.sound) swish(); }
       if (a === "zoom") this.zoom();
       if (a === "zoom-close") this.$zoom.hidden = true;
     }
