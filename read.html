@@ -51,9 +51,11 @@
   .fan img:nth-child(3) { transform: rotate(10deg) translateX(70px); }
   .auth-card { margin: 0; align-self: center; }
 }
-.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
 .tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 .92rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 10px; border-radius: 999px; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
+.tabs button { white-space: nowrap; padding-inline: 6px; gap: 6px; }
+@media (max-width: 420px) { .tabs button svg { display: none; } }
 /* Library: a welcome band with the student's numbers, then Continue reading, the chapters, and the account card. */
 .portal-hero { background: radial-gradient(circle at 90% 0%, rgba(255, 210, 74, .2), transparent 45%), var(--night); color: var(--night-fg); padding-block: 26px 58px; }
 .hero-in { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: end; justify-content: space-between; }
@@ -127,6 +129,19 @@
 .pw summary { cursor: pointer; font-weight: 600; }
 .pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
 .pw .field { flex: 1 1 220px; }
+/* Sign up: class chips, and the free sample shown until the student buys. */
+.cls-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.cls-picks label { border: 2px solid var(--line); border-radius: 999px; padding: 7px 14px; font: 600 .92rem var(--font-body); cursor: pointer; background: var(--surface); display: inline-flex; gap: 6px; align-items: center; }
+.cls-picks input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+.cls-picks label:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.free-tag { display: inline-block; font: 800 .72rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; background: var(--good); color: #fff; border-radius: 6px; padding: 2px 8px; }
+.unlock { display: grid; gap: 12px; background: radial-gradient(circle at 95% 0%, rgba(255, 210, 74, .3), transparent 50%), var(--night); color: var(--night-fg); border: 0; }
+.unlock h3 { font: 800 1.3rem var(--font-display); }
+.unlock h3 span { color: var(--sun); }
+.unlock p { color: var(--night-muted); font-size: .95rem; }
+.unlock ul { margin: 0; padding-left: 18px; color: var(--night-fg); font-size: .92rem; display: grid; gap: 4px; }
+.unlock .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.book .price-tag { display: inline-block; margin-top: 4px; font: 700 .8rem var(--font-body); color: var(--accent); }
 /* Refer a friend: the student's code and a share button. */
 .refer { display: grid; gap: 10px; background: linear-gradient(135deg, var(--surface), var(--warn-bg)); }
 .refer h2 { font-size: 1.2rem; }
@@ -208,10 +223,11 @@
     </div>
 
     <div class="card auth-card">
-      <div class="auth-top"><img class="app-logo" src="assets/logo/logo-640.webp" alt="Chemophile by Adeel Sir" width="72" height="72"><div><h2>Welcome back</h2><p class="hint">Log in to read your chapters.</p></div></div>
+      <div class="auth-top"><img class="app-logo" src="assets/logo/logo-640.webp" alt="Chemophile by Adeel Sir" width="72" height="72"><div><h2 id="auth-title">Welcome back</h2><p class="hint" id="auth-sub">Log in to read your chapters.</p></div></div>
       <div class="tabs" role="tablist" aria-label="How to sign in">
-        <button type="button" role="tab" aria-selected="true" data-tab="login-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Login ID</button>
-        <button type="button" role="tab" aria-selected="false" data-tab="promo-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/></svg>Promo code</button>
+        <button type="button" role="tab" aria-selected="true" data-tab="login-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Log in</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="signup-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M2 21a8 8 0 0 1 13-6"/><path d="M19 15v6M16 18h6"/></svg>Sign up</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="promo-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/></svg>Promo</button>
       </div>
 
       <form id="login-form" class="login-card" novalidate>
@@ -220,6 +236,18 @@
         <div class="msg bad" id="login-err" role="alert" hidden></div>
         <button class="btn btn-sun" type="submit" id="login-btn">Log in</button>
         <p class="hint">Use the ID and password Adeel Sir sent you on WhatsApp. One ID works on one phone only.</p>
+      </form>
+
+      <form id="signup-form" class="login-card" novalidate hidden>
+        <p class="hint" style="margin: 0">Free. Read the sample booklet of your class right away; buy chapters whenever you're ready.</p>
+        <div class="field"><label for="su-name">Your name</label><input id="su-name" autocomplete="name" maxlength="60"></div>
+        <div class="field"><label for="su-phone">WhatsApp number</label><input id="su-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
+        <div class="field"><label>Your class (tick one or more)</label><div class="cls-picks" id="su-cls"></div></div>
+        <div class="field"><label for="su-id">Choose a login ID</label><input id="su-id" autocapitalize="none" spellcheck="false" autocomplete="username" placeholder="e.g. rahul2026"><span class="hint">Small letters and numbers, 3 to 24 characters</span></div>
+        <div class="field"><label for="su-pw">Choose a password</label><input id="su-pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
+        <div class="msg bad" id="su-err" role="alert" hidden></div>
+        <button class="btn btn-sun" type="submit" id="su-btn">Sign up free</button>
+        <p class="hint">Your ID works on this phone only, like a bought ID. Chapters you buy later open on the same ID.</p>
       </form>
 
       <form id="promo-form" class="login-card" novalidate hidden>
@@ -296,7 +324,7 @@
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script src="js/flipbook.js"></script>
 <script type="module">
-import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
@@ -353,8 +381,12 @@ document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]");
   if (!b) return;
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["login-form", "promo-form"].forEach(id => { $("#" + id).hidden = id !== b.dataset.tab; });
+  ["login-form", "signup-form", "promo-form"].forEach(id => { $("#" + id).hidden = id !== b.dataset.tab; });
+  const [t, sub] = { "login-form": ["Welcome back", "Log in to read your chapters."], "signup-form": ["Join Chemophile", "Free account, free sample, in one minute."], "promo-form": ["Got a promo code?", "Open the book your teacher or school shared."] }[b.dataset.tab];
+  $("#auth-title").textContent = t; $("#auth-sub").textContent = sub;
 });
+// read.html#signup opens the sign-up tab (links from the website).
+if (location.hash === "#signup") document.querySelector('.tabs [data-tab="signup-form"]').click();
 
 if (!configured) {
   show("v-setup");
@@ -362,7 +394,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; newsCache = null; reading.clear(); readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; reading.clear(); quizRes.clear(); readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -412,6 +444,54 @@ $("#logout").addEventListener("click", () => {
 });
 $("#logout-no").addEventListener("click", () => { $("#logout-confirm").hidden = true; });
 $("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden = true; signOut(auth); });
+
+// ---------- sign up ----------
+// Anyone can make a free ID. It locks to this device at once, has no chapters, and shows the free sample of
+// the classes ticked here until Adeel Sir adds bought chapters to the same ID.
+function renderClassPicks() {
+  const picked = [...document.querySelectorAll("#su-cls input:checked")].map(i => i.value);
+  $("#su-cls").innerHTML = classList().map(c => `<label><input type="checkbox" value="${c}"${picked.includes(String(c)) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
+}
+renderClassPicks();
+if (configured) loadCatalog().then(() => { catalogTried = true; renderClassPicks(); });
+$("#signup-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#su-err"), fail = t => { err.textContent = t; err.hidden = false; };
+  err.hidden = true;
+  const name = $("#su-name").value.trim(), phone = $("#su-phone").value.replace(/\D/g, "").slice(-10);
+  const classes = [...document.querySelectorAll("#su-cls input:checked")].map(i => +i.value);
+  const id = $("#su-id").value.trim().toLowerCase(), pw = $("#su-pw").value;
+  if (name.length < 2) return fail("Enter your name.");
+  if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
+  if (!classes.length) return fail("Tick your class.");
+  if (!ID_PATTERN.test(id)) return fail("Login ID: small letters and numbers (and . _ -), 3 to 24 characters.");
+  if (pw.length < 6) return fail("Use at least 6 characters for the password.");
+  const mine = deviceId();
+  if (!mine) return fail("You can't sign up from this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
+  busy = true; $("#su-btn").disabled = true;
+  let user = null;
+  try {
+    if (auth.currentUser) await signOut(auth);
+    user = (await createUserWithEmailAndPassword(auth, idToEmail(id), pw)).user;
+    await setDoc(doc(db, "users", user.uid), {
+      name, phone, loginId: id, classes, chapters: [], active: true, signup: true,
+      deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp(), createdAt: serverTimestamp()
+    });
+    // Adeel Sir's copy of the password, so he can send it again if it is forgotten.
+    setDoc(doc(db, "secrets", user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
+    busy = false; $("#su-btn").disabled = false;
+    start(user);
+  } catch (ex) {
+    busy = false; $("#su-btn").disabled = false;
+    if (user) { try { await user.delete(); } catch (e2) { try { await signOut(auth); } catch (e3) {} } }
+    fail(ex.code === "auth/email-already-in-use" ? `The login ID "${id}" is taken. Try another one, like ${id.replace(/\d+$/, "")}${Math.floor(100 + Math.random() * 900)}.`
+      : ex.code === "auth/operation-not-allowed" ? "Sign up is not switched on yet. Please contact Adeel Sir."
+      : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
+      : ex.code === "permission-denied" ? "Sign up isn't open yet. Please WhatsApp Adeel Sir."
+      : "Could not sign up. Please try again.");
+    show("v-login");
+  }
+});
 
 // ---------- promo code ----------
 $("#promo-form").addEventListener("submit", async e => {
@@ -569,7 +649,7 @@ async function showNews() {
   const list = newsCache.filter(n =>
     !(n.expiresAt && n.expiresAt.toDate && n.expiresAt.toDate() < now)
     && (me.admin || !n.audience || n.audience === "all" || n.audience === who)
-    && (me.admin || !n.cls || keys.some(k => k.startsWith(n.cls + "-")))
+    && (me.admin || !n.cls || keys.some(k => k.startsWith(n.cls + "-")) || (me.classes || []).includes(n.cls))
     && store.get("chemophile-news-hide-" + n.id) !== "1"
   ).sort((a, b) => ((b.createdAt && b.createdAt.toMillis()) || 0) - ((a.createdAt && a.createdAt.toMillis()) || 0));
   box.innerHTML = list.map(n => `<div class="news-card" data-nid="${n.id}">
@@ -625,6 +705,9 @@ async function renderLibrary() {
   const note = $("#promo-note");
   note.hidden = !me.admin;
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
+  // Signed up but nothing bought yet: the free sample and the chapters they can unlock.
+  if (!me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length) return renderFree();
+  $(".lib-tools h2").textContent = "My chapters";
   const subKeys = Object.keys(me.subs || {});
   const keys = [...new Set([...(me.chapters || []), ...subKeys])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
   // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
@@ -753,6 +836,58 @@ $("#pw-form").addEventListener("submit", async e => {
     msg.textContent = ex.code === "auth/requires-recent-login" ? "Log out and log in again, then change your password." : "Could not change the password. Please try again.";
   }
 });
+
+// ---------- free account (signed up, nothing bought) ----------
+const rupee = v => "₹" + Number(v).toLocaleString("en-IN");
+function renderFree() {
+  const classes = ((me.classes || []).length ? me.classes : classList()).map(Number);
+  const samples = classes.filter(c => SAMPLE_BOOKS[c]);
+  const chs = CHAPTERS.filter(c => classes.includes(c.cls));
+  const prices = chs.map(c => priceOf(c, "online")).filter(Boolean), from = prices.length ? Math.min(...prices) : null;
+  $("#hero-sub").textContent = "Welcome to Chemophile! Your free sample is ready. Like it? Unlock the full chapters any time.";
+  $("#hero-stats").innerHTML = [[samples.reduce((a, c) => a + SAMPLE_BOOKS[c].pages, 0), "free sample pages"], [chs.length, "chapters to unlock"]]
+    .map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
+  $("#continue").innerHTML = samples.map(c => `<div class="card continue">
+      <button class="cv" type="button" data-sample="${c}" aria-label="Open the ${esc(clsName(c))} free sample"><img src="${sampleImg(c, 1, true)}" alt="" width="360" height="509"></button>
+      <div style="min-width:0"><span class="free-tag">Free</span><h2>${esc(clsName(c))} free sample</h2>
+        <div class="meta">${SAMPLE_BOOKS[c].pages} pages · one complete topic from every chapter</div>
+        <button class="btn btn-sun btn-sm" type="button" data-sample="${c}">Read the free sample</button></div>
+    </div>`).join("") || `<div class="card">The free sample for ${esc(classes.map(clsName).join(" and "))} is coming soon. See the chapters you can unlock below.</div>`;
+  $(".portal").classList.add("lift");
+  const what = classes.map(clsName).join(" + ");
+  $("#upsell").innerHTML = `<div class="card unlock"><h3>Unlock the <span>full chapters</span></h3>
+    <p>Every page, every diagram, every solved example${FORMATS.online.on ? `, valid for ${onlineDays() === 365 ? "1 full year" : onlineDays() + " days"}` : ""}. Bought chapters open right here, on this same ID.</p>
+    <ul><li>Pay by UPI on the website, then send the screenshot on WhatsApp</li><li>Tell Adeel Sir your login ID: <b>${esc(me.loginId)}</b></li>${FORMATS.monthly.on ? "<li>Or start small with a monthly plan, and stop any time</li>" : ""}</ul>
+    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices and order${from ? ` · from ${rupee(from)}` : ""}</a>
+      <a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I signed up on Chemophile (ID ${me.loginId}, ${what}). I want to buy the online book.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>`;
+  $(".lib-tools h2").textContent = "Chapters you can unlock";
+  $("#lib-chips").innerHTML = "";
+  $("#lib").innerHTML = classes.map(cls => {
+    const list = CHAPTERS.filter(c => c.cls === cls);
+    return list.length ? `${classes.length > 1 ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(c => `<div class="card book locked">
+      <div class="cv">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${c.n}`}</div>
+      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · Chapter ${c.n}</div><h3>${esc(c.title)}</h3>
+        ${priceOf(c, "online") ? `<span class="price-tag">${rupee(priceOf(c, "online"))} · ${esc(FORMATS.online.label)}</span>` : ""}
+        <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
+  }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
+  $("#myread").hidden = true; $("#refer").hidden = true;
+  const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
+  $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
+  $("#acct-tip").textContent = "Your ID works on this device only. Chapters you buy open here, on the same ID.";
+  $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile account (ID ${me.loginId}).`);
+}
+// The free sample opens in the same book viewer, straight from the website's sample pages.
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function openSampleBook(k) {
+  const b = SAMPLE_BOOKS[k];
+  if (!b) return;
+  new Flipbook({
+    title: `${clsName(k)} free sample`, pageCount: b.pages,
+    toc: CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`Ch ${c.n} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
+    loadPage: n => loadImg(sampleImg(k, n))
+  }).open();
+}
+$("#v-library").addEventListener("click", e => { const b = e.target.closest("[data-sample]"); if (b) openSampleBook(+b.dataset.sample); });
 
 // ---------- refer a friend ----------
 // The student's code is the first 6 letters of their account (refCodeOf in js/chapters.js); the admin finds the

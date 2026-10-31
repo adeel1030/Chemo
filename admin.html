@@ -300,6 +300,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <details class="panel" id="new-box">
         <summary><span class="plus" aria-hidden="true">+</span>New student ID<span class="hint">After payment is received</span></summary>
       <form class="stack" id="new-form" novalidate>
+        <p class="hint" id="signup-hint" style="margin: 0">Did the student already sign up in the reader? Don't make a new ID: find them under <b>Signed up, not bought</b> and tap <b>Give chapters</b>.</p>
         <div class="grid2">
           <div class="field"><label for="s-name">Name</label><input id="s-name" autocomplete="off" placeholder="Rahul Sharma"></div>
           <div class="field"><label for="s-phone">WhatsApp number</label><input id="s-phone" inputmode="tel" autocomplete="off" placeholder="10 digit"></div>
@@ -544,6 +545,17 @@ function renewMessage(s) {
 ${over ? "Renew to open it again" : "Renew now to keep reading"} for another ${onlineDays() === 365 ? "year" : onlineDays() + " days"}. Your reading progress stays saved. Just reply here to renew.
 - Adeel Sir`;
 }
+// Free sign-ups from the reader: an ID with no chapters and no plan yet. They read the free sample until they buy.
+const unpaid = s => !s.promo && !(s.chapters || []).length && !subKeys(s).length;
+const isSignup = s => !!s.signup && unpaid(s);
+const classesText = s => (s.classes || []).map(clsName).join(" + ");
+function followMessage(s) {
+  const what = classesText(s) || "your class";
+  return `Hello ${(s.name || "").split(" ")[0]}! Thank you for signing up on Chemophile 😊 Did you like the free sample?
+
+The full ${what} book is ready${FORMATS.online.on ? ` (online, valid ${onlineDays() === 365 ? "1 year" : onlineDays() + " days"})` : ""}. Tell me which chapters you want, or reply "all"${PAY && PAY.upi ? `, and pay by UPI to ${PAY.upi}` : ""}. The chapters open on your same login ID: ${s.loginId}.
+- Adeel Sir`;
+}
 // A bought online book is valid for onlineDays() (365 unless changed in Books & prices).
 const inAYear = () => { const d = new Date(Date.now() + onlineDays() * 864e5); return toInput({ toDate: () => d }); };
 
@@ -630,9 +642,10 @@ function renderDash() {
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
     ...(ids.filter(isInactive).length ? [item("", `${ids.filter(isInactive).length} student${ids.filter(isInactive).length > 1 ? "s haven't" : " hasn't"} opened the book for 7 days or more.`, "See", "t-students", ` data-filter="inactive"`)] : []),
     ...(waiting.length ? [item("", `${waiting.length} ${waiting.length === 1 ? "student has" : "students have"} not logged in yet.`, "See", "t-students", ` data-filter="waiting"`)] : []),
+    ...(students.filter(isSignup).length ? [item("warn", `${students.filter(isSignup).length} ${students.filter(isSignup).length === 1 ? "student signed up and hasn't" : "students signed up and haven't"} bought yet. Send a friendly follow-up.`, "See", "t-students", ` data-filter="signup"`)] : []),
   ];
   $("#todo").innerHTML = todo.length ? todo.join("") : `<p class="empty">All good. Nothing needs you right now.</p>`;
-  $("#recent").innerHTML = students.slice(0, 5).map(s => `<div><span>${esc(s.name)}${s.promo ? ` <span class="hint">(promo)</span>` : ""}</span><span>${fmtDate(s.createdAt)}</span></div>`).join("") || `<p class="hint">No students yet.</p>`;
+  $("#recent").innerHTML = students.slice(0, 5).map(s => `<div><span>${esc(s.name)}${s.promo ? ` <span class="hint">(promo)</span>` : isSignup(s) ? ` <span class="hint">(signed up)</span>` : ""}</span><span>${fmtDate(s.createdAt)}</span></div>`).join("") || `<p class="hint">No students yet.</p>`;
   const alertDot = $("#dot-home"); alertDot.hidden = !alerts.length; alertDot.textContent = alerts.length;
   const chDot = $("#dot-ch"); chDot.hidden = !missing.length; chDot.textContent = missing.length;
   $("#chap-progress").textContent = `${CHAPTERS.length - missing.length} of ${CHAPTERS.length} chapters uploaded.${missing.length ? " Students can read a chapter only after it is uploaded." : " Everything is uploaded."}`;
@@ -847,6 +860,7 @@ const FILTERS = [
   ["inactive", "Not reading 7+ days", isInactive],
   ["renew", "Ending in 30 days", s => endingSoon(s) || endedLately(s)],
   ["promo", "Promo", s => !!s.promo],
+  ["signup", "Signed up, not bought", isSignup],
 ];
 let stuFilter = "all";
 const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -862,7 +876,8 @@ function renderStudents() {
         <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
         <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>${REFERRAL.on ? ` · code ${refCodeOf(s.uid)}` : ""}`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
-          ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) ? "" : `<span class="pill good">Active</span>`}
+          ${isSignup(s) ? `<span class="pill warn">Signed up · ${esc(classesText(s) || "no class")} · not bought yet</span>` : ""}
+          ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) || isSignup(s) ? "" : `<span class="pill good">Active</span>`}
           ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
           ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
           ${lastRead(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last read ${agoText(lastRead(s))}</span>` : ""}
@@ -872,14 +887,14 @@ function renderStudents() {
           ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
         </div>
       </div>
-      ${(s.chapters || []).length || !subKeys(s).length ? `<details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}${subKeys(s).length ? " (bought)" : ""}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>` : ""}
-      ${subKeys(s).length ? `<div class="subline"><span class="pill ${subOver(s) ? "bad" : "warn"}">Monthly · ${subOver(s) ? "ended" : "paid till"} ${fmtDate(subEnd(s))}</span>
+      ${isSignup(s) ? "" : (s.chapters || []).length || !subKeys(s).length ? `<details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}${subKeys(s).length ? " (bought)" : ""}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>` : ""}
+      ${!isSignup(s) && subKeys(s).length ? `<div class="subline"><span class="pill ${subOver(s) ? "bad" : "warn"}">Monthly · ${subOver(s) ? "ended" : "paid till"} ${fmtDate(subEnd(s))}</span>
         <span>${subKeys(s).length} chapter${subKeys(s).length > 1 ? "s" : ""}: ${subKeys(s).map(k => esc(chName(k))).join(", ")}${planPrice(subKeys(s)) ? ` · ₹${planPrice(subKeys(s))}/month` : ""}</span></div>` : ""}
       <div class="actions">
-        <a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>
+        ${isSignup(s) ? `<a class="btn btn-wa btn-sm" href="${waLink(s.phone, followMessage(s))}" target="_blank" rel="noopener">Follow up on WhatsApp</a>` : `<a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>`}
         ${subKeys(s).length ? `<button class="btn btn-sun btn-sm" type="button" data-act="renew">Renew +${monthDays()} days</button><a class="btn btn-line btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Payment reminder</a>` : ""}
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
-        <button class="btn btn-line btn-sm" type="button" data-act="edit">${isOver(s) ? "Renew" : "Chapters & date"}</button>
+        <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <span class="spacer"></span>
@@ -932,13 +947,13 @@ const shownStudents = () => {
 };
 const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
 function studentsCsv(list) {
-  const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
+  const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Class", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
     "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent"];
   const rows = list.map(s => {
-    const plan = s.promo ? "Promo" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
+    const plan = s.promo ? "Promo" : isSignup(s) ? "Signed up (not bought)" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
     const status = s.active === false ? "Blocked" : isOver(s) ? "Expired" : subOver(s) && !subLive(s).length && !(s.chapters || []).length ? "Monthly unpaid" : "Active";
     const by = s.referredBy && students.find(x => x.uid === s.referredBy);
-    return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
+    return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", classesText(s), plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
       subKeys(s).map(chName).join("; "), subKeys(s).length ? dmy(subEnd(s)) : "", status, s.deviceId ? "Yes" : "No", s.deviceInfo || "", dmy(lastRead(s)), dmy(s.createdAt),
       resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt)];
   });
@@ -966,7 +981,7 @@ $("#students").addEventListener("click", async e => {
     if (b.dataset.act === "edit") {
       picks(row.querySelector(".edit .buy-picks"), s.chapters || []);
       // Renewing an expired ID starts from a year ahead.
-      row.querySelector(".edit .till").value = isOver(s) ? inAYear() : toInput(s.expiresAt);
+      row.querySelector(".edit .till").value = isOver(s) || unpaid(s) ? inAYear() : toInput(s.expiresAt);
       if (!s.promo) {
         picks(row.querySelector(".edit .sub-picks"), subKeys(s));
         row.querySelector(".edit .sub-till").value = subKeys(s).length ? toInput(subEnd(s)) : inDays(monthDays());
@@ -987,8 +1002,17 @@ $("#students").addEventListener("click", async e => {
         if (monthly.length && !subTill) return note("Choose the date the monthly plan is paid till.", "bad");
         update.subs = Object.fromEntries(monthly.map(k => [k, endOfDay(subTill)]));
       }
+      const wasSignup = isSignup(s);
       await updateDoc(ref, update);
       Object.assign(s, update); renderStudents();
+      // A signed-up student who has now bought: tell them their chapters are open on the same ID.
+      if (wasSignup && !isSignup(s)) {
+        const all = [...(s.chapters || []), ...subKeys(s)].map(chName).join(", ");
+        const text = `Hello ${(s.name || "").split(" ")[0]}! Payment received, thank you 🙏 Your chapters are now open in your Chemophile library:\n${all}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}${subKeys(s).length ? `\nMonthly plan paid till: ${fmtDate(subEnd(s))}` : ""}\n\nOpen ${readerLink()} and log in with your ID ${s.loginId}. Happy reading!\n- Adeel Sir`;
+        const m = $(`.stu[data-uid="${s.uid}"] .msg`);
+        m.className = "msg good"; m.hidden = false;
+        m.innerHTML = `Chapters given. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`;
+      }
     }
     if (b.dataset.act === "renew") {
       const till = renewedTill(s), subs = Object.fromEntries(subKeys(s).map(k => [k, till]));

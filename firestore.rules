@@ -46,10 +46,26 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/promos/$(d.promo)/redemptions/$(uid));
     }
 
+    // A free sign-up from the reader: the student's own new login makes its own document, with the login ID of
+    // its email, no chapters, no plan and no end date, locked to the device it signs up on. Only the admin can
+    // add chapters to it later (after payment).
+    function validSelfSignup(uid) {
+      let d = request.resource.data;
+      return signedIn() && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider == 'password'
+        && request.auth.token.email.split('@')[0] == d.loginId
+        && d.keys().hasOnly(['name', 'phone', 'loginId', 'classes', 'chapters', 'active', 'signup', 'deviceId', 'deviceInfo', 'boundAt', 'createdAt'])
+        && d.signup == true && d.active == true && d.chapters == []
+        && d.classes is list && d.classes.size() >= 1 && d.classes.size() <= 12
+        && d.name is string && d.name.size() <= 60
+        && d.phone is string && d.phone.size() <= 15
+        && d.deviceId is string;
+    }
+
     // One document per student: name, phone, chapters bought, and the device the ID is locked to.
     match /users/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
-      allow create: if isAdmin() || validPromoSignup(uid);
+      allow create: if isAdmin() || validPromoSignup(uid) || validSelfSignup(uid);
       allow delete: if isAdmin();
       // A student may only lock their ID to a device when it is not locked yet (only the admin can unlock it),
       // and may stamp the time they last opened a book.

@@ -138,6 +138,30 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 - **Reading record:** student jab book padhta hai to har chapter ka record save hota hai: kitne pages padhe, kahan tak pahuncha, kitna time (sirf jab book khuli ho aur page palat rahe hon), kitni baar khola, aakhri baar kab. Student ko library mein **My reading** dikhta hai; admin ko student ke card par **Reading** dabane par, aur "Last read …" pill. 7 din se na padhne wale **Not reading 7+ days** filter aur Overview mein dikhte hain.
 - **Device reset:** saal mein 2 free. Card par "Resets this year: 1/2" dikhta hai; 2 ke baad reset karne par warning aati hai, **Reset anyway** se phir bhi kar sakte ho (exceptional case).
 
+## 15. Student sign up (free account + free sample)
+
+- Reader ke login page par **Sign up** tab hai (website par **Sign up free** buttons bhi yahin le jaate hain). Student naam, WhatsApp number, apni class tick karta hai, aur khud login ID + password chunta hai.
+- Sign up karte hi ID usi phone par lock ho jaati hai. Library mein uski class ki **free sample booklet**, "Unlock the full chapters" card aur saare chapters (lock ke saath, price ke saath) dikhte hain. Jab tak kuch khareeda nahi, sirf sample khulta hai.
+- Admin panel mein **Students → Signed up, not bought** filter, aur Overview par "… signed up and haven't bought yet". Card par **Follow up on WhatsApp** (taiyaar message) aur **Give chapters (after payment)**.
+- Payment aane par **naya ID mat banao**: **Give chapters** dabao, chapters tick karo (date apne aap 365 din aage bhar jaati hai), **Save**. Student ki library usi waqt khul jaati hai, aur "Tell … on WhatsApp" link se message bhej do.
+
+## 16. Quiz, refer a friend, UPI payment
+
+- **Quiz:** **Chapters** page par har chapter ke saath **+ Quiz**. Har sawaal `Q:` se, options `A) B) C) D)`, sahi option ke aage `*`, aur chahein to `Why:` line. Sawaalon ke beech ek khaali line. `H_2O` likhne se H₂O, `Cu^2+` se Cu²⁺ banta hai. Student library mein **Quiz · N Qs** dabakar ek-ek sawaal karta hai; best score usko aur aapko (**Reading** mein) dikhta hai.
+- **Refer a friend:** **Books & prices → Offers & referral** mein switch on karo aur din likho (jaise 30). Har student ki library mein uska code (jaise `TDUTWT`) aur Share button aata hai. Naya kharidaar code bataye to naya ID banate waqt **Referral code** mein daalo: refer karne wale ki book apne aap utne din aage badh jaati hai.
+- **UPI payment:** order form par QR code (sahi amount ke saath), **Pay with UPI app** button aur UPI ID `9953821875@ptaxis` dikhta hai. Badalna ho to **Books & prices → Payment**. Paperback mein pehle delivery charge batao, phir payment.
+- **Pages halke:** naye uploads 960 px ke hote hain (lagbhag 30% kam download). Purane chapters ke liye **Chapters** page par **Make them lighter** ek baar daba do (PDF nahi chahiye).
+- **Excel list:** **Students** par **Download list (Excel)**. Jo filter chuna hai wahi list aati hai. Password kabhi file mein nahi jaata.
+- **Renewal:** 365 din khatam hone se 30 din pehle se Overview par **Remind** button aata hai.
+
+## 17. Google par site dikhane ke liye (Search Console)
+
+1. https://search.google.com/search-console kholo, Gmail se login karo, **Add property** → **URL prefix** → `https://chemophile.maproductsindia.com/` likho.
+2. **HTML tag** wala tareeka chuno. Google ek line dega jaisi `<meta name="google-site-verification" content="abc123…">`. Woh line mujhe (developer ko) bhej do, main website mein laga dunga; phir **Verify** dabao. (Ya domain wale panel mein DNS TXT record laga kar bhi verify ho sakta hai.)
+3. Verify hone ke baad left mein **Sitemaps** → `sitemap.xml` likh kar **Submit**.
+4. **URL inspection** mein home page ka link daal kar **Request indexing** dabao. Google 3–10 din mein dikhana shuru karta hai.
+5. Google Business Profile (business.google.com) par "M A Products India / Chemophile" ka listing bana lo, wahi address aur number ke saath. Isse "chemistry books near me" jaisi searches mein bhi aaoge.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**
@@ -152,6 +176,6 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 - Device ki pehchaan browser mein save hoti hai. Agar student browser ka data clear kare, ya usi phone par doosra browser use kare, to woh naya device gina jayega aur aapko **Device reset** karna padega.
 - Koi bahut technical student (programmer jaisa) apne login se pages kisi doosre tareeke se nikal sakta hai. Aam students ke liye yeh system kaafi strong hai.
 
-## Free limit
+## Free limit (Spark plan)
 
 Free plan mein roz **50,000 reads** milte hain. Ek page kholne mein lagbhag 2 reads lagte hain, yaani roz lagbhag 25,000 page views free hain. Class 11 aur 12 ke saare 19 chapters ke 1226 pages lagbhag 280 MB jagah lenge, jabki free limit 1 GB hai. Students bahut badh jaayein to Firebase **Usage** tab mein dekh lena.

@@ -210,6 +210,14 @@
     },
     {
      "@type": "Question",
+     "name": "Can I sign up without buying?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes, it's free. Tap \"Sign up free\", tick your class, and the free sample of your class stays in your own library. When you buy chapters, they open on the same login ID."
+     }
+    },
+    {
+     "@type": "Question",
      "name": "Can I see the book before buying?",
      "acceptedAnswer": {
       "@type": "Answer",
@@ -663,6 +671,10 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 @media (max-width: 640px) { .refer-band { grid-template-columns: minmax(0, 1fr); } }
 .perks { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px 10px; }
 .perks li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: .88rem; font-weight: 600; }
+.signup-cta { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; background: var(--surface); border: 2px dashed var(--accent); border-radius: 18px; padding: 16px 18px; }
+.signup-cta b { display: block; font: 800 1.1rem var(--font-display); }
+.signup-cta span { color: var(--muted); font-size: .92rem; }
+.signup-cta div { flex: 1 1 260px; }
 /* Order form: referral code and UPI payment. */
 .ref-field { display: grid; gap: 6px; margin: 4px 0 12px; }
 .ref-field label { font-size: .86rem; font-weight: 600; color: var(--muted); }
@@ -696,6 +708,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <a href="#chapters">Chapters</a>
       <a href="#plans">Plans</a>
       <a href="#faq">FAQ</a>
+      <a href="read.html#signup">Sign up free</a>
       <a class="login" href="read.html">Login</a>
       <a class="btn btn-sun" href="#pack">Order now</a>
     </nav>
@@ -740,6 +753,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <h2 class="sec-title">Read the <span class="hl">free sample</span> first</h2>
       <p class="sec-intro">One complete topic from every chapter, with the real book pages. Flip through it right here like a book, or download the PDF and share it with friends.</p>
       <div class="samples-grid" id="samples-grid"></div>
+      <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
     </div>
   </section>
 
@@ -907,6 +921,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
         <details><summary>How much does it cost?</summary><p>Each chapter's Online and Paperback price is shown under its cover. Pick chapters in "Build your pack" and the total adds up automatically. Delivery is charged extra for the paperback.</p></details>
         <details><summary>How do I order?</summary><p>Choose a format and chapters in "Build your pack" above, pay by UPI right there, then tap "Send order on WhatsApp" with the payment screenshot. Your login ID and password come on WhatsApp.</p></details>
         <details><summary>How do I pay?</summary><p>By UPI: scan the QR code on the order form, or tap "Pay with UPI app" on your phone (Google Pay, PhonePe, Paytm or any UPI app). For the paperback, Adeel Sir first tells you the delivery charge on WhatsApp, then you pay.</p></details>
+        <details><summary>Can I sign up without buying?</summary><p>Yes, it's free. Tap "Sign up free", tick your class, and the free sample of your class stays in your own library. When you buy chapters, they open on the same login ID.</p></details>
         <details><summary>Can I see the book before buying?</summary><p>Yes. There is a free sample for both Class 11 and Class 12, with one complete topic from every chapter. Flip through it in "Free sample" above, or download the PDF.</p></details>
       </div>
     </div>
@@ -945,7 +960,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <p>Start with the free sample. If you like it, build your pack and begin today.</p>
       <div class="hero-actions" style="justify-content: center; margin-top: 6px">
         <a class="btn btn-sun" href="#pack">Build your pack</a>
-        <a class="btn btn-ghost" href="#chapters">See chapters</a>
+        <a class="btn btn-ghost" href="read.html#signup">Sign up free</a>
       </div>
     </div>
   </section>
@@ -1257,7 +1272,7 @@ function renderPlans() {
     <a class="btn btn-sun" href="read.html">Get my code</a>`;
   $("#perks").innerHTML = [
     PAY && PAY.upi && "Pay by UPI: GPay, PhonePe, Paytm", "Free sample before you buy", "Login ID on WhatsApp after payment",
-    "1 ID = 1 phone: your copy stays yours", "Hinglish explanations, English exam answers"
+    "1 ID = 1 phone: your copy stays yours", "Sign up free: the sample stays in your library", "Hinglish explanations, English exam answers"
   ].filter(Boolean).map(t => `<li>✓ ${t}</li>`).join("");
   // A word about the offers in the top section too.
   const trust = $(".trust");
