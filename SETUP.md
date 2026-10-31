@@ -114,15 +114,14 @@ Dhyan rakhne wali baatein:
 
 ## 12. Books & prices (website par kya bikta hai)
 
-Admin panel mein **Books & prices** (phone par **Prices**) kholo. Pehli baar wahan website ki abhi wali list aur prices bhari milengi; check karke ek baar **Save changes** dabao. Uske baad website isi page se chalti hai.
+Admin panel mein **Books & prices** (phone par **Prices**) kholo. Upar chaar tab hain:
 
-- **Ways to buy:** Online book, Paperback (colour), Paperback (B/W). Jo tick hoga wahi website par bikega; naam aur chhota note bhi badal sakte ho. Online aur paperback dono chalu hon to "Online + Paperback" ka option apne aap aata hai.
-- **Offer banner:** website ke sabse upar ek patti, jaise "Diwali offer…", chaho to aakhri date ke saath.
-- **Classes, books aur chapters:** har class ki book ka naam, har chapter ka naam, pages, aur **Live** ya **Coming soon**. Naya class/book (jaise Class 10) aur naye chapter bhi jod sakte ho. Naye chapter ke topics bhi likh sakte ho (har line: naam | page).
-- **Price aur MRP:** har format ki price. MRP zyada likhoge to website par MRP kati hui aur "% off" dikhega. Jis format mein chapter nahi bechna, uski price khaali chhod do.
-- **Combos:** chapters ka set ek special price par (jaise "Class 11 full book"). Website par alag "Combos" hissa banta hai, har format ka WhatsApp order button ke saath.
+- **Chapters & prices:** upar **Class** ka dropdown hai. Class chuno, uske chapters number ke order mein dikhenge, har ek ke saath uski prices. Kisi chapter par tap karo to ek dialog khulta hai: naam, short naam, pages, **Live / Coming soon**, aur har format ki **Price** aur **MRP** (MRP zyada likhoge to website par kati hui aur "% off" dikhega). **Save** dabate hi website par aa jaata hai. **+ Add chapter to this class** se naya chapter (topics ke saath), **+ Add class** se nayi class/book, **Edit class** se book ka naam. Apne jode hue chapter ko dialog ke **Delete** se hata sakte ho (do baar tap).
+- **Combos:** chapters ka set ek special price par. **+ New combo** → naam, chapters tick karo (class ke hisaab se), har format ki price; MRP ke saath "single: ₹…" dikhta hai ki alag-alag lene par kitna padta.
+- **Ways to buy:** Online book, Monthly, Paperback colour, Paperback B/W: tick, naam, note, Online ki validity (365 din) aur Monthly ke din. Neeche **Same price for many chapters**: format, class (ya sab) aur price chun kar **Fill and save**.
+- **Offer banner:** website ke upar ki patti, text aur aakhri date.
 
-Har badlaav ke baad neeche **Save changes** dabana zaroori hai; **Undo all** se bina save kiye badlaav hat jaate hain. Naye chapter ki PDF **Chapters** page se upload karo, aur students ko woh chapter **Chapters & date** se do.
+Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. Naye chapter ki PDF **Chapters** page se upload karo, aur students ko woh chapter **Chapters & date** se do.
 
 ## 13. Monthly plan (har mahine payment)
 
