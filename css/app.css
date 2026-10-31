@@ -52,7 +52,10 @@ a { color: var(--accent); }
 
 .app-head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--night); color: var(--night-fg); }
 .app-head .wrap { display: flex; align-items: center; gap: 12px; padding-block: 10px; min-height: 58px; }
-.brand { font: 800 1.35rem/1 var(--font-display); color: var(--sun); text-decoration: none; }
+.brand { font: 800 1.35rem/1 var(--font-display); color: var(--sun); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+.brand img { width: 38px; height: 38px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px rgba(255, 210, 74, .35); }
+.brand > span { display: block; }
+.app-logo { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 6px 18px rgba(20, 18, 70, .3); flex: none; }
 .brand small { display: block; font: 500 .7rem var(--font-body); color: var(--night-muted); letter-spacing: .04em; }
 .head-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; min-width: 0; }
 .who { font-size: .85rem; color: var(--night-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }

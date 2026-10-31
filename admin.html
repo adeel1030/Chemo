@@ -9,6 +9,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:wght@400;500;600;700&display=swap">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/logo/icon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
+<link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
+<meta name="theme-color" content="#15134a">
+<link rel="manifest" href="admin.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chemo Admin">
+<script src="js/install.js" defer></script>
 <link rel="stylesheet" href="css/app.css">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
@@ -189,8 +199,9 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
 <header class="admin-head">
   <div class="bar">
-    <a class="brand" href="index.html">Chemophile</a><span class="badge-admin">Admin panel</span>
+    <a class="brand" href="index.html"><img src="assets/logo/icon-96.png" alt="" width="38" height="38"><span>Chemophile</span></a><span class="badge-admin">Admin panel</span>
     <div class="head-actions">
+      <button class="btn btn-ghost btn-sm" type="button" data-install hidden>Install app</button>
       <span class="who" id="who"></span>
       <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
     </div>
@@ -209,7 +220,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
   <div class="wrap center-screen" id="v-login" hidden>
     <form class="card login-card" id="login-form" novalidate>
-      <div class="lock" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <img class="app-logo" src="assets/logo/logo-640.webp" alt="Chemophile by Adeel Sir" width="72" height="72">
       <div><h1>Admin login</h1><p class="hint">Only for Adeel Sir. Students log in on the reader page.</p></div>
       <div class="field"><label for="a-email">Admin email</label><input id="a-email" type="email" autocomplete="username"></div>
       <div class="field"><label for="a-pw">Password</label><input id="a-pw" type="password" autocomplete="current-password"></div>

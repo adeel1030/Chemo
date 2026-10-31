@@ -6,6 +6,14 @@
 <title>Chemophile</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Chemophile by Adeel Sir: visual Hinglish booklets for Class 11 and 12 Chemistry. NCERT and CBSE 2026-27 syllabus, diagrams, solved examples, English exam answers and a 40-mark test in every chapter.">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/logo/icon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
+<link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
+<meta name="theme-color" content="#15134a">
+<meta property="og:title" content="Chemophile by Adeel Sir: Class 11 and 12 Chemistry in Hinglish">
+<meta property="og:description" content="Visual Hinglish chemistry booklets with diagrams, solved examples and exam answers. Read online or get the paperback.">
+<meta property="og:image" content="https://chemophile.maproductsindia.com/assets/logo/og.png">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Kalam:wght@400;700&display=swap">
@@ -117,7 +125,11 @@ p { margin: 0; }
 /* ---------- header ---------- */
 .site-head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--night); color: var(--night-fg); border-bottom: 1px solid rgba(255,255,255,.08); }
 .site-head .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
-.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; color: var(--sun); text-decoration: none; line-height: 1; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.45rem; color: var(--sun); text-decoration: none; line-height: 1; display: flex; align-items: center; gap: 10px; }
+.brand img { width: 40px; height: 40px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px rgba(255, 210, 74, .35); }
+.brand > span { display: block; }
+.site-nav a { white-space: nowrap; }
+@media (max-width: 440px) { .site-head .brand small { display: none; } .site-head .brand img { width: 34px; height: 34px; } }
 .brand small { display: block; font-family: var(--font-body); font-weight: 500; font-size: .7rem; color: var(--night-muted); letter-spacing: .04em; }
 .site-nav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
 .site-nav a { color: var(--night-fg); text-decoration: none; font-weight: 500; font-size: .92rem; padding: 6px 10px; border-radius: 999px; }
@@ -426,7 +438,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="#top">Chemophile<small>by Adeel Sir · Class 11 &amp; 12</small></a>
+    <a class="brand" href="#top"><img src="assets/logo/icon-96.png" alt="" width="40" height="40"><span>Chemophile<small>by Adeel Sir · Class 11 &amp; 12</small></span></a>
     <nav class="site-nav" aria-label="Main">
       <a href="#andar">Look inside</a>
       <a href="#chapters">Chapters</a>
