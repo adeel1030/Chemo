@@ -28,6 +28,7 @@ body { background: var(--paper); }
 .badge-admin { white-space: nowrap; font: 700 .7rem var(--font-body); letter-spacing: .12em; text-transform: uppercase; background: var(--sun); color: var(--sun-ink); border-radius: 6px; padding: 3px 8px; }
 .admin-head .brand { display: flex; align-items: center; gap: 10px; }
 @media (max-width: 560px) { .admin-head .who { display: none; } }
+@media (max-width: 440px) { .admin-head .brand > span { display: none; } .admin-head .bar { gap: 8px; } }
 
 .desk { display: grid; grid-template-columns: minmax(0, 1fr); }
 .side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
@@ -192,6 +193,36 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .rrow { display: grid; gap: 4px; padding: 8px 0; border-top: 1px dashed var(--line); font-size: .88rem; }
 .rrow .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; }
 .rrow .m { color: var(--muted); font-size: .82rem; }
+/* Books & prices: tabs, a class picker, a sorted chapter list, and a dialog for editing one item. */
+.seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.seg button { flex: 1 1 auto; border: 0; background: none; color: var(--muted); font: 700 .9rem var(--font-body); padding: 9px 12px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+.seg button[aria-selected="true"] { background: var(--night); color: var(--sun); }
+.cat-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.cat-top .field { flex: 0 1 260px; }
+.cat-top .cat-bookname { flex: 1 1 160px; padding-bottom: 10px; }
+.ch-list { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ch-item { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 12px 14px; background: var(--surface); border: 0; border-top: 1px solid var(--line); text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100%; }
+.ch-item:first-child { border-top: 0; }
+.ch-item:hover { background: var(--paper); }
+.ch-item .no { font: 800 1.1rem var(--font-display); color: var(--accent); text-align: center; }
+.ch-item .nm { font-weight: 700; min-width: 0; }
+.ch-item .nm small { display: block; font-weight: 400; color: var(--muted); font-size: .82rem; margin-top: 2px; }
+.ch-item .go { color: var(--accent); font-weight: 700; font-size: .88rem; white-space: nowrap; }
+.ch-item .pr { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .84rem; color: var(--muted); }
+.ch-item .pr b { color: var(--fg); }
+.ch-item .pr s { margin-right: 3px; }
+.ch-empty { padding: 20px; text-align: center; color: var(--muted); }
+.cat-fill { border-top: 1px dashed var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.dlg { border: 0; padding: 0; border-radius: 18px; width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); background: var(--surface); color: var(--fg); box-shadow: 0 30px 80px rgba(0, 0, 0, .35); }
+.dlg::backdrop { background: rgba(10, 9, 35, .55); }
+.dlg-in { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.dlg-head h2 { font-size: 1.25rem; }
+.dlg-x { border: 0; background: var(--paper); color: var(--fg); width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; flex: none; }
+.dlg-body { padding: 16px 20px; overflow-y: auto; }
+.dlg-in > .msg { margin: 0 20px 10px; }
+.dlg-foot { display: flex; gap: 8px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line); }
+.dlg-foot .spacer { flex: 1; }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 </style>
 </head>
@@ -362,18 +393,68 @@ textarea:focus { border-color: var(--accent); outline: none; }
     </section>
 
     <section id="t-catalog" class="stack cat" hidden>
-      <div class="page-head"><div><h1>Books &amp; prices</h1><p>What the website sells: classes, books, chapters, prices, MRPs, combos and the offer banner.</p></div>
+      <div class="page-head"><div><h1>Books &amp; prices</h1><p>What the website sells. Every change is saved when you tap Save and shows on the website at once.</p></div>
         <a class="btn btn-line btn-sm" href="index.html#chapters" target="_blank" rel="noopener">See the website ↗</a></div>
-      <div class="msg warn" id="cat-first" hidden>The website still uses the built-in list. Check the prices below and tap <b>Save changes</b> once; after that, the website follows this page.</div>
-      <div class="card stack"><div><h2>Ways to buy</h2><p class="cat-sub">Tick the formats the website should offer. The name and note show on the order form.</p></div><div id="cat-formats"></div></div>
-      <div class="card stack"><div><h2>Offer banner</h2><p class="cat-sub">A strip on top of the website, e.g. "Diwali offer: 20% off all combos till 5 Nov".</p></div><div id="cat-offer"></div></div>
-      <div class="card stack"><div><h2>Classes, books and chapters</h2><p class="cat-sub">Price is what the student pays. MRP is optional: if it is higher, the website shows it crossed out with the % off. Leave a price empty if that format isn't sold for the chapter. "Coming soon" chapters show on the website but can't be ordered.</p></div><div id="cat-books"></div>
-        <div class="cat-add"><div class="field sm"><label for="nb-cls">Class</label><input id="nb-cls" type="number" min="1" max="12" inputmode="numeric" placeholder="10"></div><div class="field"><label for="nb-name">Book name</label><input id="nb-name" placeholder="Part 3 (for 10th Class)"></div><button class="btn btn-line btn-sm" type="button" data-cat="add-book">+ Add class / book</button></div>
+      <div class="msg warn" id="cat-first" hidden>The website still uses the built-in list. Your first Save here makes this page the one the website follows.</div>
+      <div class="seg" role="tablist" aria-label="Books and prices" id="cat-tabs">
+        <button type="button" role="tab" data-ctab="ch" aria-selected="true">Chapters &amp; prices</button>
+        <button type="button" role="tab" data-ctab="combo" aria-selected="false">Combos</button>
+        <button type="button" role="tab" data-ctab="fmt" aria-selected="false">Ways to buy</button>
+        <button type="button" role="tab" data-ctab="offer" aria-selected="false">Offer banner</button>
       </div>
-      <div class="card stack"><div class="section-title" style="margin: 0"><div><h2>Combos</h2><p class="cat-sub">A set of chapters at one special price, e.g. "Class 11 full book".</p></div><button class="btn btn-line btn-sm" type="button" data-cat="add-combo">+ New combo</button></div><div class="stack" id="cat-combos"></div></div>
       <div class="msg" id="cat-msg" role="status" hidden></div>
-      <div class="savebar" id="cat-bar" hidden><span><b>Unsaved changes</b> · the website changes only after you save.</span><span class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="undo" style="background: transparent; color: var(--night-fg)">Undo all</button><button class="btn btn-sun btn-sm" type="button" data-cat="save">Save changes</button></span></div>
+
+      <div class="card stack" id="cat-ch">
+        <div class="cat-top">
+          <div class="field"><label for="cat-cls">Class</label><select id="cat-cls"></select></div>
+          <div class="cat-bookname"><span class="cat-sub" id="cat-book-name"></span></div>
+          <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class</button></div>
+        </div>
+        <div class="ch-list" id="cat-list"></div>
+        <div><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button></div>
+      </div>
+
+      <div class="card stack" id="cat-combo" hidden>
+        <div class="section-title" style="margin: 0"><p class="cat-sub">A set of chapters at one special price, e.g. "Class 11 full book". Shown in a Combos section on the website.</p><button class="btn btn-sun btn-sm" type="button" data-cat="new-combo">+ New combo</button></div>
+        <div class="ch-list" id="cat-combos"></div>
+      </div>
+
+      <div class="card stack" id="cat-fmt" hidden>
+        <p class="cat-sub">Tick what the website should sell. The name and note show on the order form.</p>
+        <div id="cat-formats"></div>
+        <div><button class="btn btn-sun" type="button" data-cat="save-fmt">Save</button></div>
+        <div class="cat-fill"><b>Same price for many chapters</b>
+          <div class="cat-row">
+            <div class="field"><label for="fill-f">Way to buy</label><select id="fill-f"></select></div>
+            <div class="field"><label for="fill-cls">Chapters of</label><select id="fill-cls"></select></div>
+            <div class="field sm"><label for="fill-v">Price ₹</label><input id="fill-v" type="number" min="1" inputmode="numeric"></div>
+            <button class="btn btn-line btn-sm" type="button" data-cat="fill">Fill and save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card stack" id="cat-offer" hidden>
+        <p class="cat-sub">A strip on top of the website, e.g. "Diwali offer: 20% off all combos till 5 Nov".</p>
+        <label class="cat-check"><input type="checkbox" id="of-on"> Show the banner</label>
+        <div class="field"><label for="of-text">Banner text</label><input id="of-text" maxlength="140" placeholder="Diwali offer: 20% off all combos!"></div>
+        <div class="field" style="max-width: 260px"><label for="of-until">Show until (optional)</label><input id="of-until" type="date"></div>
+        <div><button class="btn btn-sun" type="button" data-cat="save-offer">Save</button></div>
+      </div>
     </section>
+
+    <dialog class="dlg cat" id="cat-dlg" aria-labelledby="dlg-title">
+      <form method="dialog" class="dlg-in">
+        <div class="dlg-head"><h2 id="dlg-title"></h2><button class="dlg-x" value="cancel" aria-label="Close">×</button></div>
+        <div class="dlg-body stack" id="dlg-body"></div>
+        <div class="msg bad" id="dlg-err" hidden></div>
+        <div class="dlg-foot">
+          <button class="btn btn-danger btn-sm" type="button" data-dlg="delete" hidden>Delete</button>
+          <span class="spacer"></span>
+          <button class="btn btn-line" value="cancel">Cancel</button>
+          <button class="btn btn-sun" type="button" data-dlg="save">Save</button>
+        </div>
+      </form>
+    </dialog>
 
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div></div>
@@ -1076,182 +1157,248 @@ $("#news").addEventListener("click", async e => {
 });
 
 // ---------- books & prices (the catalog) ----------
-let cat = null, catSaved = null, catDirty = false;
+// One catalog document holds everything the website sells. Each Save here writes it at once.
+let cat = null, catSaved = null, catCls = null;
 const clone = o => JSON.parse(JSON.stringify(o));
-const FMT_NAMES = { online: "Online", colour: "Colour", bw: "B/W" };
 function startCatalog(saved) {
   catSaved = saved ? clone(saved) : null;
   cat = saved ? clone(saved) : defaultCatalog();
   // Fill in anything an older saved catalog doesn't have yet.
-  cat.formats = Object.assign(clone(FORMATS), cat.formats || {});
+  FORMAT_IDS.forEach(f => { cat.formats = cat.formats || {}; cat.formats[f] = Object.assign(clone(FORMATS[f]), cat.formats[f] || {}); });
   cat.combos = cat.combos || [];
   cat.offer = Object.assign({ on: false, text: "", until: "" }, cat.offer || {});
-  catDirty = false;
   $("#cat-first").hidden = !!saved;
   picks($("#new-ch")); picks($("#p-ch"));
   planUI();
   renderCatalog();
 }
-const onFormats = () => FORMAT_IDS.filter(f => cat.formats[f] && cat.formats[f].on);
+const onFormats = (c = cat) => FORMAT_IDS.filter(f => c.formats[f] && c.formats[f].on);
 const numVal = v => (v === "" || v == null ? "" : v);
-function priceBoxes(path, price = {}, mrp = {}, hint = {}) {
-  return `<div class="price-grid">${onFormats().map(f => `<div class="price-box"><b>${esc(cat.formats[f].label)}</b>
-    <div class="field"><label>Price ₹</label><input type="number" min="0" inputmode="numeric" data-f="${path}.price.${f}" data-num value="${numVal(price[f])}"></div>
-    <div class="field"><label>MRP ₹${hint[f] ? ` <span title="Price of these chapters bought one by one">(single: ${hint[f]})</span>` : ""}</label><input type="number" min="0" inputmode="numeric" data-f="${path}.mrp.${f}" data-num value="${numVal(mrp[f])}"></div>
-  </div>`).join("") || `<p class="cat-sub">Tick at least one way to buy above.</p>`}</div>`;
+const ckey = c => `${c.cls}-${c.n}`;
+const classesOf = () => [...cat.books].map(b => +b.cls).sort((a, b) => a - b);
+const fmtShort = f => ({ online: "Online", monthly: "Monthly", colour: "Colour", bw: "B/W" })[f];
+function catSay(t, cls = "good") { const m = $("#cat-msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }
+// Save a changed copy of the catalog; only if Firestore accepts it does the page switch to it.
+async function commit(change, done) {
+  const next = clone(cat);
+  const problem = change(next);
+  if (problem) throw new Error(problem);
+  await setDoc(doc(db, "catalog", "main"), { data: JSON.stringify(next), updatedAt: serverTimestamp() });
+  applyCatalog(clone(next));
+  startCatalog(clone(next));
+  catSay(done || "Saved. The website shows it now.");
+  loadChapters().catch(() => {});
+  renderStudents();
+}
+const saveError = ex => ex.code === "permission-denied" ? "Not saved: paste the latest Firestore rules first (SETUP.md, step 6)." : (ex.message || ex.code);
+
+function priceLine(price = {}, mrp = {}) {
+  const parts = onFormats().filter(f => +price[f] > 0).map(f => `<span>${fmtShort(f)} ${+mrp[f] > +price[f] ? `<s>₹${mrp[f]}</s>` : ""}<b>₹${price[f]}</b>${f === "monthly" ? "/mo" : ""}</span>`);
+  return parts.join("") || `<span>No price yet</span>`;
 }
 function renderCatalog() {
-  $("#cat-formats").innerHTML = FORMAT_IDS.map(f => `<div class="cat-format">
-    <label class="cat-check"><input type="checkbox" data-f="formats.${f}.on"${cat.formats[f].on ? " checked" : ""}> Sell</label>
-    <div class="field"><label>Name on the website</label><input data-f="formats.${f}.label" value="${esc(cat.formats[f].label)}"></div>
-    <div class="field"><label>Short note</label><input data-f="formats.${f}.note" value="${esc(cat.formats[f].note || "")}"></div>
-    ${cat.formats[f].on ? `<div class="cat-row" style="grid-column: 2 / -1">
-      ${f === "online" ? `<div class="field sm"><label>Valid for (days)</label><input type="number" min="1" max="3660" inputmode="numeric" data-f="formats.online.days" data-num value="${numVal(cat.formats.online.days || 365)}"></div>` : ""}
-      ${f === "monthly" ? `<div class="field sm"><label>Days paid for</label><input type="number" min="1" max="366" inputmode="numeric" data-f="formats.monthly.days" data-num value="${numVal(cat.formats.monthly.days || 30)}"></div>` : ""}
-      <div class="field sm"><label>Same price for all</label><input type="number" min="0" inputmode="numeric" data-bulk="${f}" placeholder="₹"></div>
-      <button class="btn btn-line btn-sm" type="button" data-cat="bulk" data-f="${f}">Fill every chapter</button>
-    </div>` : ""}
-  </div>`).join("");
-  $("#cat-offer").innerHTML = `<div class="cat-row">
-    <label class="cat-check"><input type="checkbox" data-f="offer.on"${cat.offer.on ? " checked" : ""}> Show the banner</label>
-    <div class="field lg"><label>Banner text</label><input data-f="offer.text" maxlength="140" value="${esc(cat.offer.text)}" placeholder="Diwali offer: 20% off all combos!"></div>
-    <div class="field"><label>Show until (optional)</label><input type="date" data-f="offer.until" value="${esc(cat.offer.until || "")}"></div>
-  </div>`;
-  const books = [...cat.books].sort((a, b) => a.cls - b.cls);
-  $("#cat-books").innerHTML = books.map(b => {
-    const bi = cat.books.indexOf(b);
-    const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === +b.cls).sort((x, y) => x[0].n - y[0].n);
-    const isBase = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
-    return `<div class="cat-book">
-      <div class="cat-row"><h3>Class ${b.cls}</h3>
-        <div class="field lg"><label>Book name</label><input data-f="books.${bi}.name" value="${esc(b.name)}"></div>
-        ${list.length ? "" : `<button class="btn btn-danger btn-sm" type="button" data-cat="del-book" data-i="${bi}">Remove class</button>`}</div>
-      ${list.map(([c, i]) => `<div class="cat-ch${c.soon ? " soon" : ""}">
-        <div class="cat-row"><span class="no">Ch ${c.n}</span>
-          <div class="field lg"><label>Chapter name</label><input data-f="chapters.${i}.title" value="${esc(c.title)}"></div>
-          <div class="field"><label>Short name (optional)</label><input data-f="chapters.${i}.short" value="${esc(c.short || "")}"></div>
-          <div class="field sm"><label>Pages</label><input type="number" min="0" inputmode="numeric" data-f="chapters.${i}.pages" data-num value="${numVal(c.pages)}"></div>
-          <div class="field sm" style="flex-basis: 130px"><label>On website</label><select data-f="chapters.${i}.soon" data-bool><option value="">Live</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
-        </div>
-        ${priceBoxes(`chapters.${i}`, c.price, c.mrp)}
-        ${isBase(c) ? "" : `<div class="field"><label>Topics, one per line: name | start page (optional)</label><textarea data-topics="${i}" placeholder="Atoms and molecules | 4">${esc((c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n"))}</textarea></div>
-        <div><button class="btn btn-danger btn-sm" type="button" data-cat="del-ch" data-i="${i}">Remove this chapter</button></div>`}
-      </div>`).join("")}
-      <div class="cat-add"><div class="field sm"><label>Chapter no.</label><input type="number" min="1" inputmode="numeric" data-new-n="${b.cls}" value="${(list.length ? Math.max(...list.map(([c]) => +c.n)) : 0) + 1}"></div>
-        <div class="field"><label>New chapter name</label><input data-new-title="${b.cls}" placeholder="Chapter name"></div>
-        <button class="btn btn-line btn-sm" type="button" data-cat="add-ch" data-cls="${b.cls}">+ Add chapter</button></div>
-    </div>`;
+  const classes = classesOf();
+  if (!classes.includes(catCls)) catCls = classes.includes(11) ? 11 : classes[0];
+  $("#cat-cls").innerHTML = classes.map(c => {
+    const n = cat.chapters.filter(x => +x.cls === c).length;
+    return `<option value="${c}"${c === catCls ? " selected" : ""}>Class ${c} (${n} chapter${n === 1 ? "" : "s"})</option>`;
   }).join("");
-  $("#cat-combos").innerHTML = cat.combos.length ? cat.combos.map((x, i) => {
-    const single = {};
-    onFormats().forEach(f => { const t = x.chapters.reduce((a, k) => a + (+((cat.chapters.find(c => `${c.cls}-${c.n}` === k) || {}).price || {})[f] || 0), 0); if (t) single[f] = "₹" + t; });
-    return `<div class="cat-ch">
-      <div class="cat-row">
-        <div class="field lg"><label>Combo name</label><input data-f="combos.${i}.name" value="${esc(x.name || "")}" placeholder="Class 11 full book"></div>
-        <label class="cat-check"><input type="checkbox" data-f="combos.${i}.on"${x.on !== false ? " checked" : ""}> Show on website</label>
-      </div>
-      <div class="field"><label>One line about it (optional)</label><input data-f="combos.${i}.text" value="${esc(x.text || "")}" placeholder="All 9 chapters of Class 11 together"></div>
-      <div><b style="font-size: .9rem">Chapters in this combo (${x.chapters.length})</b>
-        <div class="chap-picks" data-combo="${i}">${classList().map(cls => {
-          const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
-          return chs.length ? `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
-            chs.map(c => { const k = `${c.cls}-${c.n}`; return `<label><input type="checkbox" value="${k}"${x.chapters.includes(k) ? " checked" : ""}> Ch ${c.n} ${esc(c.short || c.title)}</label>`; }).join("") : "";
-        }).join("")}</div></div>
-      ${priceBoxes(`combos.${i}`, x.price, x.mrp, single)}
-      <div><button class="btn btn-danger btn-sm" type="button" data-cat="del-combo" data-i="${i}">Remove combo</button></div>
-    </div>`;
-  }).join("") : `<p class="cat-sub">No combos yet.</p>`;
+  const book = cat.books.find(b => +b.cls === catCls);
+  $("#cat-book-name").textContent = book ? `Book: ${book.name}` : "";
+  const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === catCls).sort((a, b) => a[0].n - b[0].n);
+  $("#cat-list").innerHTML = list.length ? list.map(([c, i]) => `<button class="ch-item" type="button" data-edit-ch="${i}">
+      <span class="no">${c.n}</span>
+      <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
+      <span class="go">Edit ›</span>
+      <span class="pr">${priceLine(c.price, c.mrp)}</span>
+    </button>`).join("") : `<div class="ch-empty">No chapters in Class ${catCls} yet. Add the first one below.</div>`;
+  $("#cat-combos").innerHTML = cat.combos.length ? [...cat.combos.map((x, i) => [x, i])].sort((a, b) => (a[0].name || "").localeCompare(b[0].name || "")).map(([x, i]) => `<button class="ch-item" type="button" data-edit-combo="${i}">
+      <span class="no">${x.chapters.length}</span>
+      <span class="nm">${esc(x.name || "(no name)")}<small>${x.chapters.length} chapters · ${x.on === false ? "hidden from the website" : "on the website"}</small></span>
+      <span class="go">Edit ›</span>
+      <span class="pr">${priceLine(x.price, x.mrp)}</span>
+    </button>`).join("") : `<div class="ch-empty">No combos yet.</div>`;
+  $("#cat-formats").innerHTML = FORMAT_IDS.map(f => `<div class="cat-format" data-fmt="${f}">
+    <label class="cat-check"><input type="checkbox" data-k="on"${cat.formats[f].on ? " checked" : ""}> Sell</label>
+    <div class="field"><label>Name on the website</label><input data-k="label" value="${esc(cat.formats[f].label)}"></div>
+    <div class="field"><label>Short note</label><input data-k="note" value="${esc(cat.formats[f].note || "")}"></div>
+    ${f === "online" || f === "monthly" ? `<div class="cat-row" style="grid-column: 2 / -1"><div class="field sm"><label>${f === "online" ? "Valid for (days)" : "Days paid for"}</label><input type="number" min="1" max="3660" inputmode="numeric" data-k="days" value="${numVal(cat.formats[f].days || (f === "online" ? 365 : 30))}"></div></div>` : ""}
+  </div>`).join("");
+  $("#fill-f").innerHTML = FORMAT_IDS.map(f => `<option value="${f}">${esc(cat.formats[f].label)}</option>`).join("");
+  $("#fill-cls").innerHTML = `<option value="all">Every class</option>` + classes.map(c => `<option value="${c}">Class ${c}</option>`).join("");
+  $("#of-on").checked = !!cat.offer.on; $("#of-text").value = cat.offer.text || ""; $("#of-until").value = cat.offer.until || "";
 }
-function setPath(obj, path, v) {
-  const ks = path.split("."); let o = obj;
-  ks.slice(0, -1).forEach(k => { if (o[k] == null || typeof o[k] !== "object") o[k] = {}; o = o[k]; });
-  o[ks[ks.length - 1]] = v;
-}
-function markDirty() {
-  catDirty = true;
-  $("#cat-bar").hidden = false;
-  $("#cat-msg").hidden = true;
-}
-window.addEventListener("beforeunload", e => { if (catDirty) { e.preventDefault(); e.returnValue = ""; } });
-$("#t-catalog").addEventListener("input", e => {
-  const el = e.target;
-  if (el.dataset.f) {
-    let v = el.type === "checkbox" ? el.checked : el.value;
-    if ("num" in el.dataset) v = el.value === "" ? null : Math.max(0, Math.round(+el.value));
-    if ("bool" in el.dataset) v = !!el.value;
-    setPath(cat, el.dataset.f, v);
-    markDirty();
-    // Turning a format on or off, or a chapter live or soon, changes which boxes show.
-    if (/^formats\.\w+\.on$/.test(el.dataset.f) || /\.soon$/.test(el.dataset.f)) renderCatalog();
-  } else if (el.dataset.topics) {
-    cat.chapters[+el.dataset.topics].topics = el.value.split("\n").map(l => l.trim()).filter(Boolean)
-      .map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-    markDirty();
-  } else if (el.closest("[data-combo]")) {
-    const box = el.closest("[data-combo]"), x = cat.combos[+box.dataset.combo];
-    x.chapters = [...box.querySelectorAll("input:checked")].map(i => i.value);
-    markDirty(); renderCatalog();
-  }
-});
-$("#t-catalog").addEventListener("change", e => { if (e.target.matches("select, input[type=checkbox], input[type=date]")) e.target.dispatchEvent(new Event("input", { bubbles: true })); });
-// "All of Class N" inside a combo also has to update the combo.
-$("#t-catalog").addEventListener("click", e => {
-  const pick = e.target.closest("[data-combo] [data-pick-cls]");
-  if (pick) setTimeout(() => pick.closest("[data-combo]").querySelector("input")?.dispatchEvent(new Event("input", { bubbles: true })));
-  const b = e.target.closest("[data-cat]");
+$("#cat-tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-ctab]");
   if (!b) return;
-  const act = b.dataset.cat, msg = $("#cat-msg"), say = (t, cls = "bad") => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
-  if (act === "add-book") {
-    const cls = parseInt($("#nb-cls").value, 10), name = $("#nb-name").value.trim();
-    if (!(cls >= 1 && cls <= 12)) return say("Class: a number from 1 to 12.");
-    if (cat.books.some(x => +x.cls === cls)) return say(`Class ${cls} is already there.`);
-    cat.books.push({ cls, name: name || `Class ${cls}` });
-    $("#nb-cls").value = ""; $("#nb-name").value = "";
-  }
-  if (act === "del-book") cat.books.splice(+b.dataset.i, 1);
-  if (act === "add-ch") {
-    const cls = +b.dataset.cls, n = parseInt($(`[data-new-n="${cls}"]`).value, 10), title = $(`[data-new-title="${cls}"]`).value.trim();
-    if (!(n >= 1)) return say("Chapter number: 1 or more.");
-    if (!title) return say("Write the chapter name.");
-    if (cat.chapters.some(c => +c.cls === cls && +c.n === n)) return say(`Class ${cls} already has a Chapter ${n}.`);
-    cat.chapters.push({ cls, n, title, short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] });
-    say(`Chapter ${n} added as "Coming soon". Fill its prices, then set it to Live when it's ready.`, "good");
-  }
-  if (act === "del-ch") cat.chapters.splice(+b.dataset.i, 1);
-  if (act === "bulk") {
-    const f = b.dataset.f, v = Math.round(+$(`[data-bulk="${f}"]`).value);
-    if (!(v > 0)) return say("Write the price to fill in first.");
-    cat.chapters.forEach(c => { c.price = c.price || {}; c.price[f] = v; });
-    say(`${cat.formats[f].label}: ₹${v} filled in for all ${cat.chapters.length} chapters. Change any one below if needed, then Save.`, "good");
-  }
-  if (act === "add-combo") cat.combos.push({ id: "c" + Date.now(), name: "", text: "", on: true, chapters: [], price: {}, mrp: {} });
-  if (act === "del-combo") cat.combos.splice(+b.dataset.i, 1);
-  if (act === "undo") { startCatalog(catSaved); $("#cat-bar").hidden = true; return; }
-  if (act === "save") return saveCatalog(b);
-  markDirty(); renderCatalog();
+  document.querySelectorAll("#cat-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  ["ch", "combo", "fmt", "offer"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
+  $("#cat-msg").hidden = true;
 });
-async function saveCatalog(b) {
-  const msg = $("#cat-msg"), say = (t, cls) => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
-  const bad = cat.chapters.find(c => !String(c.title || "").trim());
-  if (bad) return say(`Class ${bad.cls} Chapter ${bad.n} has no name.`, "bad");
-  const noPrice = cat.chapters.filter(c => !c.soon && !onFormats().some(f => (c.price || {})[f] > 0));
-  if (noPrice.length) return say(`Give a price to: ${noPrice.map(c => `Class ${c.cls} Ch ${c.n}`).join(", ")}, or set them to Coming soon.`, "bad");
-  const emptyCombo = cat.combos.find(x => x.on !== false && (!x.name || !x.chapters.length || !onFormats().some(f => (x.price || {})[f] > 0)));
-  if (emptyCombo) return say(`The combo "${emptyCombo.name || "(no name)"}" needs a name, chapters and a price, or untick "Show on website".`, "bad");
+$("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; renderCatalog(); });
+
+// ---------- the edit dialog ----------
+const dlg = $("#cat-dlg");
+let dlgSave = null, dlgDelete = null;
+function openDialog(title, body, onSave, onDelete) {
+  $("#dlg-title").textContent = title;
+  $("#dlg-body").innerHTML = body;
+  $("#dlg-err").hidden = true;
+  const del = dlg.querySelector('[data-dlg="delete"]');
+  del.hidden = !onDelete; del.textContent = "Delete"; delete del.dataset.armed;
+  dlgSave = onSave; dlgDelete = onDelete;
+  dlg.showModal();
+  const first = dlg.querySelector(".dlg-body input:not([type=checkbox]), .dlg-body textarea");
+  if (first) first.focus();
+}
+const dlgErr = t => { const m = $("#dlg-err"); m.textContent = t; m.hidden = false; };
+const val = id => { const e = dlg.querySelector("#" + id); return e ? e.value.trim() : ""; };
+const num = id => { const v = val(id); return v === "" ? null : Math.max(0, Math.round(+v)); };
+dlg.addEventListener("click", async e => {
+  const b = e.target.closest("[data-dlg]");
+  if (!b) return;
+  try {
+    if (b.dataset.dlg === "save" && dlgSave) { b.disabled = true; await dlgSave(); dlg.close(); }
+    if (b.dataset.dlg === "delete" && dlgDelete) {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
+      await dlgDelete(); dlg.close();
+    }
+  } catch (ex) { dlgErr(saveError(ex)); }
+  b.disabled = false;
+});
+function priceFields(price = {}, mrp = {}, hint = {}) {
+  const on = onFormats();
+  return `<div><b>Prices</b><p class="cat-sub">Price is what the student pays. MRP is optional: if it is higher, the website shows it crossed out with the % off. Leave a price empty if it isn't sold that way.</p></div>
+    <div class="price-grid">${on.map(f => `<div class="price-box"><b>${esc(cat.formats[f].label)}${f === "monthly" ? ` <span class="cat-sub">per ${cat.formats.monthly.days || 30} days</span>` : ""}</b>
+      <div class="field"><label for="p-${f}">Price ₹</label><input id="p-${f}" type="number" min="0" inputmode="numeric" value="${numVal(price[f])}"></div>
+      <div class="field"><label for="m-${f}">MRP ₹${hint[f] ? ` (single: ${hint[f]})` : ""}</label><input id="m-${f}" type="number" min="0" inputmode="numeric" value="${numVal(mrp[f])}"></div>
+    </div>`).join("")}</div>
+    ${on.length < FORMAT_IDS.length ? `<p class="cat-sub">More ways to buy can be switched on in the "Ways to buy" tab.</p>` : ""}`;
+}
+// Read the price boxes back, keeping prices of formats that are switched off now.
+function readPrices(old = {}, oldMrp = {}) {
+  const price = Object.assign({}, old), mrp = Object.assign({}, oldMrp);
+  onFormats().forEach(f => { price[f] = num("p-" + f); mrp[f] = num("m-" + f); });
+  return { price, mrp };
+}
+const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
+function chapterDialog(i) {
+  const isNew = i == null, c = isNew ? { cls: catCls, n: (Math.max(0, ...cat.chapters.filter(x => +x.cls === catCls).map(x => +x.n)) + 1), title: "", short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] } : cat.chapters[i];
+  const custom = isNew || !isBaseChapter(c);
+  openDialog(isNew ? `New chapter in Class ${catCls}` : `Class ${c.cls} · Chapter ${c.n}`, `
+    <div class="cat-row">
+      ${isNew ? `<div class="field sm"><label for="d-n">Chapter no.</label><input id="d-n" type="number" min="1" inputmode="numeric" value="${c.n}"></div>` : ""}
+      <div class="field lg"><label for="d-title">Chapter name</label><input id="d-title" value="${esc(c.title)}"></div>
+    </div>
+    <div class="cat-row">
+      <div class="field"><label for="d-short">Short name (optional)</label><input id="d-short" value="${esc(c.short || "")}"></div>
+      <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
+      <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live (can be ordered)</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
+    </div>
+    ${priceFields(c.price, c.mrp)}
+    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc((c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n"))}</textarea></div>` : ""}`,
+    async () => {
+      const n = isNew ? parseInt(val("d-n"), 10) : c.n, title = val("d-title");
+      if (!(n >= 1)) throw new Error("Chapter number: 1 or more.");
+      if (!title) throw new Error("Write the chapter name.");
+      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`Class ${c.cls} already has a Chapter ${n}.`);
+      const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
+      if (!soon && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or set it to Coming soon.");
+      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp });
+      if (custom) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
+      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `Class ${c.cls} Chapter ${n} saved.`);
+    },
+    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `Class ${c.cls} Chapter ${c.n} removed.`); } : null);
+}
+function classDialog(isNew) {
+  const b = isNew ? { cls: "", name: "" } : cat.books.find(x => +x.cls === catCls);
+  const count = isNew ? 0 : cat.chapters.filter(x => +x.cls === catCls).length;
+  openDialog(isNew ? "Add a class" : `Class ${b.cls}`, `
+    <div class="cat-row">
+      ${isNew ? `<div class="field sm"><label for="d-cls">Class</label><input id="d-cls" type="number" min="1" max="12" inputmode="numeric" placeholder="10"></div>` : ""}
+      <div class="field lg"><label for="d-book">Book name</label><input id="d-book" value="${esc(b.name)}" placeholder="Part 3 (for 10th Class)"></div>
+    </div>
+    ${!isNew && count ? `<p class="cat-sub">A class can be removed only when it has no chapters.</p>` : ""}`,
+    async () => {
+      const cls = isNew ? parseInt(val("d-cls"), 10) : +b.cls, name = val("d-book");
+      if (!(cls >= 1 && cls <= 12)) throw new Error("Class: a number from 1 to 12.");
+      if (isNew && cat.books.some(x => +x.cls === cls)) throw new Error(`Class ${cls} is already there.`);
+      await commit(next => { if (isNew) next.books.push({ cls, name: name || `Class ${cls}` }); else next.books.find(x => +x.cls === cls).name = name || `Class ${cls}`; }, `Class ${cls} saved.`);
+      catCls = cls; renderCatalog();
+    },
+    !isNew && !count ? async () => { await commit(next => { next.books = next.books.filter(x => +x.cls !== +b.cls); }, `Class ${b.cls} removed.`); } : null);
+}
+function comboDialog(i) {
+  const isNew = i == null, x = isNew ? { id: "c" + Date.now(), name: "", text: "", on: true, chapters: [], price: {}, mrp: {} } : cat.combos[i];
+  const single = keys => { const h = {}; onFormats().forEach(f => { const t = keys.reduce((a, k) => a + (+((cat.chapters.find(c => ckey(c) === k) || {}).price || {})[f] || 0), 0); if (t) h[f] = "₹" + t; }); return h; };
+  openDialog(isNew ? "New combo" : x.name || "Combo", `
+    <div class="field"><label for="d-cname">Combo name</label><input id="d-cname" value="${esc(x.name)}" placeholder="Class 11 full book"></div>
+    <div class="field"><label for="d-ctext">One line about it (optional)</label><input id="d-ctext" value="${esc(x.text || "")}" placeholder="All 9 chapters together"></div>
+    <label class="cat-check"><input type="checkbox" id="d-con"${x.on !== false ? " checked" : ""}> Show on the website</label>
+    <div><b>Chapters in this combo</b><div class="chap-picks" id="d-cpicks">${classesOf().map(cls => {
+      const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
+      return chs.length ? `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
+        chs.map(c => `<label><input type="checkbox" value="${ckey(c)}"${x.chapters.includes(ckey(c)) ? " checked" : ""}> Ch ${c.n} ${esc(c.short || c.title)}</label>`).join("") : "";
+    }).join("")}</div></div>
+    <div id="d-cprices">${priceFields(x.price, x.mrp, single(x.chapters))}</div>`,
+    async () => {
+      const chapters = [...dlg.querySelectorAll("#d-cpicks input:checked")].map(e => e.value), name = val("d-cname"), on = dlg.querySelector("#d-con").checked;
+      const { price, mrp } = readPrices(x.price, x.mrp);
+      if (!name) throw new Error("Write the combo name.");
+      if (!chapters.length) throw new Error("Tick the chapters in this combo.");
+      if (on && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or untick Show on the website.");
+      const item = Object.assign({}, x, { name, text: val("d-ctext"), on, chapters, price, mrp });
+      await commit(next => { if (isNew) next.combos.push(item); else next.combos[i] = item; }, `Combo "${name}" saved.`);
+    },
+    isNew ? null : async () => { await commit(next => { next.combos.splice(i, 1); }, `Combo "${x.name}" removed.`); });
+  // Show what the ticked chapters cost one by one, to help set the MRP.
+  const refresh = () => {
+    const keys = [...dlg.querySelectorAll("#d-cpicks input:checked")].map(e => e.value), h = single(keys);
+    onFormats().forEach(f => { const l = dlg.querySelector(`label[for="m-${f}"]`); if (l) l.textContent = `MRP ₹${h[f] ? ` (single: ${h[f]})` : ""}`; });
+  };
+  dlg.querySelector("#d-cpicks").addEventListener("change", refresh);
+  dlg.querySelector("#d-cpicks").addEventListener("click", e => { if (e.target.closest("[data-pick-cls]")) setTimeout(refresh); });
+}
+$("#t-catalog").addEventListener("click", async e => {
+  const ch = e.target.closest("[data-edit-ch]"), cb = e.target.closest("[data-edit-combo]"), b = e.target.closest("[data-cat]");
+  if (ch) return chapterDialog(+ch.dataset.editCh);
+  if (cb) return comboDialog(+cb.dataset.editCombo);
+  if (!b) return;
+  const act = b.dataset.cat;
+  if (act === "new-ch") return chapterDialog(null);
+  if (act === "edit-class") return classDialog(false);
+  if (act === "new-class") return classDialog(true);
+  if (act === "new-combo") return comboDialog(null);
   b.disabled = true;
   try {
-    await setDoc(doc(db, "catalog", "main"), { data: JSON.stringify(cat), updatedAt: serverTimestamp() });
-    applyCatalog(clone(cat));
-    startCatalog(clone(cat));
-    $("#cat-bar").hidden = true;
-    say("Saved. The website shows the new list and prices now (reload it to see).", "good");
-    loadChapters().catch(() => {});
-    renderStudents();
-  } catch (ex) {
-    say(ex.code === "permission-denied" ? "Not saved: paste the latest Firestore rules first (SETUP.md, step 6)." : "Not saved: " + (ex.message || ex.code), "bad");
-  }
+    if (act === "save-fmt") {
+      const rows = [...document.querySelectorAll("#cat-formats [data-fmt]")];
+      await commit(next => {
+        rows.forEach(r => {
+          const f = r.dataset.fmt, F = next.formats[f], g = k => r.querySelector(`[data-k="${k}"]`);
+          F.on = g("on").checked; F.label = g("label").value.trim() || FORMATS[f].label; F.note = g("note").value.trim();
+          if (g("days")) F.days = Math.max(1, Math.round(+g("days").value) || (f === "online" ? 365 : 30));
+        });
+        if (!FORMAT_IDS.some(f => next.formats[f].on)) return "Keep at least one way to buy switched on.";
+      }, "Ways to buy saved.");
+    }
+    if (act === "fill") {
+      const f = $("#fill-f").value, cls = $("#fill-cls").value, v = Math.round(+$("#fill-v").value);
+      if (!(v > 0)) throw new Error("Write the price to fill in.");
+      let n = 0;
+      await commit(next => {
+        next.chapters.forEach(c => { if (cls === "all" || +c.cls === +cls) { c.price = c.price || {}; c.price[f] = v; n++; } });
+        if (!next.formats[f].on) next.formats[f].on = true;
+      }, `₹${v} filled in for ${cls === "all" ? "every chapter" : "every Class " + cls + " chapter"} (${cat.formats[f].label}).`);
+    }
+    if (act === "save-offer") {
+      const on = $("#of-on").checked, text = $("#of-text").value.trim(), until = $("#of-until").value;
+      if (on && !text) throw new Error("Write the banner text.");
+      await commit(next => { next.offer = { on, text, until }; }, on ? "Offer banner saved and showing." : "Offer banner saved (hidden).");
+    }
+  } catch (ex) { catSay(saveError(ex), "bad"); }
   b.disabled = false;
-}
+});
 
 // ---------- chapters upload ----------
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
