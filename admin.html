@@ -20,8 +20,9 @@ body { background: var(--paper); }
 @media (max-width: 560px) { .admin-head .who { display: none; } }
 
 .desk { display: grid; grid-template-columns: minmax(0, 1fr); }
-.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
 .nav-btn .long { display: none; }
+@media (max-width: 420px) { .nav-btn { font-size: .66rem; padding: 7px 2px; } }
 @media (min-width: 900px) { .nav-btn .long { display: inline; } .nav-btn .short { display: none; } }
 .nav-btn { display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--night-muted); font: 600 .72rem var(--font-body); padding: 7px 4px; border-radius: 10px; cursor: pointer; position: relative; }
 .nav-btn svg { width: 22px; height: 22px; }
@@ -138,6 +139,34 @@ progress { width: 100%; height: 10px; accent-color: var(--accent); }
 textarea { font: 1rem/1.5 var(--font-body); padding: 11px 14px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); width: 100%; min-height: 110px; resize: vertical; }
 textarea:focus { border-color: var(--accent); outline: none; }
 .field select { appearance: auto; }
+/* Books & prices */
+.cat-sub { font-size: .9rem; color: var(--muted); }
+.cat input, .cat select, .cat textarea { font: .95rem var(--font-body); padding: 8px 10px; border-radius: 9px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); width: 100%; min-width: 0; }
+.cat textarea { min-height: 90px; }
+.cat input:focus, .cat select:focus, .cat textarea:focus { border-color: var(--accent); outline: none; }
+.cat input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--good); padding: 0; }
+.cat .field label { font-size: .8rem; }
+.cat-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.cat-row > .field { flex: 1 1 160px; min-width: 0; }
+.cat-row > .field.sm { flex: 0 1 96px; }
+.cat-row > .field.lg { flex: 3 1 240px; }
+.cat-check { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: .92rem; padding-bottom: 8px; cursor: pointer; }
+.cat-format { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr); gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+@media (max-width: 640px) { .cat-format { grid-template-columns: auto minmax(0, 1fr); } .cat-format > :last-child { grid-column: 1 / -1; } }
+.cat-book { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 12px; background: var(--paper); }
+.cat-book > .cat-row h3 { font-size: 1.15rem; margin-right: auto; }
+.cat-ch { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 10px; }
+.cat-ch.soon { border-style: dashed; }
+.cat-ch .no { font: 800 1rem var(--font-display); color: var(--accent); white-space: nowrap; padding-bottom: 9px; }
+.price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px 12px; }
+.price-box { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--paper); border-radius: 9px; padding: 8px 10px; }
+.price-box > b { grid-column: 1 / -1; font-size: .8rem; }
+.price-box .field label { font-weight: 500; color: var(--muted); }
+.cat-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; border-top: 1px dashed var(--line); padding-top: 12px; }
+.cat-add .field { flex: 1 1 140px; }
+.cat-add .field.sm { flex: 0 1 90px; }
+.savebar { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--night); color: var(--night-fg); border-radius: 14px; padding: 12px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+@media (min-width: 900px) { .savebar { bottom: 16px; } }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 </style>
 </head>
@@ -181,6 +210,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
+      <button class="nav-btn" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
     </nav>
 
@@ -198,6 +228,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
             <button class="btn btn-line" type="button" data-go="new-promo">+ New promo code</button>
             <button class="btn btn-line" type="button" data-go="new-news">+ New announcement</button>
             <button class="btn btn-line" type="button" data-go="t-chapters">Upload a chapter</button>
+            <button class="btn btn-line" type="button" data-go="t-catalog">Change prices or offers</button>
           </div>
           <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
         </div>
@@ -298,6 +329,20 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </div>
     </section>
 
+    <section id="t-catalog" class="stack cat" hidden>
+      <div class="page-head"><div><h1>Books &amp; prices</h1><p>What the website sells: classes, books, chapters, prices, MRPs, combos and the offer banner.</p></div>
+        <a class="btn btn-line btn-sm" href="index.html#chapters" target="_blank" rel="noopener">See the website ↗</a></div>
+      <div class="msg warn" id="cat-first" hidden>The website still uses the built-in list. Check the prices below and tap <b>Save changes</b> once; after that, the website follows this page.</div>
+      <div class="card stack"><div><h2>Ways to buy</h2><p class="cat-sub">Tick the formats the website should offer. The name and note show on the order form.</p></div><div id="cat-formats"></div></div>
+      <div class="card stack"><div><h2>Offer banner</h2><p class="cat-sub">A strip on top of the website, e.g. "Diwali offer: 20% off all combos till 5 Nov".</p></div><div id="cat-offer"></div></div>
+      <div class="card stack"><div><h2>Classes, books and chapters</h2><p class="cat-sub">Price is what the student pays. MRP is optional: if it is higher, the website shows it crossed out with the % off. Leave a price empty if that format isn't sold for the chapter. "Coming soon" chapters show on the website but can't be ordered.</p></div><div id="cat-books"></div>
+        <div class="cat-add"><div class="field sm"><label for="nb-cls">Class</label><input id="nb-cls" type="number" min="1" max="12" inputmode="numeric" placeholder="10"></div><div class="field"><label for="nb-name">Book name</label><input id="nb-name" placeholder="Part 3 (for 10th Class)"></div><button class="btn btn-line btn-sm" type="button" data-cat="add-book">+ Add class / book</button></div>
+      </div>
+      <div class="card stack"><div class="section-title" style="margin: 0"><div><h2>Combos</h2><p class="cat-sub">A set of chapters at one special price, e.g. "Class 11 full book".</p></div><button class="btn btn-line btn-sm" type="button" data-cat="add-combo">+ New combo</button></div><div class="stack" id="cat-combos"></div></div>
+      <div class="msg" id="cat-msg" role="status" hidden></div>
+      <div class="savebar" id="cat-bar" hidden><span><b>Unsaved changes</b> · the website changes only after you save.</span><span class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="undo" style="background: transparent; color: var(--night-fg)">Undo all</button><button class="btn btn-sun btn-sm" type="button" data-cat="save">Save changes</button></span></div>
+    </section>
+
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div></div>
       <div class="card">
@@ -317,7 +362,7 @@ import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc } from "./js/fb.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
@@ -341,6 +386,9 @@ else onAuthStateChanged(auth, async user => {
   $("#who").textContent = user.email;
   $("#logout").hidden = false;
   show("v-admin");
+  // The catalog decides which classes and chapters exist, so it comes first.
+  const saved = await loadCatalog();
+  startCatalog(saved);
   // Load each part on its own, so one failure doesn't hide the rest, and say exactly what Firebase answered.
   const fails = [];
   const run = (name, load, onFail) => load().catch(ex => {
@@ -416,7 +464,7 @@ function renderDash() {
 }
 
 // ---------- navigation ----------
-const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-news"];
+const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-news", "t-catalog"];
 function go(tab) {
   document.querySelectorAll(".nav-btn").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
   TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
@@ -437,7 +485,7 @@ document.addEventListener("click", e => {
 
 // ---------- new student ----------
 const picks = (box, selected = []) => {
-  box.innerHTML = [11, 12].map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
+  box.innerHTML = classList().filter(cls => CHAPTERS.some(c => c.cls === cls)).map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
     CHAPTERS.filter(c => c.cls === cls).map(c => {
       const k = chapterKey(c);
       return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> ${esc(chName(k))}</label>`;
@@ -725,7 +773,7 @@ function promoState(p, now = new Date()) {
 }
 // What the code opens, without chapter names: "Class 11 full book (all 9 chapters)" or "Class 12, 3 chapters".
 function bookSummary(keys) {
-  return [11, 12].map(cls => {
+  return classList().map(cls => {
     const n = keys.filter(k => k.startsWith(cls + "-")).length, all = CHAPTERS.filter(c => c.cls === cls).length;
     return !n ? "" : n === all ? `Class ${cls} full book (all ${n} chapters)` : `Class ${cls}, ${n} chapter${n > 1 ? "s" : ""}`;
   }).filter(Boolean).join(" + ");
@@ -890,6 +938,171 @@ $("#news").addEventListener("click", async e => {
   }
 });
 
+// ---------- books & prices (the catalog) ----------
+let cat = null, catSaved = null, catDirty = false;
+const clone = o => JSON.parse(JSON.stringify(o));
+const FMT_NAMES = { online: "Online", colour: "Colour", bw: "B/W" };
+function startCatalog(saved) {
+  catSaved = saved ? clone(saved) : null;
+  cat = saved ? clone(saved) : defaultCatalog();
+  // Fill in anything an older saved catalog doesn't have yet.
+  cat.formats = Object.assign(clone(FORMATS), cat.formats || {});
+  cat.combos = cat.combos || [];
+  cat.offer = Object.assign({ on: false, text: "", until: "" }, cat.offer || {});
+  catDirty = false;
+  $("#cat-first").hidden = !!saved;
+  picks($("#new-ch")); picks($("#p-ch"));
+  renderCatalog();
+}
+const onFormats = () => FORMAT_IDS.filter(f => cat.formats[f] && cat.formats[f].on);
+const numVal = v => (v === "" || v == null ? "" : v);
+function priceBoxes(path, price = {}, mrp = {}, hint = {}) {
+  return `<div class="price-grid">${onFormats().map(f => `<div class="price-box"><b>${esc(cat.formats[f].label)}</b>
+    <div class="field"><label>Price ₹</label><input type="number" min="0" inputmode="numeric" data-f="${path}.price.${f}" data-num value="${numVal(price[f])}"></div>
+    <div class="field"><label>MRP ₹${hint[f] ? ` <span title="Price of these chapters bought one by one">(single: ${hint[f]})</span>` : ""}</label><input type="number" min="0" inputmode="numeric" data-f="${path}.mrp.${f}" data-num value="${numVal(mrp[f])}"></div>
+  </div>`).join("") || `<p class="cat-sub">Tick at least one way to buy above.</p>`}</div>`;
+}
+function renderCatalog() {
+  $("#cat-formats").innerHTML = FORMAT_IDS.map(f => `<div class="cat-format">
+    <label class="cat-check"><input type="checkbox" data-f="formats.${f}.on"${cat.formats[f].on ? " checked" : ""}> Sell</label>
+    <div class="field"><label>Name on the website</label><input data-f="formats.${f}.label" value="${esc(cat.formats[f].label)}"></div>
+    <div class="field"><label>Short note</label><input data-f="formats.${f}.note" value="${esc(cat.formats[f].note || "")}"></div>
+  </div>`).join("");
+  $("#cat-offer").innerHTML = `<div class="cat-row">
+    <label class="cat-check"><input type="checkbox" data-f="offer.on"${cat.offer.on ? " checked" : ""}> Show the banner</label>
+    <div class="field lg"><label>Banner text</label><input data-f="offer.text" maxlength="140" value="${esc(cat.offer.text)}" placeholder="Diwali offer: 20% off all combos!"></div>
+    <div class="field"><label>Show until (optional)</label><input type="date" data-f="offer.until" value="${esc(cat.offer.until || "")}"></div>
+  </div>`;
+  const books = [...cat.books].sort((a, b) => a.cls - b.cls);
+  $("#cat-books").innerHTML = books.map(b => {
+    const bi = cat.books.indexOf(b);
+    const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === +b.cls).sort((x, y) => x[0].n - y[0].n);
+    const isBase = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
+    return `<div class="cat-book">
+      <div class="cat-row"><h3>Class ${b.cls}</h3>
+        <div class="field lg"><label>Book name</label><input data-f="books.${bi}.name" value="${esc(b.name)}"></div>
+        ${list.length ? "" : `<button class="btn btn-danger btn-sm" type="button" data-cat="del-book" data-i="${bi}">Remove class</button>`}</div>
+      ${list.map(([c, i]) => `<div class="cat-ch${c.soon ? " soon" : ""}">
+        <div class="cat-row"><span class="no">Ch ${c.n}</span>
+          <div class="field lg"><label>Chapter name</label><input data-f="chapters.${i}.title" value="${esc(c.title)}"></div>
+          <div class="field"><label>Short name (optional)</label><input data-f="chapters.${i}.short" value="${esc(c.short || "")}"></div>
+          <div class="field sm"><label>Pages</label><input type="number" min="0" inputmode="numeric" data-f="chapters.${i}.pages" data-num value="${numVal(c.pages)}"></div>
+          <div class="field sm" style="flex-basis: 130px"><label>On website</label><select data-f="chapters.${i}.soon" data-bool><option value="">Live</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
+        </div>
+        ${priceBoxes(`chapters.${i}`, c.price, c.mrp)}
+        ${isBase(c) ? "" : `<div class="field"><label>Topics, one per line: name | start page (optional)</label><textarea data-topics="${i}" placeholder="Atoms and molecules | 4">${esc((c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n"))}</textarea></div>
+        <div><button class="btn btn-danger btn-sm" type="button" data-cat="del-ch" data-i="${i}">Remove this chapter</button></div>`}
+      </div>`).join("")}
+      <div class="cat-add"><div class="field sm"><label>Chapter no.</label><input type="number" min="1" inputmode="numeric" data-new-n="${b.cls}" value="${(list.length ? Math.max(...list.map(([c]) => +c.n)) : 0) + 1}"></div>
+        <div class="field"><label>New chapter name</label><input data-new-title="${b.cls}" placeholder="Chapter name"></div>
+        <button class="btn btn-line btn-sm" type="button" data-cat="add-ch" data-cls="${b.cls}">+ Add chapter</button></div>
+    </div>`;
+  }).join("");
+  $("#cat-combos").innerHTML = cat.combos.length ? cat.combos.map((x, i) => {
+    const single = {};
+    onFormats().forEach(f => { const t = x.chapters.reduce((a, k) => a + (+((cat.chapters.find(c => `${c.cls}-${c.n}` === k) || {}).price || {})[f] || 0), 0); if (t) single[f] = "₹" + t; });
+    return `<div class="cat-ch">
+      <div class="cat-row">
+        <div class="field lg"><label>Combo name</label><input data-f="combos.${i}.name" value="${esc(x.name || "")}" placeholder="Class 11 full book"></div>
+        <label class="cat-check"><input type="checkbox" data-f="combos.${i}.on"${x.on !== false ? " checked" : ""}> Show on website</label>
+      </div>
+      <div class="field"><label>One line about it (optional)</label><input data-f="combos.${i}.text" value="${esc(x.text || "")}" placeholder="All 9 chapters of Class 11 together"></div>
+      <div><b style="font-size: .9rem">Chapters in this combo (${x.chapters.length})</b>
+        <div class="chap-picks" data-combo="${i}">${classList().map(cls => {
+          const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
+          return chs.length ? `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
+            chs.map(c => { const k = `${c.cls}-${c.n}`; return `<label><input type="checkbox" value="${k}"${x.chapters.includes(k) ? " checked" : ""}> Ch ${c.n} ${esc(c.short || c.title)}</label>`; }).join("") : "";
+        }).join("")}</div></div>
+      ${priceBoxes(`combos.${i}`, x.price, x.mrp, single)}
+      <div><button class="btn btn-danger btn-sm" type="button" data-cat="del-combo" data-i="${i}">Remove combo</button></div>
+    </div>`;
+  }).join("") : `<p class="cat-sub">No combos yet.</p>`;
+}
+function setPath(obj, path, v) {
+  const ks = path.split("."); let o = obj;
+  ks.slice(0, -1).forEach(k => { if (o[k] == null || typeof o[k] !== "object") o[k] = {}; o = o[k]; });
+  o[ks[ks.length - 1]] = v;
+}
+function markDirty() {
+  catDirty = true;
+  $("#cat-bar").hidden = false;
+  $("#cat-msg").hidden = true;
+}
+window.addEventListener("beforeunload", e => { if (catDirty) { e.preventDefault(); e.returnValue = ""; } });
+$("#t-catalog").addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.f) {
+    let v = el.type === "checkbox" ? el.checked : el.value;
+    if ("num" in el.dataset) v = el.value === "" ? null : Math.max(0, Math.round(+el.value));
+    if ("bool" in el.dataset) v = !!el.value;
+    setPath(cat, el.dataset.f, v);
+    markDirty();
+    // Turning a format on or off, or a chapter live or soon, changes which boxes show.
+    if (/^formats\.\w+\.on$/.test(el.dataset.f) || /\.soon$/.test(el.dataset.f)) renderCatalog();
+  } else if (el.dataset.topics) {
+    cat.chapters[+el.dataset.topics].topics = el.value.split("\n").map(l => l.trim()).filter(Boolean)
+      .map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
+    markDirty();
+  } else if (el.closest("[data-combo]")) {
+    const box = el.closest("[data-combo]"), x = cat.combos[+box.dataset.combo];
+    x.chapters = [...box.querySelectorAll("input:checked")].map(i => i.value);
+    markDirty(); renderCatalog();
+  }
+});
+$("#t-catalog").addEventListener("change", e => { if (e.target.matches("select, input[type=checkbox], input[type=date]")) e.target.dispatchEvent(new Event("input", { bubbles: true })); });
+// "All of Class N" inside a combo also has to update the combo.
+$("#t-catalog").addEventListener("click", e => {
+  const pick = e.target.closest("[data-combo] [data-pick-cls]");
+  if (pick) setTimeout(() => pick.closest("[data-combo]").querySelector("input")?.dispatchEvent(new Event("input", { bubbles: true })));
+  const b = e.target.closest("[data-cat]");
+  if (!b) return;
+  const act = b.dataset.cat, msg = $("#cat-msg"), say = (t, cls = "bad") => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
+  if (act === "add-book") {
+    const cls = parseInt($("#nb-cls").value, 10), name = $("#nb-name").value.trim();
+    if (!(cls >= 1 && cls <= 12)) return say("Class: a number from 1 to 12.");
+    if (cat.books.some(x => +x.cls === cls)) return say(`Class ${cls} is already there.`);
+    cat.books.push({ cls, name: name || `Class ${cls}` });
+    $("#nb-cls").value = ""; $("#nb-name").value = "";
+  }
+  if (act === "del-book") cat.books.splice(+b.dataset.i, 1);
+  if (act === "add-ch") {
+    const cls = +b.dataset.cls, n = parseInt($(`[data-new-n="${cls}"]`).value, 10), title = $(`[data-new-title="${cls}"]`).value.trim();
+    if (!(n >= 1)) return say("Chapter number: 1 or more.");
+    if (!title) return say("Write the chapter name.");
+    if (cat.chapters.some(c => +c.cls === cls && +c.n === n)) return say(`Class ${cls} already has a Chapter ${n}.`);
+    cat.chapters.push({ cls, n, title, short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] });
+    say(`Chapter ${n} added as "Coming soon". Fill its prices, then set it to Live when it's ready.`, "good");
+  }
+  if (act === "del-ch") cat.chapters.splice(+b.dataset.i, 1);
+  if (act === "add-combo") cat.combos.push({ id: "c" + Date.now(), name: "", text: "", on: true, chapters: [], price: {}, mrp: {} });
+  if (act === "del-combo") cat.combos.splice(+b.dataset.i, 1);
+  if (act === "undo") { startCatalog(catSaved); $("#cat-bar").hidden = true; return; }
+  if (act === "save") return saveCatalog(b);
+  markDirty(); renderCatalog();
+});
+async function saveCatalog(b) {
+  const msg = $("#cat-msg"), say = (t, cls) => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
+  const bad = cat.chapters.find(c => !String(c.title || "").trim());
+  if (bad) return say(`Class ${bad.cls} Chapter ${bad.n} has no name.`, "bad");
+  const noPrice = cat.chapters.filter(c => !c.soon && !onFormats().some(f => (c.price || {})[f] > 0));
+  if (noPrice.length) return say(`Give a price to: ${noPrice.map(c => `Class ${c.cls} Ch ${c.n}`).join(", ")}, or set them to Coming soon.`, "bad");
+  const emptyCombo = cat.combos.find(x => x.on !== false && (!x.name || !x.chapters.length || !onFormats().some(f => (x.price || {})[f] > 0)));
+  if (emptyCombo) return say(`The combo "${emptyCombo.name || "(no name)"}" needs a name, chapters and a price, or untick "Show on website".`, "bad");
+  b.disabled = true;
+  try {
+    await setDoc(doc(db, "catalog", "main"), { data: JSON.stringify(cat), updatedAt: serverTimestamp() });
+    applyCatalog(clone(cat));
+    startCatalog(clone(cat));
+    $("#cat-bar").hidden = true;
+    say("Saved. The website shows the new list and prices now (reload it to see).", "good");
+    loadChapters().catch(() => {});
+    renderStudents();
+  } catch (ex) {
+    say(ex.code === "permission-denied" ? "Not saved: paste the latest Firestore rules first (SETUP.md, step 6)." : "Not saved: " + (ex.message || ex.code), "bad");
+  }
+  b.disabled = false;
+}
+
 // ---------- chapters upload ----------
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const uploaded = new Map();
@@ -897,9 +1110,10 @@ async function loadChapters() {
   const snap = await getDocs(collection(db, "chapters"));
   snap.docs.forEach(d => uploaded.set(d.id, d.data()));
   chaptersLoaded = true;
-  $("#chap-rows").innerHTML = CHAPTERS.map((c, i) => {
+  const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || a.n - b.n);
+  $("#chap-rows").innerHTML = all.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k);
-    return `${!i || CHAPTERS[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}</h2>` : ""}${chapRow(c, k, u)}`;
+    return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
   }).join("");
   renderDash();
 }
@@ -908,7 +1122,7 @@ async function loadChapters() {
 const LOCK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 function chapRow(c, k, u) {
   return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
-    <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}</h3>
+    <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
       <progress max="100" value="0" hidden></progress></div>
     <div class="ctl">${u

@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, LOGIN_DOMAIN } from "./firebase-config.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 // admin.html sets <html data-firebase-app="admin"> so the admin login is kept apart from the student login.
@@ -43,5 +44,16 @@ export function deviceInfo() {
 
 export const chapterKey = c => `${c.cls}-${c.n}`;
 // CHAPTERS comes from js/chapters.js, a classic script, so it is a global binding rather than a window property.
-export const findChapter = k => (typeof CHAPTERS !== "undefined" ? CHAPTERS : []).find(c => chapterKey(c) === k);
+export const findChapter = k => [...(typeof CHAPTERS !== "undefined" ? CHAPTERS : []), ...(typeof SOON_CHAPTERS !== "undefined" ? SOON_CHAPTERS : [])]
+  .find(c => chapterKey(c) === k);
+// The admin's catalog (books, chapters, prices) laid over js/chapters.js. Returns the raw catalog, or null.
+export async function loadCatalog() {
+  if (!db || typeof applyCatalog === "undefined") return null;
+  try {
+    const s = await getDoc(doc(db, "catalog", "main"));
+    if (!s.exists()) return null;
+    const cat = JSON.parse(s.data().data);
+    return applyCatalog(cat) ? cat : null;
+  } catch (e) { console.warn("catalog", e); return null; }
+}
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

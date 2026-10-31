@@ -230,7 +230,7 @@
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, getDocs, query, where, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc } from "./js/fb.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -403,8 +403,11 @@ $("#promo-form").addEventListener("submit", async e => {
 });
 
 // ---------- device lock ----------
+let catalogTried = false;
 async function start(user) {
   show("v-loading");
+  // Chapter names and new chapters come from the admin's catalog.
+  if (!catalogTried) { catalogTried = true; await loadCatalog(); }
   if (isAdminEmail(user.email)) {
     // Admin preview: every chapter, no device lock, no expiry.
     if (unwatch) { unwatch(); unwatch = null; }
@@ -566,7 +569,7 @@ async function renderLibrary() {
   if (pick) {
     const c = findChapter(pick) || {}, pr = progress(pick), started = pr.last > 1;
     $("#continue").innerHTML = `<div class="card continue">
-      <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : ""}</button>
+      <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${c.n}`}</button>
       <div style="min-width:0"><div class="tag">${started ? "Continue reading" : "Start reading"}</div>
         <h2>${esc(c.title || pick)}</h2>
         <div class="meta">Class ${c.cls} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
@@ -579,7 +582,7 @@ async function renderLibrary() {
   $("#upsell").innerHTML = me.promo ? `<div class="card upsell"><div><h3>Enjoying the book?</h3><p class="hint">This promo ends${expires ? ` on ${fmtDate(expires)}` : " soon"}. Get your own ID to keep reading, or order the paperback.</p></div>
     <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices</a><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I read the Chemophile book with promo code ${me.promo}. I want to buy it.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>` : "";
 
-  const classes = [11, 12].filter(cls => keys.some(k => k.startsWith(cls + "-")));
+  const classes = [...new Set(keys.map(k => +k.split("-")[0]))].sort((a, b) => a - b);
   if (!classes.includes(Number(libCls))) libCls = "all";
   $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), `Class ${c}`])]
     .map(([v, l]) => `<button class="chip" type="button" data-cls="${v}" aria-pressed="${libCls === v}">${l}</button>`).join("") : "";
@@ -587,7 +590,7 @@ async function renderLibrary() {
     const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k);
     const [cls, n] = k.split("-");
     const title = c.title || (info && info.title) || `Chapter ${n}`;
-    const cover = c.n ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
+    const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
     const status = !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${pr.ready ? "" : " soon"}">
       <button class="cv" type="button" ${pr.ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>

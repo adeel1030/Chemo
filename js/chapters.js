@@ -2,30 +2,43 @@
 // ===== Settings Adeel Sir can change =====
 const PHONE = "9953821875";
 const WHATSAPP = "919953821875";
-// Price of each chapter in rupees. Key = "class-chapter", e.g. "11-1" is Class 11 Chapter 1.
-// Paperback delivery charges are extra.
+// Default price of each chapter in rupees. Key = "class-chapter", e.g. "11-1" is Class 11 Chapter 1.
+// Paperback delivery charges are extra. The admin panel (Prices page) can change all of this; its catalog wins.
 const PRICES = {
-  "11-1": { online: 205, paperback: 492 },
-  "11-2": { online: 203, paperback: 486 },
-  "11-3": { online: 145, paperback: 348 },
-  "11-4": { online: 155, paperback: 372 },
-  "11-5": { online: 170, paperback: 408 },
-  "11-6": { online: 183, paperback: 438 },
-  "11-7": { online: 130, paperback: 312 },
-  "11-8": { online: 220, paperback: 528 },
-  "11-9": { online: 218, paperback: 522 },
-  "12-1": { online: 165, paperback: 396 },
-  "12-2": { online: 148, paperback: 354 },
-  "12-3": { online: 133, paperback: 318 },
-  "12-4": { online: 145, paperback: 348 },
-  "12-5": { online: 138, paperback: 330 },
-  "12-6": { online: 150, paperback: 360 },
-  "12-7": { online: 138, paperback: 330 },
-  "12-8": { online: 160, paperback: 384 },
-  "12-9": { online: 130, paperback: 312 },
-  "12-10": { online: 133, paperback: 318 }
+  "11-1": { online: 205, colour: 492, bw: null },
+  "11-2": { online: 203, colour: 486, bw: null },
+  "11-3": { online: 145, colour: 348, bw: null },
+  "11-4": { online: 155, colour: 372, bw: null },
+  "11-5": { online: 170, colour: 408, bw: null },
+  "11-6": { online: 183, colour: 438, bw: null },
+  "11-7": { online: 130, colour: 312, bw: null },
+  "11-8": { online: 220, colour: 528, bw: null },
+  "11-9": { online: 218, colour: 522, bw: null },
+  "12-1": { online: 165, colour: 396, bw: null },
+  "12-2": { online: 148, colour: 354, bw: null },
+  "12-3": { online: 133, colour: 318, bw: null },
+  "12-4": { online: 145, colour: 348, bw: null },
+  "12-5": { online: 138, colour: 330, bw: null },
+  "12-6": { online: 150, colour: 360, bw: null },
+  "12-7": { online: 138, colour: 330, bw: null },
+  "12-8": { online: 160, colour: 384, bw: null },
+  "12-9": { online: 130, colour: 312, bw: null },
+  "12-10": { online: 133, colour: 318, bw: null }
 };
-const priceOf = (c, format) => PRICES[`${c.cls}-${c.n}`][format];
+// MRP (the crossed-out price) of each chapter, same keys. Empty until the admin sets one.
+const MRP = {};
+const priceOf = (c, format) => { const v = (PRICES[`${c.cls}-${c.n}`] || {})[format]; return v > 0 ? v : null; };
+const mrpOf = (c, format) => { const v = (MRP[`${c.cls}-${c.n}`] || {})[format], p = priceOf(c, format); return v > 0 && p && v > p ? v : null; };
+// Ways to buy. "on" decides whether the website offers it.
+const FORMATS = {
+  online: { on: true, label: "Online book", note: "Log in and read on your phone" },
+  colour: { on: true, label: "Paperback (colour)", note: "Printed in colour, delivery extra" },
+  bw: { on: false, label: "Paperback (B/W)", note: "Black and white print, delivery extra" }
+};
+const FORMAT_IDS = ["online", "colour", "bw"];
+const COMBOS = [];       // { id, name, text, chapters: [keys], price: { online, colour, bw }, mrp: {...}, on }
+let OFFER = null;        // { on, text, until: "YYYY-MM-DD" }: a banner on top of the website
+const SOON_CHAPTERS = []; // chapters set to "Coming soon" in the catalog, in the same shape as CHAPTERS
 
 // Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).
 const UPCOMING = [];
@@ -276,6 +289,56 @@ const CLASS_12 = [
 ];
 CLASS_12.forEach(c => { c.cls = 12; CHAPTERS.push(c); });
 
+// ===== Catalog from the admin panel =====
+// The admin panel saves one catalog (books, chapters, prices, MRPs, formats, combos, offer) in Firestore.
+// applyCatalog() lays it over the built-in data above, so every page shows the same, current list.
+const STATIC_CHAPTERS = CHAPTERS.map(c => Object.assign({}, c));
+const STATIC_PART = Object.assign({}, PART);
+const keyOf = c => `${c.cls}-${c.n}`;
+function defaultCatalog() {
+  return {
+    formats: JSON.parse(JSON.stringify(FORMATS)),
+    books: Object.keys(STATIC_PART).map(cls => ({ cls: +cls, name: STATIC_PART[cls] })),
+    chapters: STATIC_CHAPTERS.map(c => ({
+      cls: c.cls, n: c.n, title: c.title, short: c.short || "", pages: c.pages, soon: false,
+      price: Object.assign({}, PRICES[keyOf(c)]), mrp: {}
+    })),
+    combos: [], offer: { on: false, text: "", until: "" }
+  };
+}
+function applyCatalog(cat) {
+  if (!cat || !Array.isArray(cat.chapters)) return false;
+  const base = new Map(STATIC_CHAPTERS.map(c => [keyOf(c), c]));
+  Object.keys(PART).forEach(k => delete PART[k]);
+  (cat.books || []).forEach(b => { PART[b.cls] = b.name; });
+  Object.keys(PRICES).forEach(k => delete PRICES[k]);
+  Object.keys(MRP).forEach(k => delete MRP[k]);
+  const live = [], soon = [];
+  cat.chapters.forEach(x => {
+    const old = base.get(keyOf(x));
+    const c = Object.assign({ tag: "", topics: [], pages: 0, fig: 0, solved: 0, practice: 0 }, old || { custom: true }, {
+      cls: +x.cls, n: +x.n, title: x.title || (old && old.title) || `Chapter ${x.n}`, short: x.short || "",
+      pages: +x.pages || (old && old.pages) || 0
+    });
+    if (x.tag) c.tag = x.tag;
+    if (Array.isArray(x.topics) && x.topics.length) c.topics = x.topics.map(t => [t[0], t[1] || "", +t[2] || 1, t[3] || ""]);
+    PRICES[keyOf(c)] = Object.assign({}, x.price);
+    MRP[keyOf(c)] = Object.assign({}, x.mrp);
+    (x.soon ? soon : live).push(c);
+  });
+  const order = (a, b) => a.cls - b.cls || a.n - b.n;
+  CHAPTERS.length = 0; live.sort(order).forEach(c => CHAPTERS.push(c));
+  SOON_CHAPTERS.length = 0; soon.sort(order).forEach(c => SOON_CHAPTERS.push(c));
+  UPCOMING.length = 0; SOON_CHAPTERS.forEach(c => UPCOMING.push({ cls: c.cls, n: c.n, title: c.title, tag: c.tag || "Coming soon", f: "" }));
+  if (cat.formats) FORMAT_IDS.forEach(id => { if (cat.formats[id]) FORMATS[id] = Object.assign({}, FORMATS[id], cat.formats[id]); });
+  COMBOS.length = 0; (cat.combos || []).filter(x => x.on !== false && x.chapters && x.chapters.length).forEach(x => COMBOS.push(x));
+  OFFER = cat.offer || null;
+  return true;
+}
+// Classes that have a book, in order.
+const classList = () => Object.keys(PART).map(Number).filter(n => n).sort((a, b) => a - b);
+const offerLive = () => !!(OFFER && OFFER.on && OFFER.text && (!OFFER.until || new Date(OFFER.until + "T23:59:59") >= new Date()));
+
 // Free sample books (whole PDFs, free to download). Their pages are also in assets/samples/<class>/NN.webp.
 const SAMPLE_BOOKS = {
   11: { title: "Chemophile Part 1 (Class 11): free sample", pdf: "samples/Chemophile-Class-11-Free-Sample.pdf", pages: 25, sizeMB: 4.3 },
@@ -284,7 +347,8 @@ const SAMPLE_BOOKS = {
 const pad2 = n => String(n).padStart(2, "0");
 const sampleImg = (cls, p, thumb) => `assets/samples/${cls}/${thumb ? "t" : ""}${pad2(p)}.webp`;
 const assetName = c => c.cls === 11 ? `ch${c.n}` : `c12-ch${c.n}`;
-const coverOf = c => `assets/thumbs/${assetName(c)}-1.webp`;
+// Chapters added in the admin panel have no pictures in assets/, so they get no cover image (null).
+const coverOf = c => c.custom ? null : `assets/thumbs/${assetName(c)}-1.webp`;
 // Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
-const samplePagesOf = c => [[1, "Cover"], [3, "Contents"], [4, "Topic 1, first page"], [5, "Page 5"], [6, "Page 6"]]
+const samplePagesOf = c => c.custom ? [] : [[1, "Cover"], [3, "Contents"], [4, "Topic 1, first page"], [5, "Page 5"], [6, "Page 6"]]
   .map(([p, label]) => [`assets/thumbs/${assetName(c)}-${p}.webp`, `assets/pages/${assetName(c)}-${p}.webp`, label]);

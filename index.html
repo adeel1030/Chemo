@@ -296,7 +296,7 @@ section.block { padding-block: 64px; }
 @media (max-width: 860px) { .pack { grid-template-columns: minmax(0, 1fr); } }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; color: var(--fg); }
 .panel h3 { font-size: 1.25rem; }
-.fmt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.fmt { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); gap: 8px; margin-top: 12px; }
 .fmt label { border: 2px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; font-weight: 700; display: grid; gap: 2px; }
 .fmt label small { font-weight: 400; font-size: .76rem; color: var(--muted); }
 .fmt input { position: absolute; opacity: 0; pointer-events: none; }
@@ -397,9 +397,30 @@ section.block { padding-block: 64px; }
 .viewer-nav { display: flex; justify-content: center; gap: 12px; }
 .icon-btn { background: rgba(255,255,255,.12); color: var(--night-fg); border: 0; border-radius: 999px; padding: 8px 18px; font: 600 .95rem var(--font-body); cursor: pointer; }
 .icon-btn:hover { background: rgba(255,255,255,.22); }
+/* Admin-set offers: a banner on top, MRP crossed out, % off, and combo cards. */
+.offer-bar { background: linear-gradient(90deg, var(--sun), #ffb84a); color: var(--sun-ink); font-weight: 600; font-size: .92rem; }
+.offer-bar .wrap { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; justify-content: center; padding-block: 8px; text-align: center; }
+.offer-bar a { color: var(--sun-ink); font-weight: 800; }
+.offer-bar small { opacity: .8; font-weight: 500; }
+s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
+.off { display: inline-block; background: color-mix(in srgb, var(--good, #158a4e) 14%, transparent); color: var(--good, #158a4e); font: 700 .72rem var(--font-body); border-radius: 6px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+.night s.mrp { color: var(--night-muted); }
+.combos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px; margin-top: 24px; }
+.combo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 12px; align-content: start; box-shadow: 0 10px 26px rgba(20,18,70,.08); position: relative; overflow: hidden; }
+.combo::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: linear-gradient(90deg, var(--t1) 0 20%, var(--t2) 20% 40%, var(--t3) 40% 60%, var(--t5) 60% 80%, var(--t8) 80%); }
+.combo h3 { font-size: 1.3rem; }
+.combo p { color: var(--muted); font-size: .92rem; }
+.combo .count { font: 700 .76rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.combo .buy { display: grid; gap: 8px; }
+.combo .buy a { display: flex; justify-content: space-between; align-items: center; gap: 10px; text-decoration: none; border: 2px solid var(--line); border-radius: 12px; padding: 10px 14px; color: var(--fg); font-weight: 600; }
+.combo .buy a:hover { border-color: var(--wa); }
+.combo .buy b { font: 800 1.15rem var(--font-display); }
+.made-cover .f { font-family: var(--font-display); font-weight: 800; color: rgba(255,255,255,.18); font-size: clamp(2.4rem, 8vw, 3.4rem); }
 </style>
 </head>
 <body>
+
+<div class="offer-bar" id="offer-bar" hidden><div class="wrap"><span id="offer-text"></span><a href="#pack">Order now →</a></div></div>
 
 <header class="site-head">
   <div class="wrap">
@@ -545,10 +566,7 @@ section.block { padding-block: 64px; }
     <div class="wrap">
       <div class="eyebrow">Every chapter of the CBSE 2026-27 syllabus</div>
       <h2 class="sec-title">Choose your <span class="hl">chapters</span></h2>
-      <div class="tabs" role="tablist" aria-label="Class">
-        <button type="button" role="tab" id="tab-11" aria-controls="shelf" aria-selected="true" data-cls="11">Class 11 <small id="tab-11-n"></small></button>
-        <button type="button" role="tab" id="tab-12" aria-controls="shelf" aria-selected="false" data-cls="12">Class 12 <small id="tab-12-n"></small></button>
-      </div>
+      <div class="tabs" role="tablist" aria-label="Class" id="cls-tabs"></div>
       <p class="shelf-note" id="shelf-note"></p>
       <div class="shelf" id="shelf" role="tabpanel"></div>
 
@@ -560,6 +578,15 @@ section.block { padding-block: 64px; }
     </div>
   </section>
 
+  <section class="block" id="combos" hidden>
+    <div class="wrap">
+      <div class="eyebrow">Combos</div>
+      <h2 class="sec-title">Save more with a <span class="hl">combo</span></h2>
+      <p class="sec-intro">Ready-made sets of chapters at one special price. Tap a format to order on WhatsApp.</p>
+      <div class="combos" id="combo-list"></div>
+    </div>
+  </section>
+
   <section class="block night" id="pack">
     <div class="wrap">
       <div class="eyebrow">Order</div>
@@ -568,11 +595,7 @@ section.block { padding-block: 64px; }
       <div class="pack">
         <div class="panel">
           <h3>1. Choose a format</h3>
-          <div class="fmt" role="radiogroup" aria-label="Format">
-            <label><input type="radio" name="fmt" id="fmt-online" value="online" checked>Online<small>Log in and read on your phone</small></label>
-            <label><input type="radio" name="fmt" id="fmt-paperback" value="paperback">Paperback<small>Printed booklet, delivery extra</small></label>
-            <label><input type="radio" name="fmt" id="fmt-both" value="both">Both<small>Online + Paperback</small></label>
-          </div>
+          <div class="fmt" role="radiogroup" aria-label="Format" id="fmt-opts"></div>
           <div class="pick-head">
             <h3>2. Choose chapters</h3>
             <button class="btn btn-line btn-small" type="button" id="pick-all">All chapters</button>
@@ -681,6 +704,28 @@ section.block { padding-block: 64px; }
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script src="js/flipbook.js"></script>
 <script>
+// The admin panel's catalog (chapters, prices, combos, offer) decides what this page sells.
+// It is read from Firestore before the page is drawn; without it (offline, or not set up yet)
+// the last copy seen, or the built-in list in js/chapters.js, is used.
+async function loadSiteCatalog() {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem("chemophile-catalog")); } catch (e) {}
+  try {
+    const { firebaseConfig } = await import("./js/firebase-config.js");
+    if (!firebaseConfig.projectId) throw new Error("not set up");
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/catalog/main?key=${firebaseConfig.apiKey}`, { signal: ctl.signal });
+    clearTimeout(t);
+    if (r.status === 404) { try { localStorage.removeItem("chemophile-catalog"); } catch (e) {} return; }
+    const j = await r.json();
+    const data = j.fields && j.fields.data && j.fields.data.stringValue;
+    if (data && applyCatalog(JSON.parse(data))) { try { localStorage.setItem("chemophile-catalog", data); } catch (e) {} return; }
+  } catch (e) {}
+  if (cached) applyCatalog(cached);
+}
+loadSiteCatalog().finally(boot);
+
+function boot() {
 const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -711,20 +756,40 @@ const store = {
 
 // ---------- pack state ----------
 const pack = new Set((store.get("chemophile-pack") || []).filter(k => CHAPTERS.some(c => key(c) === k)));
-const fmtLabel = { online: "Online", paperback: "Paperback", both: "Online + Paperback" };
+// Formats on sale, from the catalog, plus "Online + paperback" when both kinds are sold.
+const OPTS = FORMAT_IDS.filter(f => FORMATS[f].on).map(f => ({ id: f, label: FORMATS[f].label, note: FORMATS[f].note || "", parts: [f] }));
+const paperId = ["colour", "bw"].find(f => FORMATS[f].on);
+if (FORMATS.online.on && paperId) OPTS.push({ id: "both", label: `Online + ${FORMATS[paperId].label}`, note: "Read now, keep the print too", parts: ["online", paperId] });
+const optOf = id => OPTS.find(o => o.id === id) || OPTS[0];
 let fmt = store.get("chemophile-fmt");
-if (!fmtLabel[fmt]) fmt = "online";
-const priceFor = (c, f) => f === "both" ? priceOf(c, "online") + priceOf(c, "paperback") : priceOf(c, f);
-const priceChips = c => `<div class="price-row">
-    <span class="price">Online <b>${rupee(priceOf(c, "online"))}</b></span>
-    <span class="price">Paperback <b>${rupee(priceOf(c, "paperback"))}</b></span>
-  </div>`;
+if (!OPTS.some(o => o.id === fmt)) fmt = OPTS[0] ? OPTS[0].id : "online";
+const isPaper = id => optOf(id).parts.some(p => p !== "online");
+// Price of one chapter in a format (null if it isn't sold that way), and its MRP if that is higher.
+const priceFor = (c, id) => { const ps = optOf(id).parts.map(p => priceOf(c, p)); return ps.every(v => v) ? ps.reduce((a, v) => a + v, 0) : null; };
+const mrpFor = (c, id) => { const p = priceFor(c, id); if (!p) return null; const m = optOf(id).parts.reduce((a, f) => a + (mrpOf(c, f) || priceOf(c, f)), 0); return m > p ? m : null; };
+const pctOff = (mrp, p) => Math.round((1 - p / mrp) * 100);
+const money = (p, mrp) => `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}<b>${rupee(p)}</b>${mrp ? `<span class="off">${pctOff(mrp, p)}% off</span>` : ""}`;
+const priceChips = c => `<div class="price-row">${FORMAT_IDS.filter(f => FORMATS[f].on && priceOf(c, f)).map(f =>
+    `<span class="price">${esc(FORMATS[f].label)} ${money(priceOf(c, f), mrpOf(c, f))}</span>`).join("")}</div>`;
+document.querySelectorAll("#fmt-opts").forEach(box => {
+  box.innerHTML = OPTS.map(o => `<label><input type="radio" name="fmt" value="${o.id}"${o.id === fmt ? " checked" : ""}>${esc(o.label)}<small>${esc(o.note)}</small></label>`).join("");
+});
 
 // ---------- shelf ----------
-let cls = 11;
+const CLASSES = classList().filter(k => CHAPTERS.some(c => c.cls === k) || UPCOMING.some(u => u.cls === k));
+let cls = CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
+// Chapters added in the admin panel have no cover picture yet, so draw one.
+function madeCover(c) {
+  return `<div class="soon-cover made-cover night">
+      <span class="w">Chemophile</span><span class="p">${esc(PART[c.cls] || "Class " + c.cls)}</span>
+      <span class="f"><span>${c.n}</span></span>
+      <span class="c">Chapter ${c.n}</span><span class="t">${esc(c.title)}</span><span class="bar"></span>
+    </div>`;
+}
+const coverHtml = c => coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : madeCover(c);
 function soonCover(u) {
   return `<div class="soon-cover night">
-      <span class="w">Chemophile</span><span class="p">${PART[u.cls]}</span>
+      <span class="w">Chemophile</span><span class="p">${esc(PART[u.cls] || "Class " + u.cls)}</span>
       <span class="f"><span>${u.f}</span></span>
       <span class="c">Chapter ${u.n}</span><span class="t">${esc(u.title)}</span>
       <span class="rib">Coming soon</span><span class="bar"></span>
@@ -739,10 +804,10 @@ function renderShelf() {
       const k = key(c), on = pack.has(k);
       return `<div class="card">
         <button class="cover-btn" type="button" data-sheet="${k}" aria-label="See topics of Chapter ${c.n}: ${esc(c.title)}">
-          <img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">
+          ${coverHtml(c)}
         </button>
         <div><div class="ch">Chapter ${c.n}</div><div class="nm">${esc(nameOf(c))}</div>
-        <div class="meta">${c.topics.length} topics · ${c.pages} pages · ${c.solved} solved</div></div>
+        <div class="meta">${[c.topics.length && `${c.topics.length} topics`, c.pages && `${c.pages} pages`, c.solved && `${c.solved} solved`].filter(Boolean).join(" · ")}</div></div>
         ${priceChips(c)}
         <div class="card-actions">
           <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In pack" : "+ Add to pack"}</button>
@@ -758,15 +823,16 @@ function renderShelf() {
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Notify me →</a>
     </div>`;
   }).join("");
+  const book = PART[cls] ? `Chemophile ${PART[cls]}` : `Class ${cls}`;
   $("#shelf-note").textContent = ready.length
-    ? `Chemophile ${PART[cls]}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : `all ${ready.length} chapters are ready.`}`
-    : `Chemophile ${PART[cls]}: all ${soon.length} chapters are coming soon. Tap "Notify me" under the ones you want.`;
-  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
+    ? `${book}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : `all ${ready.length} chapters are ready.`}`
+    : `${book}: all ${soon.length} chapters are coming soon. Tap "Notify me" under the ones you want.`;
+  document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
-[11, 12].forEach(k => {
-  const ready = CHAPTERS.filter(c => c.cls === k).length, soon = UPCOMING.filter(u => u.cls === k).length;
-  $(`#tab-${k}-n`).textContent = ready ? `${ready} ready` : "coming soon";
-});
+$("#cls-tabs").innerHTML = CLASSES.map(k => {
+  const ready = CHAPTERS.filter(c => c.cls === k).length;
+  return `<button type="button" role="tab" aria-controls="shelf" aria-selected="${k === cls}" data-cls="${k}">Class ${k} <small>${ready ? `${ready} ready` : "coming soon"}</small></button>`;
+}).join("");
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-cls]");
   if (!b) return;
@@ -776,33 +842,36 @@ document.querySelector(".tabs").addEventListener("click", e => {
 
 // ---------- pack builder ----------
 function renderPick() {
-  $("#pick-list").innerHTML = [11, 12].map(k => {
+  $("#pick-list").innerHTML = CLASSES.map(k => {
     const list = CHAPTERS.filter(c => c.cls === k);
     if (!list.length) return "";
     const all = list.every(c => pack.has(key(c)));
     return `<li class="pick-group"><b>Class ${k}</b><button class="more-btn" type="button" data-pick-cls="${k}">${all ? "Remove Class " + k : "All of Class " + k}</button></li>` +
       list.map(c => {
-        const ck = key(c), v = priceFor(c, fmt);
+        const ck = key(c), v = priceFor(c, fmt), mrp = mrpFor(c, fmt);
         return `<li><label><input type="checkbox" id="pick-${ck}" data-pick="${ck}"${pack.has(ck) ? " checked" : ""}>
-      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${rupee(v)}</span></label></li>`;
+      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}` : "Ask"}</span></label></li>`;
       }).join("");
   }).join("");
   $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Remove all" : "All chapters";
 }
 function renderSummary() {
   const chosen = CHAPTERS.filter(c => pack.has(key(c)));
-  const total = chosen.reduce((a, c) => a + priceFor(c, fmt), 0);
-  const paper = fmt !== "online";
+  const total = chosen.reduce((a, c) => a + (priceFor(c, fmt) || 0), 0);
+  const save = chosen.reduce((a, c) => a + (mrpFor(c, fmt) ? mrpFor(c, fmt) - priceFor(c, fmt) : 0), 0);
+  const ask = chosen.filter(c => !priceFor(c, fmt)).length;
+  const paper = isPaper(fmt), label = optOf(fmt).label;
   $("#summary").innerHTML = `
-    <dt>Format</dt><dd>${fmtLabel[fmt]}</dd>
+    <dt>Format</dt><dd>${esc(label)}</dd>
     <dt>Chapters</dt><dd>${chosen.length}</dd>
-    <div class="total" style="display:contents"><dt>Total</dt><dd>${chosen.length ? rupee(total) : "–"}</dd></div>`;
+    ${save ? `<dt>You save</dt><dd>${rupee(save)}</dd>` : ""}
+    <div class="total" style="display:contents"><dt>Total</dt><dd>${chosen.length ? rupee(total) + (ask ? " +" : "") : "–"}</dd></div>`;
   $("#summary-note").textContent = !chosen.length
     ? "Tick at least one chapter."
-    : paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp."
-    : "After payment, Adeel Sir will send your login ID and password on WhatsApp.";
-  const lines = chosen.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)} (${rupee(priceFor(c, fmt))})`);
-  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${fmtLabel[fmt]}\n${lines.join("\n")}\nTotal: ${rupee(total)}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+    : (ask ? `${ask} chapter${ask > 1 ? "s have" : " has"} no price in this format yet; Adeel Sir will tell you. ` : "")
+      + (paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp." : "After payment, Adeel Sir will send your login ID and password on WhatsApp.");
+  const lines = chosen.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)} (${priceFor(c, fmt) ? rupee(priceFor(c, fmt)) : "price on request"})`);
+  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
   const btn = $("#order-btn");
   btn.href = chosen.length ? wa(msg) : "#pack";
   btn.setAttribute("aria-disabled", String(!chosen.length));
@@ -810,7 +879,7 @@ function renderSummary() {
   const bar = $("#order-bar");
   bar.hidden = !chosen.length;
   document.body.classList.toggle("has-pack", !!chosen.length);
-  $("#order-bar-txt").innerHTML = `<b>${chosen.length}</b> chapter${chosen.length > 1 ? "s" : ""} · ${fmtLabel[fmt]} · <b>${rupee(total)}</b>`;
+  $("#order-bar-txt").innerHTML = `<b>${chosen.length}</b> chapter${chosen.length > 1 ? "s" : ""} · ${esc(label)} · <b>${rupee(total)}</b>`;
   store.set("chemophile-pack", [...pack]);
   store.set("chemophile-fmt", fmt);
 }
@@ -825,6 +894,27 @@ document.querySelectorAll('input[name="fmt"]').forEach(r => {
   r.checked = r.value === fmt;
   r.addEventListener("change", () => { fmt = r.value; renderPick(); renderSummary(); });
 });
+
+// ---------- combos and the offer banner (set in the admin panel) ----------
+function renderCombos() {
+  $("#combos").hidden = !COMBOS.length;
+  $("#combo-list").innerHTML = COMBOS.map(x => {
+    const chs = x.chapters.map(k => CHAPTERS.find(c => key(c) === k)).filter(Boolean);
+    const classes = [...new Set(chs.map(c => c.cls))].map(k => `Class ${k}`).join(" + ");
+    const buys = FORMAT_IDS.filter(f => FORMATS[f].on && (x.price || {})[f] > 0).map(f => {
+      const p = +x.price[f], m = +(x.mrp || {})[f] > p ? +x.mrp[f] : null, paper = f !== "online";
+      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}\nPrice: ${rupee(p)}${paper ? " + delivery" : ""}\nChapters:\n${chs.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+      return `<a href="${wa(msg)}" target="_blank" rel="noopener"><span>${esc(FORMATS[f].label)}</span><span>${money(p, m)}</span></a>`;
+    }).join("");
+    return `<div class="combo"><div class="count">${chs.length} chapters · ${classes}</div><h3>${esc(x.name)}</h3>${x.text ? `<p>${esc(x.text)}</p>` : ""}
+      <p>${chs.map(c => `Ch ${c.n} ${esc(nameOf(c))}`).join(", ")}</p><div class="buy">${buys}</div></div>`;
+  }).join("");
+}
+function renderOffer() {
+  const on = offerLive();
+  $("#offer-bar").hidden = !on;
+  if (on) $("#offer-text").innerHTML = `${esc(OFFER.text)}${OFFER.until ? ` <small>· till ${new Date(OFFER.until + "T12:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</small>` : ""}`;
+}
 $("#pick-list").addEventListener("change", e => { if (e.target.dataset.pick) toggle(e.target.dataset.pick, e.target.checked); });
 $("#pick-list").addEventListener("click", e => {
   const b = e.target.closest("[data-pick-cls]");
@@ -855,7 +945,7 @@ function openSheet(k, topicId) {
   const on = pack.has(k);
   const topics = c.topics.map(([name, sec, start, subs], i) => {
     const isRev = i === c.topics.length - 1;
-    const subHtml = parseSubs(subs).map(s => `<span>${s.name}${s.page ? `&nbsp;<b>${s.page}</b>` : ""}</span>`).join("<i>·</i>");
+    const subHtml = (subs ? parseSubs(subs) : []).map(s => `<span>${s.name}${s.page ? `&nbsp;<b>${s.page}</b>` : ""}</span>`).join("<i>·</i>");
     return `<li class="topic${isRev ? " rev" : ""}" id="t-${k}-${i + 1}" style="--c: var(${TOPIC_COLORS[i % TOPIC_COLORS.length]})">
       <div class="num">${i + 1}</div>
       <div style="min-width:0"><h5>${name}<span class="sec">${sec}</span></h5><p class="subs">${subHtml}</p></div>
@@ -867,25 +957,24 @@ function openSheet(k, topicId) {
   sheetBody.innerHTML = `
     <div class="sheet-top"><button class="close-btn" type="button" id="sheet-close">Close ✕</button></div>
     <div class="ch-head night">
-      <img src="${coverOf(c)}" alt="" width="360" height="509">
+      ${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : madeCover(c)}
       <div style="min-width:0">
-        <div class="kicker">Chemophile ${PART[c.cls]} · Chapter ${c.n}</div>
+        <div class="kicker">Chemophile ${esc(PART[c.cls] || "Class " + c.cls)} · Chapter ${c.n}</div>
         <h3 id="sheet-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
-        <p class="tag">${esc(c.tag)}</p>
+        ${c.tag ? `<p class="tag">${esc(c.tag)}</p>` : ""}
         <div class="stats">
-          <span class="stat"><b>${c.topics.length}</b> topics</span><span class="stat"><b>${c.pages}</b> pages</span>
-          <span class="stat"><b>${c.fig}</b> figures</span><span class="stat"><b>${c.solved}</b> solved examples</span>
-          <span class="stat"><b>${c.practice}</b> practice questions</span>${c.qr ? `<span class="stat">${esc(c.qr)}</span>` : ""}
+          ${[[c.topics.length, "topics"], [c.pages, "pages"], [c.fig, "figures"], [c.solved, "solved examples"], [c.practice, "practice questions"]]
+            .filter(([v]) => v && v !== "0").map(([v, l]) => `<span class="stat"><b>${v}</b> ${l}</span>`).join("")}${c.qr ? `<span class="stat">${esc(c.qr)}</span>` : ""}
         </div>
       </div>
     </div>
     <div class="sheet-buy">${priceChips(c)}
       <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In your pack" : "+ Add to pack"}</button>
     </div>
-    <h4 class="sub">Free sample pages</h4>
-    <div class="sample-row">${samples}</div>
-    <h4 class="sub">What's in this chapter</h4>
-    <ol class="topics">${topics}</ol>`;
+    ${samples ? `<h4 class="sub">Free sample pages</h4>
+    <div class="sample-row">${samples}</div>` : ""}
+    ${topics ? `<h4 class="sub">What's in this chapter</h4>
+    <ol class="topics">${topics}</ol>` : ""}`;
   sheet.hidden = false;
   document.body.style.overflow = "hidden";
   $("#sheet-close").addEventListener("click", closeSheet);
@@ -914,9 +1003,9 @@ CHAPTERS.forEach(c => c.topics.forEach(([name, sec, start, subs], i) => {
   const where = `Class ${c.cls} · Ch ${c.n} ${nameOf(c)} · Topic ${i + 1}`;
   const ref = { k: key(c), t: `t-${key(c)}-${i + 1}` };
   INDEX.push({ ...ref, text: plain(name), where: `${where} · ${sec}`, page: start });
-  parseSubs(subs).forEach(s => INDEX.push({ ...ref, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
+  (subs ? parseSubs(subs) : []).forEach(s => INDEX.push({ ...ref, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
 }));
-UPCOMING.forEach(u => INDEX.push({ soon: true, text: u.title, where: `Class ${u.cls} · Chapter ${u.n} · Coming soon`, page: null }));
+UPCOMING.forEach(u => INDEX.push({ soon: u.cls, text: u.title, where: `Class ${u.cls} · Chapter ${u.n} · Coming soon`, page: null }));
 const results = $("#results");
 $("#topic-search").addEventListener("input", e => {
   const q = e.target.value.trim().toLowerCase();
@@ -926,7 +1015,7 @@ $("#topic-search").addEventListener("input", e => {
   if (!hits.length) { results.innerHTML = `<div class="empty">No topic found for "${esc(q)}". Try another word.</div>`; return; }
   const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
   results.innerHTML = hits.map(h => `
-    <button type="button"${h.soon ? ` data-soon="1"` : ` data-k="${h.k}" data-t="${h.t}"`}>
+    <button type="button"${h.soon ? ` data-soon="${h.soon}"` : ` data-k="${h.k}" data-t="${h.t}"`}>
       <span><span>${esc(h.text).replace(re, m => `<mark>${m}</mark>`)}</span><span class="where">${esc(h.where)}</span></span>
       <span class="pg">${h.page ? "p. " + h.page : ""}</span>
     </button>`).join("");
@@ -934,7 +1023,7 @@ $("#topic-search").addEventListener("input", e => {
 results.addEventListener("click", e => {
   const b = e.target.closest("button");
   if (!b) return;
-  if (b.dataset.soon) { cls = 12; renderShelf(); $("#chapters").scrollIntoView(); return; }
+  if (b.dataset.soon) { cls = +b.dataset.soon; renderShelf(); $("#chapters").scrollIntoView(); return; }
   openSheet(b.dataset.k, b.dataset.t);
 });
 
@@ -989,7 +1078,7 @@ viewer.addEventListener("touchend", e => {
 // ---------- free samples ----------
 $("#samples-grid").innerHTML = [11, 12].map(k => {
   const b = SAMPLE_BOOKS[k];
-  const n = CHAPTERS.filter(c => c.cls === k).length;
+  const n = CHAPTERS.filter(c => c.cls === k && !c.custom).length;
   return `<div class="sample-card">
     <button class="cv" type="button" data-sample="${k}" aria-label="Read the Class ${k} free sample"><img src="${sampleImg(k, 1, true)}" alt="" width="360" height="509" loading="lazy"></button>
     <div style="min-width:0">
@@ -1005,7 +1094,7 @@ $("#samples-grid").innerHTML = [11, 12].map(k => {
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
 function openSample(k) {
   const b = SAMPLE_BOOKS[k];
-  const toc = CHAPTERS.filter(c => c.cls === k).map(c => [`Ch ${c.n} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
+  const toc = CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`Ch ${c.n} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
   new Flipbook({
     title: `Class ${k} free sample`, pageCount: b.pages, toc,
     download: { href: b.pdf, label: "PDF download" },
@@ -1032,9 +1121,11 @@ $("#copy-phone").addEventListener("click", () => {
 });
 
 // ---------- start ----------
-renderShelf(); renderPick(); renderSummary();
-const m = location.hash.match(/^#ch(1[12])-(\d+)$/);
+renderShelf(); renderPick(); renderSummary(); renderCombos(); renderOffer();
+const m = location.hash.match(/^#ch(\d+)-(\d+)$/);
 if (m) openSheet(`${m[1]}-${m[2]}`);
+window.openSample = openSample;
+}
 </script>
 </body>
 </html>
