@@ -133,6 +133,12 @@ Har badlaav ke baad neeche **Save changes** dabana zaroori hai; **Undo all** se 
 5. Date nikalte hi woh chapters lock ho jaate hain (Firebase rules bhi rokte hain). Student ko "Your monthly plan has ended" aur **Renew on WhatsApp** dikhta hai. Renew karte hi turant khul jaate hain; padhai ki jagah yaad rehti hai.
 6. Ek hi student ke paas khareede hue aur monthly dono chapters ho sakte hain: **Chapters & date** mein dono list alag hain.
 
+## 14. Policies, reading record, device reset limit
+
+- **Policies:** `policies.html` par Terms, Online book rules, Refund & cancellation, Shipping, Privacy, Copyright aur Contact hain. Website aur reader ke footer mein inke links hain. Naam, email, "supported by" aur office address `js/chapters.js` ke `BUSINESS` mein hain; `address` khaali hai to woh line nahi dikhti.
+- **Reading record:** student jab book padhta hai to har chapter ka record save hota hai: kitne pages padhe, kahan tak pahuncha, kitna time (sirf jab book khuli ho aur page palat rahe hon), kitni baar khola, aakhri baar kab. Student ko library mein **My reading** dikhta hai; admin ko student ke card par **Reading** dabane par, aur "Last read …" pill. 7 din se na padhne wale **Not reading 7+ days** filter aur Overview mein dikhte hain.
+- **Device reset:** saal mein 2 free. Card par "Resets this year: 1/2" dikhta hai; 2 ke baad reset karne par warning aati hai, **Reset anyway** se phir bhi kar sakte ho (exceptional case).
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**
