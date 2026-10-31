@@ -75,6 +75,7 @@ body { background: var(--paper); }
 .todo-item.bad .ic { background: var(--bad); }
 .todo-item.warn .ic { background: #e0a800; }
 .todo-item span { flex: 1; min-width: 0; }
+.todo-item small { display: block; margin-top: 2px; }
 .quick { display: grid; gap: 10px; }
 .quick .btn { justify-content: flex-start; }
 .recent { display: grid; gap: 6px; font-size: .9rem; }
@@ -136,6 +137,8 @@ body { background: var(--paper); }
 .chap-row .sub { font-size: .85rem; color: var(--muted); }
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+.quiz-eg { background: var(--paper); border-radius: 10px; padding: 10px 12px; font-size: .84rem; white-space: pre-wrap; margin: 8px 0 0; }
+#d-quiz { min-height: 280px; font: .92rem/1.45 ui-monospace, Menlo, Consolas, monospace; }
 .chap-row .confirm { grid-column: 1 / -1; }
 .pill.locked { display: inline-flex; flex: none; white-space: nowrap; align-items: center; gap: 4px; padding: 4px 10px; background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; color: var(--good); font-weight: 600; }
 .cls-head { font: 700 1.05rem var(--font-display); margin: 10px 0 0; }
@@ -304,6 +307,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
           <div class="field"><label for="s-pw">Password</label><div class="pw-row"><input id="s-pw" autocomplete="off"><button class="btn btn-line btn-sm" type="button" id="gen-pw">New one</button></div></div>
           <div class="field"><label for="s-till" id="s-till-label">Access until</label><input id="s-till" type="date"><span class="hint" id="s-till-hint">The ID stops working after 11:59 pm that day. Leave it empty for no end date.</span></div>
         </div>
+        <div class="field" id="ref-field" hidden style="max-width: 320px"><label for="s-ref">Referral code (optional)</label><input id="s-ref" autocapitalize="characters" spellcheck="false" autocomplete="off" maxlength="12" placeholder="AB12CD"><span class="hint" id="ref-hint"></span></div>
         <div class="field"><label>How they pay</label>
           <div class="plan" role="radiogroup" aria-label="How they pay">
             <label><input type="radio" name="s-plan" value="buy" checked>Bought<small>Paid once; valid for a year (365 days)</small></label>
@@ -328,7 +332,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </details>
 
       <div class="card">
-        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button></div>
         <div class="list-tools">
           <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div>
           <div class="chips" id="stu-filters" role="group" aria-label="Show"></div>
@@ -379,7 +383,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <div class="field"><label for="n-text">Message</label><textarea id="n-text" maxlength="600" placeholder="Chapter 9 Amines is now in your library. Happy reading!"></textarea></div>
         <div class="grid2">
           <div class="field"><label for="n-who">Who sees it</label><select id="n-who"><option value="all">Everyone</option><option value="students">Students with a login ID</option><option value="promo">Promo code users</option></select></div>
-          <div class="field"><label for="n-cls">Which class</label><select id="n-cls"><option value="0">Class 11 and 12</option><option value="11">Only Class 11 readers</option><option value="12">Only Class 12 readers</option></select></div>
+          <div class="field"><label for="n-cls">Which class</label><select id="n-cls"></select></div>
           <div class="field"><label for="n-till">Show until (optional)</label><input id="n-till" type="date"><span class="hint">Empty means it stays until you switch it off.</span></div>
         </div>
         <div class="msg" id="n-msg" role="status" hidden></div>
@@ -400,15 +404,16 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <button type="button" role="tab" data-ctab="ch" aria-selected="true">Chapters &amp; prices</button>
         <button type="button" role="tab" data-ctab="combo" aria-selected="false">Combos</button>
         <button type="button" role="tab" data-ctab="fmt" aria-selected="false">Ways to buy</button>
-        <button type="button" role="tab" data-ctab="offer" aria-selected="false">Offer banner</button>
+        <button type="button" role="tab" data-ctab="offer" aria-selected="false">Offers &amp; referral</button>
+        <button type="button" role="tab" data-ctab="pay" aria-selected="false">Payment</button>
       </div>
       <div class="msg" id="cat-msg" role="status" hidden></div>
 
       <div class="card stack" id="cat-ch">
         <div class="cat-top">
-          <div class="field"><label for="cat-cls">Class</label><select id="cat-cls"></select></div>
+          <div class="field"><label for="cat-cls">Class or book</label><select id="cat-cls"></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="cat-book-name"></span></div>
-          <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class</button></div>
+          <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class or university book</button></div>
         </div>
         <div class="ch-list" id="cat-list"></div>
         <div><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button></div>
@@ -438,7 +443,22 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <label class="cat-check"><input type="checkbox" id="of-on"> Show the banner</label>
         <div class="field"><label for="of-text">Banner text</label><input id="of-text" maxlength="140" placeholder="Diwali offer: 20% off all combos!"></div>
         <div class="field" style="max-width: 260px"><label for="of-until">Show until (optional)</label><input id="of-until" type="date"></div>
+        <div class="cat-fill stack"><b>Refer a friend</b>
+          <p class="cat-sub">Every student gets a code in their library. A new buyer gives that code when ordering; when you make the new ID with it, the friend who referred gets free days added to their online book.</p>
+          <label class="cat-check"><input type="checkbox" id="rf-on"> Switch on "Refer a friend"</label>
+          <div class="field sm" style="max-width: 200px"><label for="rf-days">Free days for each friend</label><input id="rf-days" type="number" min="1" max="365" inputmode="numeric"></div>
+        </div>
         <div><button class="btn btn-sun" type="button" data-cat="save-offer">Save</button></div>
+      </div>
+
+      <div class="card stack" id="cat-pay" hidden>
+        <p class="cat-sub">Shown on the order form: a UPI QR code with the exact amount, a "Pay with UPI app" button and your UPI ID. The student pays, then sends the order on WhatsApp with the screenshot. Paperback orders pay after you tell them the delivery charge.</p>
+        <div class="grid2">
+          <div class="field"><label for="pay-upi">UPI ID</label><input id="pay-upi" autocapitalize="none" spellcheck="false" placeholder="maproducts@okicici"><span class="hint">A business (merchant) UPI ID works best: personal UPI IDs may show a limit warning in some apps.</span></div>
+          <div class="field"><label for="pay-name">Name the student sees</label><input id="pay-name" placeholder="M A Products India"></div>
+        </div>
+        <div class="field"><label for="pay-link">Card / net banking payment link (optional)</label><input id="pay-link" type="url" inputmode="url" placeholder="https://razorpay.me/@yourname"><span class="hint">From Razorpay, PhonePe Business, Instamojo or Paytm. Leave empty if you only take UPI.</span></div>
+        <div><button class="btn btn-sun" type="button" data-cat="save-pay">Save</button></div>
       </div>
     </section>
 
@@ -462,6 +482,11 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
       </div>
+      <div class="card stack" id="lighter" hidden>
+        <p></p>
+        <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-lighter>Make them lighter</button></div>
+        <div class="sub status" role="status"></div>
+      </div>
       <div class="chap-rows" id="chap-rows"></div>
     </section>
     </div>
@@ -473,7 +498,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 
@@ -506,6 +531,18 @@ const planPrice = keys => keys.reduce((a, k) => { const c = findChapter(k); retu
 function remindMessage(s) {
   const end = subEnd(s), over = end && end.toDate() < new Date(), total = planPrice(subKeys(s));
   return `Hello ${(s.name || "").split(" ")[0]}! Your Chemophile monthly plan (${subKeys(s).length} chapter${subKeys(s).length > 1 ? "s" : ""}) ${over ? "ended" : "ends"} on ${fmtDate(end)}.${total ? ` Pay ₹${total} to keep reading for ${monthDays()} more days.` : " Pay this month's fee to keep reading."}\n\nChapters: ${subKeys(s).map(chName).join(", ")}\n- Adeel Sir`;
+}
+// Renewal of a bought online book: reminders start 30 days before the end date.
+const daysLeft = s => s.expiresAt && s.expiresAt.toDate ? Math.ceil((s.expiresAt.toDate() - Date.now()) / 864e5) : null;
+const endingSoon = s => !s.promo && s.active !== false && (s.chapters || []).length > 0 && !isOver(s) && daysLeft(s) !== null && daysLeft(s) <= 30;
+const endedLately = s => !s.promo && s.active !== false && (s.chapters || []).length > 0 && isOver(s) && daysLeft(s) > -30;
+const remindedText = s => s.remindedAt && s.remindedAt.toDate ? ` · reminded ${agoText(s.remindedAt.toDate())}` : "";
+function renewMessage(s) {
+  const over = isOver(s), what = bookSummary(s.chapters || []);
+  return `Hello ${(s.name || "").split(" ")[0]}! Your Chemophile online book${what ? ` (${what})` : ""} ${over ? "ended" : "is valid till"} ${over ? "on " : ""}${fmtDate(s.expiresAt)}.
+
+${over ? "Renew to open it again" : "Renew now to keep reading"} for another ${onlineDays() === 365 ? "year" : onlineDays() + " days"}. Your reading progress stays saved. Just reply here to renew.
+- Adeel Sir`;
 }
 // A bought online book is valid for onlineDays() (365 unless changed in Books & prices).
 const inAYear = () => { const d = new Date(Date.now() + onlineDays() * 864e5); return toInput({ toDate: () => d }); };
@@ -565,9 +602,8 @@ function renderDash() {
   const alerts = students.filter(s => s.attempts > 0), waiting = ids.filter(s => !s.deviceId && s.active !== false);
   const blocked = students.filter(s => s.active === false), live = promos.filter(p => promoState(p, now) === "active");
   const missing = CHAPTERS.filter(c => !uploaded.has(chapterKey(c)));
-  const week = new Date(Date.now() + 7 * 864e5);
-  const ending = ids.filter(s => s.active !== false && !isOver(s) && s.expiresAt && s.expiresAt.toDate() < week);
-  const over = ids.filter(isOver);
+  const ending = ids.filter(endingSoon).sort((a, b) => a.expiresAt.toMillis() - b.expiresAt.toMillis());
+  const lately = ids.filter(endedLately), over = ids.filter(s => isOver(s) && !endedLately(s));
   const soonDue = ids.filter(s => s.active !== false && subKeys(s).length && !subOver(s) && subEnd(s).toDate() < new Date(Date.now() + 3 * 864e5));
   const unpaid = ids.filter(s => s.active !== false && subOver(s) && subEnd(s).toDate() > new Date(Date.now() - 30 * 864e5));
   const h = now.getHours();
@@ -587,8 +623,8 @@ function renderDash() {
     ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
     ...soonDue.map(s => `<div class="todo-item warn"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ends on ${fmtDate(subEnd(s))}.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...unpaid.map(s => `<div class="todo-item bad"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Chapters are locked till they pay.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
-    ...ending.map(s => item("warn", `<b>${esc(s.name)}</b>'s access ends on ${fmtDate(s.expiresAt)}.`, "Renew", "t-students", ` data-filter="all" data-q="${esc(s.loginId)}"`)),
-    ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access has" : "students' access has"} ended. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
+    ...[...lately, ...ending].map(s => `<div class="todo-item ${isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : ""}"><i class="ic"></i><span><b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}.<small class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</small></span><a class="btn btn-wa btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
+    ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
     ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} not uploaded yet. Students can't read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters")] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
@@ -625,7 +661,7 @@ document.addEventListener("click", e => {
 
 // ---------- new student ----------
 const picks = (box, selected = []) => {
-  box.innerHTML = classList().filter(cls => CHAPTERS.some(c => c.cls === cls)).map(cls => `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
+  box.innerHTML = classList().filter(cls => CHAPTERS.some(c => c.cls === cls)).map(cls => `<div class="pick-head"><b>${esc(clsName(cls))}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of ${esc(clsName(cls))}</button></div>` +
     CHAPTERS.filter(c => c.cls === cls).map(c => {
       const k = chapterKey(c);
       return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> ${esc(chName(k))}</label>`;
@@ -688,6 +724,10 @@ $("#new-form").addEventListener("submit", async e => {
   if (!chapters.length) return fail("Choose at least one chapter.");
   if (till && new Date(till + "T23:59:59") < new Date()) return fail("The access date must be today or later.");
   if (monthly && !till) return fail("Choose the date the monthly plan is paid till.");
+  // Refer a friend: the code is the first 6 letters of the friend's account, in capitals.
+  const refCode = REFERRAL.on ? $("#s-ref").value.trim().toUpperCase() : "";
+  const referrer = refCode ? students.find(x => !x.promo && refCodeOf(x.uid) === refCode) : null;
+  if (refCode && !referrer) return fail(`No student has the referral code ${refCode}. Check it, or leave it empty.`);
   // A monthly student has no bought chapters: each plan chapter carries its own paid-till date.
   const data = monthly
     ? { chapters: [], expiresAt: null, subs: Object.fromEntries(chapters.map(k => [k, endOfDay(till)])) }
@@ -701,17 +741,20 @@ $("#new-form").addEventListener("submit", async e => {
     const secAuth = initializeAuth(sec, { persistence: inMemoryPersistence });
     const cred = await createUserWithEmailAndPassword(secAuth, idToEmail(id), pw);
     await setDoc(doc(db, "users", cred.user.uid), {
-      name, phone, loginId: id, active: true, ...data,
+      name, phone, loginId: id, active: true, ...data, ...(referrer ? { referredBy: referrer.uid } : {}),
       deviceId: null, deviceInfo: null, boundAt: null, createdAt: serverTimestamp()
     });
+    const thanks = referrer ? await rewardReferrer(referrer, name).catch(ex => ({ error: ex })) : null;
     await setDoc(doc(db, "secrets", cred.user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
     await signOut(secAuth);
     msg.className = "msg good"; msg.textContent = `ID created for ${name}.`;
+    if (thanks && thanks.error) msg.textContent += ` The ${REFERRAL.days} free days for ${referrer.name} could not be added (${thanks.error.message || thanks.error.code}); add them in their Chapters & date.`;
+    else if (thanks) msg.innerHTML = `${esc(msg.textContent)} <b>${esc(referrer.name)}</b> referred them and gets ${REFERRAL.days} free days${thanks.till ? ` (now till ${fmtDate(thanks.till)})` : ""}. <a href="${waLink(referrer.phone, thanks.text)}" target="_blank" rel="noopener">Tell ${esc(referrer.name.split(" ")[0])} on WhatsApp</a>`;
     const text = studentMessage({ name, loginId: id, ...data }, pw);
     $("#creds-text").textContent = text;
     $("#creds-wa").href = waLink(phone, text);
     $("#creds").hidden = false;
-    ["s-name", "s-phone", "s-id"].forEach(i => { $("#" + i).value = ""; });
+    ["s-name", "s-phone", "s-id", "s-ref"].forEach(i => { $("#" + i).value = ""; });
     delete $("#s-id").dataset.touched;
     $("#s-pw").value = genPassword();
     planUI();
@@ -726,6 +769,21 @@ $("#new-form").addEventListener("submit", async e => {
     $("#new-btn").disabled = false;
   }
 });
+// The friend who referred a new buyer: their online book gets REFERRAL.days more (from its end date, or from
+// today if it has already ended); a monthly plan gets the days on each chapter. Counted on their record too.
+async function rewardReferrer(r, newName) {
+  const days = REFERRAL.days, plus = ts => { const from = ts && ts.toDate && ts.toDate() > new Date() ? ts.toDate() : new Date(); return endOfDay(toInput({ toDate: () => new Date(from.getTime() + days * 864e5) })); };
+  const update = { referrals: increment(1), refDays: increment(days) };
+  let till = null;
+  if ((r.chapters || []).length && r.expiresAt) { till = plus(r.expiresAt); update.expiresAt = till; }
+  else if (subKeys(r).length) { update.subs = Object.fromEntries(subKeys(r).map(k => [k, plus(r.subs[k])])); till = Object.values(update.subs)[0]; }
+  await updateDoc(doc(db, "users", r.uid), update);
+  if (update.expiresAt) r.expiresAt = update.expiresAt;
+  if (update.subs) r.subs = update.subs;
+  r.referrals = (r.referrals || 0) + 1; r.refDays = (r.refDays || 0) + days;
+  const text = `Hello ${(r.name || "").split(" ")[0]}! ${newName.split(" ")[0]} joined Chemophile with your referral code. Thank you! 🎉\n\nYou get ${days} free days${till ? `: your online book is now valid till ${fmtDate(till)}` : ""}.\n- Adeel Sir`;
+  return { till, text };
+}
 $("#creds-copy").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText($("#creds-text").textContent); $("#creds-copy").textContent = "Copied"; }
   catch (e) { const r = document.createRange(); r.selectNodeContents($("#creds-text")); getSelection().removeAllRanges(); getSelection().addRange(r); }
@@ -736,8 +794,9 @@ $("#creds-copy").addEventListener("click", async () => {
 async function studentRefs(uid) {
   const tries = await getDocs(collection(db, "users", uid, "attempts"));
   const reads = await getDocs(collection(db, "users", uid, "reading")).catch(() => ({ docs: [] }));
+  const quiz = await getDocs(collection(db, "users", uid, "quiz")).catch(() => ({ docs: [] }));
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {
@@ -786,6 +845,7 @@ const FILTERS = [
   ["monthly", "Monthly plan", s => subKeys(s).length > 0],
   ["subover", "Monthly unpaid", subOver],
   ["inactive", "Not reading 7+ days", isInactive],
+  ["renew", "Ending in 30 days", s => endingSoon(s) || endedLately(s)],
   ["promo", "Promo", s => !!s.promo],
 ];
 let stuFilter = "all";
@@ -800,7 +860,7 @@ function renderStudents() {
     <div class="stu" data-uid="${s.uid}">
       <div class="stu-top">
         <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
-        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
+        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>${REFERRAL.on ? ` · code ${refCodeOf(s.uid)}` : ""}`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
           ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) ? "" : `<span class="pill good">Active</span>`}
           ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
@@ -808,6 +868,8 @@ function renderStudents() {
           ${lastRead(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last read ${agoText(lastRead(s))}</span>` : ""}
           ${resetsThisYear(s) ? `<span class="pill${resetsThisYear(s) >= BUSINESS.freeResetsPerYear ? " bad" : ""}">Resets this year: ${resetsThisYear(s)}/${BUSINESS.freeResetsPerYear}</span>` : ""}
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
+          ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
+          ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
         </div>
       </div>
       ${(s.chapters || []).length || !subKeys(s).length ? `<details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}${subKeys(s).length ? " (bought)" : ""}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>` : ""}
@@ -816,6 +878,7 @@ function renderStudents() {
       <div class="actions">
         <a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>
         ${subKeys(s).length ? `<button class="btn btn-sun btn-sm" type="button" data-act="renew">Renew +${monthDays()} days</button><a class="btn btn-line btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Payment reminder</a>` : ""}
+        ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="edit">${isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
@@ -849,6 +912,49 @@ function renderStudents() {
   renderDash();
 }
 $("#stu-search").addEventListener("input", renderStudents);
+// The renewal reminder link opens WhatsApp; also note the date, so the overview shows who was reminded.
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-remind]");
+  if (!a) return;
+  const s = students.find(x => x.uid === a.dataset.remind);
+  if (!s) return;
+  s.remindedAt = Timestamp.now();
+  updateDoc(doc(db, "users", s.uid), { remindedAt: serverTimestamp() }).catch(() => {});
+  setTimeout(renderStudents, 300);
+});
+
+// ---------- download the list ----------
+// A CSV file (opens in Excel and Google Sheets) of the students shown, as a backup and for your records.
+// Passwords are never put in it.
+const shownStudents = () => {
+  const q = $("#stu-search").value.trim().toLowerCase(), test = FILTERS.find(f => f[0] === stuFilter)[2];
+  return students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
+};
+const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
+function studentsCsv(list) {
+  const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
+    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent"];
+  const rows = list.map(s => {
+    const plan = s.promo ? "Promo" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
+    const status = s.active === false ? "Blocked" : isOver(s) ? "Expired" : subOver(s) && !subLive(s).length && !(s.chapters || []).length ? "Monthly unpaid" : "Active";
+    const by = s.referredBy && students.find(x => x.uid === s.referredBy);
+    return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
+      subKeys(s).map(chName).join("; "), subKeys(s).length ? dmy(subEnd(s)) : "", status, s.deviceId ? "Yes" : "No", s.deviceInfo || "", dmy(lastRead(s)), dmy(s.createdAt),
+      resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt)];
+  });
+  // Quote every cell; a cell starting with = + - @ is kept as text so a spreadsheet never runs it as a formula.
+  const cell = v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+  return "\ufeff" + [head, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+}
+$("#stu-csv").addEventListener("click", () => {
+  const list = shownStudents();
+  const blob = new Blob([studentsCsv(list)], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  const label = stuFilter === "all" ? "students" : "students-" + FILTERS.find(f => f[0] === stuFilter)[1].toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  a.href = URL.createObjectURL(blob); a.download = `chemophile-${label}-${dmy(new Date())}.csv`;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
 $("#stu-filters").addEventListener("click", e => { const b = e.target.closest("[data-filter]"); if (b) { stuFilter = b.dataset.filter; renderStudents(); } });
 $("#students").addEventListener("click", async e => {
   const b = e.target.closest("[data-act]");
@@ -898,6 +1004,9 @@ $("#students").addEventListener("click", async e => {
       if (!box.hidden) { box.hidden = true; return; }
       box.hidden = false; box.textContent = "Loading…";
       const docs = (await getDocs(collection(db, "users", s.uid, "reading"))).docs.map(d => [d.id, d.data()]);
+      const quiz = new Map((await getDocs(collection(db, "users", s.uid, "quiz")).catch(() => ({ docs: [] }))).docs.map(d => [d.id, d.data()]));
+      // A quiz taken without opening the book still shows.
+      quiz.forEach((q, k) => { if (!docs.some(([d]) => d === k)) docs.push([k, { seen: [], minutes: 0, opens: 0, total: (uploaded.get(k) || {}).pageCount || 0 }]); });
       if (!docs.length) { box.innerHTML = `<p class="hint">${esc(s.name)} hasn't opened a book yet${s.deviceId ? " (or read before reading records started)" : ""}.</p>`; return; }
       const mins = docs.reduce((a, [, r]) => a + (r.minutes || 0), 0), pages = docs.reduce((a, [, r]) => a + (r.seen || []).length, 0);
       const done = docs.filter(([, r]) => r.total && r.max >= r.total).length;
@@ -905,7 +1014,7 @@ $("#students").addEventListener("click", async e => {
         docs.sort((a, b) => ((b[1].updatedAt && b[1].updatedAt.toMillis()) || 0) - ((a[1].updatedAt && a[1].updatedAt.toMillis()) || 0)).map(([k, r]) => {
           const total = r.total || 0, seen = (r.seen || []).length, pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
           return `<div class="rrow"><div class="t"><span>${esc(chName(k))}</span><span>${pct}%</span></div><div class="meter"><i style="width: ${pct}%"></i></div>
-            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}</div></div>`;
+            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 0}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}${quiz.get(k) ? ` · <b>quiz best ${quiz.get(k).best}/${quiz.get(k).total}</b> (last ${quiz.get(k).last}, ${quiz.get(k).tries} tr${quiz.get(k).tries === 1 ? "y" : "ies"})` : ""}</div></div>`;
         }).join("");
     }
     if (b.dataset.act === "reset" && resetsThisYear(s) >= BUSINESS.freeResetsPerYear) { row.querySelector(".reset-confirm").hidden = false; return; }
@@ -989,11 +1098,11 @@ function promoState(p, now = new Date()) {
   const exp = p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
   return p.active === false ? "off" : exp && exp < now ? "expired" : (p.used || 0) >= p.maxUses ? "full" : "active";
 }
-// What the code opens, without chapter names: "Class 11 full book (all 9 chapters)" or "Class 12, 3 chapters".
+// What the code opens, without chapter names: "Class 11 full book (all 9 chapters)" or "B.Sc 1st Year, 3 chapters".
 function bookSummary(keys) {
   return classList().map(cls => {
     const n = keys.filter(k => k.startsWith(cls + "-")).length, all = CHAPTERS.filter(c => c.cls === cls).length;
-    return !n ? "" : n === all ? `Class ${cls} full book (all ${n} chapters)` : `Class ${cls}, ${n} chapter${n > 1 ? "s" : ""}`;
+    return !n ? "" : n === all ? `${clsName(cls)} full book (all ${n} chapters)` : `${clsName(cls)}, ${n} chapter${n > 1 ? "s" : ""}`;
   }).filter(Boolean).join(" + ");
 }
 function promoMessage(p) {
@@ -1109,7 +1218,7 @@ function renderNews() {
       <div class="stu-top">
         <div class="avatar" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg></div>
         <div style="min-width:0"><h3>${esc(n.title || "Announcement")}</h3><div class="sub">Posted ${fmtDate(n.createdAt)}${n.expiresAt ? ` · until ${fmtDate(n.expiresAt)}` : ""}</div></div>
-        <div class="pills">${live ? `<span class="pill good">Showing</span>` : `<span class="pill bad">${n.active === false ? "Switched off" : "Ended"}</span>`}<span class="pill">${WHO[n.audience] || "Everyone"}</span>${n.cls ? `<span class="pill">Class ${n.cls}</span>` : ""}</div>
+        <div class="pills">${live ? `<span class="pill good">Showing</span>` : `<span class="pill bad">${n.active === false ? "Switched off" : "Ended"}</span>`}<span class="pill">${WHO[n.audience] || "Everyone"}</span>${n.cls ? `<span class="pill">${esc(clsName(n.cls))}</span>` : ""}</div>
       </div>
       <p class="news-text">${esc(n.text)}</p>
       <div class="actions"><span class="spacer"></span>
@@ -1167,8 +1276,11 @@ function startCatalog(saved) {
   FORMAT_IDS.forEach(f => { cat.formats = cat.formats || {}; cat.formats[f] = Object.assign(clone(FORMATS[f]), cat.formats[f] || {}); });
   cat.combos = cat.combos || [];
   cat.offer = Object.assign({ on: false, text: "", until: "" }, cat.offer || {});
+  cat.referral = Object.assign({ on: false, days: 30 }, cat.referral || {});
+  cat.pay = Object.assign({ upi: "", payee: "", link: "" }, cat.pay || DEFAULT_PAY);
   $("#cat-first").hidden = !!saved;
   picks($("#new-ch")); picks($("#p-ch"));
+  $("#n-cls").innerHTML = `<option value="0">All readers</option>` + classList().map(c => `<option value="${c}">Only ${esc(clsName(c))} readers</option>`).join("");
   planUI();
   renderCatalog();
 }
@@ -1201,7 +1313,7 @@ function renderCatalog() {
   if (!classes.includes(catCls)) catCls = classes.includes(11) ? 11 : classes[0];
   $("#cat-cls").innerHTML = classes.map(c => {
     const n = cat.chapters.filter(x => +x.cls === c).length;
-    return `<option value="${c}"${c === catCls ? " selected" : ""}>Class ${c} (${n} chapter${n === 1 ? "" : "s"})</option>`;
+    return `<option value="${c}"${c === catCls ? " selected" : ""}>${esc(clsName(c))}${isUni(c) ? " · university" : ""} (${n} chapter${n === 1 ? "" : "s"})</option>`;
   }).join("");
   const book = cat.books.find(b => +b.cls === catCls);
   $("#cat-book-name").textContent = book ? `Book: ${book.name}` : "";
@@ -1211,7 +1323,7 @@ function renderCatalog() {
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
       <span class="go">Edit ›</span>
       <span class="pr">${priceLine(c.price, c.mrp)}</span>
-    </button>`).join("") : `<div class="ch-empty">No chapters in Class ${catCls} yet. Add the first one below.</div>`;
+    </button>`).join("") : `<div class="ch-empty">No chapters in ${esc(clsName(catCls))} yet. Add the first one below.</div>`;
   $("#cat-combos").innerHTML = cat.combos.length ? [...cat.combos.map((x, i) => [x, i])].sort((a, b) => (a[0].name || "").localeCompare(b[0].name || "")).map(([x, i]) => `<button class="ch-item" type="button" data-edit-combo="${i}">
       <span class="no">${x.chapters.length}</span>
       <span class="nm">${esc(x.name || "(no name)")}<small>${x.chapters.length} chapters · ${x.on === false ? "hidden from the website" : "on the website"}</small></span>
@@ -1225,14 +1337,18 @@ function renderCatalog() {
     ${f === "online" || f === "monthly" ? `<div class="cat-row" style="grid-column: 2 / -1"><div class="field sm"><label>${f === "online" ? "Valid for (days)" : "Days paid for"}</label><input type="number" min="1" max="3660" inputmode="numeric" data-k="days" value="${numVal(cat.formats[f].days || (f === "online" ? 365 : 30))}"></div></div>` : ""}
   </div>`).join("");
   $("#fill-f").innerHTML = FORMAT_IDS.map(f => `<option value="${f}">${esc(cat.formats[f].label)}</option>`).join("");
-  $("#fill-cls").innerHTML = `<option value="all">Every class</option>` + classes.map(c => `<option value="${c}">Class ${c}</option>`).join("");
+  $("#fill-cls").innerHTML = `<option value="all">Every class</option>` + classes.map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("");
   $("#of-on").checked = !!cat.offer.on; $("#of-text").value = cat.offer.text || ""; $("#of-until").value = cat.offer.until || "";
+  $("#rf-on").checked = !!cat.referral.on; $("#rf-days").value = cat.referral.days || 30;
+  $("#pay-upi").value = cat.pay.upi || ""; $("#pay-name").value = cat.pay.payee || ""; $("#pay-link").value = cat.pay.link || "";
+  $("#ref-field").hidden = !cat.referral.on;
+  $("#ref-hint").textContent = `If a friend referred them. That friend gets ${cat.referral.days || 30} free days.`;
 }
 $("#cat-tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-ctab]");
   if (!b) return;
   document.querySelectorAll("#cat-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["ch", "combo", "fmt", "offer"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
+  ["ch", "combo", "fmt", "offer", "pay"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
   $("#cat-msg").hidden = true;
 });
 $("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; renderCatalog(); });
@@ -1285,7 +1401,7 @@ const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n ===
 function chapterDialog(i) {
   const isNew = i == null, c = isNew ? { cls: catCls, n: (Math.max(0, ...cat.chapters.filter(x => +x.cls === catCls).map(x => +x.n)) + 1), title: "", short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] } : cat.chapters[i];
   const custom = isNew || !isBaseChapter(c);
-  openDialog(isNew ? `New chapter in Class ${catCls}` : `Class ${c.cls} · Chapter ${c.n}`, `
+  openDialog(isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · Chapter ${c.n}`, `
     <div class="cat-row">
       ${isNew ? `<div class="field sm"><label for="d-n">Chapter no.</label><input id="d-n" type="number" min="1" inputmode="numeric" value="${c.n}"></div>` : ""}
       <div class="field lg"><label for="d-title">Chapter name</label><input id="d-title" value="${esc(c.title)}"></div>
@@ -1301,32 +1417,53 @@ function chapterDialog(i) {
       const n = isNew ? parseInt(val("d-n"), 10) : c.n, title = val("d-title");
       if (!(n >= 1)) throw new Error("Chapter number: 1 or more.");
       if (!title) throw new Error("Write the chapter name.");
-      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`Class ${c.cls} already has a Chapter ${n}.`);
+      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has a Chapter ${n}.`);
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
       if (!soon && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or set it to Coming soon.");
       const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp });
       if (custom) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `Class ${c.cls} Chapter ${n} saved.`);
+      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} Chapter ${n} saved.`);
     },
-    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `Class ${c.cls} Chapter ${c.n} removed.`); } : null);
+    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `${clsName(c.cls)} Chapter ${c.n} removed.`); } : null);
 }
+// A school class (1 to 12) or a university / college book. University books get numbers from 101 up,
+// and their own label ("B.Sc 1st Year") is shown wherever a school book says "Class 11".
 function classDialog(isNew) {
-  const b = isNew ? { cls: "", name: "" } : cat.books.find(x => +x.cls === catCls);
+  const b = isNew ? { cls: "", name: "", label: "" } : cat.books.find(x => +x.cls === catCls);
   const count = isNew ? 0 : cat.chapters.filter(x => +x.cls === catCls).length;
-  openDialog(isNew ? "Add a class" : `Class ${b.cls}`, `
+  const uniNow = !isNew && isUni(b.cls);
+  openDialog(isNew ? "Add a class or university book" : clsName(b.cls), `
+    ${isNew ? `<div class="field"><label>What is it?</label><div class="plan" role="radiogroup" aria-label="Type">
+      <label><input type="radio" name="d-type" value="school" checked>School class<small>Class 1 to 12</small></label>
+      <label><input type="radio" name="d-type" value="uni">University / college<small>B.Sc, M.Sc, B.Pharm, NEET…</small></label>
+    </div></div>` : ""}
     <div class="cat-row">
-      ${isNew ? `<div class="field sm"><label for="d-cls">Class</label><input id="d-cls" type="number" min="1" max="12" inputmode="numeric" placeholder="10"></div>` : ""}
-      <div class="field lg"><label for="d-book">Book name</label><input id="d-book" value="${esc(b.name)}" placeholder="Part 3 (for 10th Class)"></div>
+      ${isNew ? `<div class="field sm" data-type="school"><label for="d-cls">Class</label><input id="d-cls" type="number" min="1" max="12" inputmode="numeric" placeholder="10"></div>` : ""}
+      <div class="field" data-type="uni"${isNew || uniNow ? "" : " hidden"}><label for="d-label">Course and year</label><input id="d-label" value="${esc(b.label || "")}" maxlength="40" placeholder="B.Sc 1st Year"><span class="hint">Shown where school books say "Class 11".</span></div>
+      <div class="field lg"><label for="d-book">Book name</label><input id="d-book" value="${esc(b.name)}" placeholder="${uniNow ? "Inorganic Chemistry (B.Sc Sem 1)" : "Part 3 (for 10th Class)"}"></div>
     </div>
-    ${!isNew && count ? `<p class="cat-sub">A class can be removed only when it has no chapters.</p>` : ""}`,
+    ${!isNew && count ? `<p class="cat-sub">It can be removed only when it has no chapters.</p>` : ""}`,
     async () => {
-      const cls = isNew ? parseInt(val("d-cls"), 10) : +b.cls, name = val("d-book");
-      if (!(cls >= 1 && cls <= 12)) throw new Error("Class: a number from 1 to 12.");
-      if (isNew && cat.books.some(x => +x.cls === cls)) throw new Error(`Class ${cls} is already there.`);
-      await commit(next => { if (isNew) next.books.push({ cls, name: name || `Class ${cls}` }); else next.books.find(x => +x.cls === cls).name = name || `Class ${cls}`; }, `Class ${cls} saved.`);
+      const uni = isNew ? dlg.querySelector('input[name="d-type"]:checked').value === "uni" : uniNow;
+      const label = val("d-label");
+      let cls = +b.cls;
+      if (isNew && uni) cls = Math.max(100, ...cat.books.map(x => +x.cls)) + 1;
+      if (isNew && !uni) {
+        cls = parseInt(val("d-cls"), 10);
+        if (!(cls >= 1 && cls <= 12)) throw new Error("Class: a number from 1 to 12. For a university book, choose University / college.");
+        if (cat.books.some(x => +x.cls === cls)) throw new Error(`Class ${cls} is already there.`);
+      }
+      if (uni && !label) throw new Error("Write the course and year, e.g. B.Sc 1st Year.");
+      if (uni && cat.books.some(x => +x.cls !== cls && (x.label || "").toLowerCase() === label.toLowerCase())) throw new Error(`"${label}" is already there.`);
+      const item = { cls, name: val("d-book") || (uni ? label : `Class ${cls}`), ...(uni ? { label } : {}) };
+      await commit(next => { if (isNew) next.books.push(item); else next.books[next.books.findIndex(x => +x.cls === cls)] = item; }, `${uni ? label : "Class " + cls} saved.`);
       catCls = cls; renderCatalog();
     },
-    !isNew && !count ? async () => { await commit(next => { next.books = next.books.filter(x => +x.cls !== +b.cls); }, `Class ${b.cls} removed.`); } : null);
+    !isNew && !count ? async () => { await commit(next => { next.books = next.books.filter(x => +x.cls !== +b.cls); }, `${clsName(b.cls)} removed.`); } : null);
+  if (isNew) {
+    const sync = () => { const uni = dlg.querySelector('input[name="d-type"]:checked').value === "uni"; dlg.querySelectorAll("[data-type]").forEach(e => { e.hidden = e.dataset.type !== (uni ? "uni" : "school"); }); };
+    dlg.querySelectorAll('input[name="d-type"]').forEach(r => r.addEventListener("change", sync)); sync();
+  }
 }
 function comboDialog(i) {
   const isNew = i == null, x = isNew ? { id: "c" + Date.now(), name: "", text: "", on: true, chapters: [], price: {}, mrp: {} } : cat.combos[i];
@@ -1337,7 +1474,7 @@ function comboDialog(i) {
     <label class="cat-check"><input type="checkbox" id="d-con"${x.on !== false ? " checked" : ""}> Show on the website</label>
     <div><b>Chapters in this combo</b><div class="chap-picks" id="d-cpicks">${classesOf().map(cls => {
       const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
-      return chs.length ? `<div class="pick-head"><b>Class ${cls}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of Class ${cls}</button></div>` +
+      return chs.length ? `<div class="pick-head"><b>${esc(clsName(cls))}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of ${esc(clsName(cls))}</button></div>` +
         chs.map(c => `<label><input type="checkbox" value="${ckey(c)}"${x.chapters.includes(ckey(c)) ? " checked" : ""}> Ch ${c.n} ${esc(c.short || c.title)}</label>`).join("") : "";
     }).join("")}</div></div>
     <div id="d-cprices">${priceFields(x.price, x.mrp, single(x.chapters))}</div>`,
@@ -1389,12 +1526,22 @@ $("#t-catalog").addEventListener("click", async e => {
       await commit(next => {
         next.chapters.forEach(c => { if (cls === "all" || +c.cls === +cls) { c.price = c.price || {}; c.price[f] = v; n++; } });
         if (!next.formats[f].on) next.formats[f].on = true;
-      }, `₹${v} filled in for ${cls === "all" ? "every chapter" : "every Class " + cls + " chapter"} (${cat.formats[f].label}).`);
+      }, `₹${v} filled in for ${cls === "all" ? "every chapter" : "every " + clsName(cls) + " chapter"} (${cat.formats[f].label}).`);
     }
     if (act === "save-offer") {
       const on = $("#of-on").checked, text = $("#of-text").value.trim(), until = $("#of-until").value;
+      const rOn = $("#rf-on").checked, days = Math.round(+$("#rf-days").value);
       if (on && !text) throw new Error("Write the banner text.");
-      await commit(next => { next.offer = { on, text, until }; }, on ? "Offer banner saved and showing." : "Offer banner saved (hidden).");
+      if (!(days >= 1 && days <= 365)) throw new Error("Free days for each friend: 1 to 365.");
+      await commit(next => { next.offer = { on, text, until }; next.referral = { on: rOn, days }; },
+        `Saved. Offer banner ${on ? "showing" : "hidden"}; refer a friend ${rOn ? `on (${days} free days)` : "off"}.`);
+    }
+    if (act === "save-pay") {
+      const upi = $("#pay-upi").value.trim(), payee = $("#pay-name").value.trim(), link = $("#pay-link").value.trim();
+      if (upi && !/^[a-zA-Z0-9._-]{2,}@[a-zA-Z][a-zA-Z0-9.-]{1,}$/.test(upi)) throw new Error("UPI ID looks wrong. It is like name@okicici or 9876543210@ybl.");
+      if (upi && !payee) throw new Error("Write the name the student sees when paying.");
+      if (link && !/^https:\/\/\S+$/.test(link)) throw new Error("The payment link must start with https://");
+      await commit(next => { next.pay = { upi, payee, link }; }, upi || link ? "Payment details saved. The order form shows them now." : "Payment details removed from the order form.");
     }
   } catch (ex) { catSay(saveError(ex), "bad"); }
   b.disabled = false;
@@ -1402,15 +1549,18 @@ $("#t-catalog").addEventListener("click", async e => {
 
 // ---------- chapters upload ----------
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-const uploaded = new Map();
+// chapters/{key}: pageCount once the PDF is uploaded; quiz = number of quiz questions; px = page width.
+const uploaded = new Map(), chInfo = new Map();
 async function loadChapters() {
   const snap = await getDocs(collection(db, "chapters"));
-  snap.docs.forEach(d => uploaded.set(d.id, d.data()));
+  uploaded.clear(); chInfo.clear();
+  snap.docs.forEach(d => { chInfo.set(d.id, d.data()); if (d.data().pageCount) uploaded.set(d.id, d.data()); });
   chaptersLoaded = true;
+  renderLighter();
   const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || a.n - b.n);
   $("#chap-rows").innerHTML = all.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k);
-    return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">Class ${c.cls}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
+    return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">${esc(clsName(c.cls))}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
   }).join("");
   renderDash();
 }
@@ -1422,7 +1572,7 @@ function chapRow(c, k, u) {
     <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
       <progress max="100" value="0" hidden></progress></div>
-    <div class="ctl">${u
+    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
       ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
       : `<input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
     ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace chapter ${c.n}" hidden>
@@ -1433,11 +1583,14 @@ function chapRow(c, k, u) {
   </div>`;
 }
 
+// Pages are 960 pixels wide at 70% quality: sharp on a phone (and when zoomed), and about 30% less to
+// download than the 1100-pixel pages made before. Every student's download, and the Firebase bill, shrink with it.
+const PAGE_PX = 960;
 function pageImage(canvas) {
-  let q = 0.8, url = canvas.toDataURL("image/webp", q);
+  let q = 0.7, url = canvas.toDataURL("image/webp", q);
   const webp = url.startsWith("data:image/webp");
   if (!webp) url = canvas.toDataURL("image/jpeg", q);
-  while (url.length > 900000 && q > 0.4) {
+  while (url.length > 600000 && q > 0.4) {
     q -= 0.1;
     url = canvas.toDataURL(webp ? "image/webp" : "image/jpeg", q);
   }
@@ -1475,7 +1628,7 @@ $("#chap-rows").addEventListener("click", async e => {
     for (let n = 1; n <= total; n++) {
       status.textContent = `Uploading page ${n} / ${total}…`;
       const page = await pdf.getPage(n);
-      const scale = 1100 / page.getViewport({ scale: 1 }).width;
+      const scale = PAGE_PX / page.getViewport({ scale: 1 }).width;
       const vp = page.getViewport({ scale });
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
@@ -1484,21 +1637,150 @@ $("#chap-rows").addEventListener("click", async e => {
       page.cleanup();
       bar.value = Math.round((n / total) * 100);
     }
-    const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, updatedAt: serverTimestamp() };
-    await setDoc(doc(db, "chapters", k), info);
+    const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, px: PAGE_PX, updatedAt: serverTimestamp() };
+    await setDoc(doc(db, "chapters", k), info, { merge: true });
     // A shorter replacement leaves the old extra pages behind; remove them.
     if (before && before.pageCount > total) {
       const extra = [];
       for (let n = total + 1; n <= before.pageCount; n++) extra.push(doc(db, "pages", pageId(k, n)));
       await deleteAll(extra).catch(() => {});
     }
-    uploaded.set(k, { ...info, updatedAt: Timestamp.now() });
+    uploaded.set(k, { ...(chInfo.get(k) || {}), ...info, updatedAt: Timestamp.now() });
+    chInfo.set(k, uploaded.get(k));
+    renderLighter();
     row.outerHTML = chapRow(c, k, uploaded.get(k));
     $(`.chap-row[data-k="${k}"] .status`).textContent = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now.`;
     renderDash();
     return;
   } catch (ex) {
     status.textContent = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
+  } finally {
+    b.disabled = false;
+    if (lock) lock.release().catch(() => {});
+  }
+});
+
+// ---------- chapter quizzes ----------
+// Written as plain text (easy to type on a phone or paste from notes), saved as quizzes/{chapter}.
+// chapters/{chapter}.quiz holds the number of questions, so the reader knows which chapters have a quiz.
+const QUIZ_HELP = `Q: Oxidation number of Mn in KMnO_4 is
+A) +5
+B) +7 *
+C) +6
+D) +4
+Why: K is +1 and each O is −2, so Mn = +7.
+
+Q: Which one is a reducing agent?
+A) Zn *
+B) Cu^2+
+C) O_2
+D) F_2`;
+function parseQuiz(text) {
+  const qs = [], errs = [];
+  text.replace(/\r/g, "").split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach((block, i) => {
+    let q = "", o = [], a = -1, why = "", m;
+    block.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => {
+      if (!o.length && (m = l.match(/^(?:q(?:uestion)?\s*\d*|\d+)\s*[:.)-]\s*(.+)$/i))) q = q ? q + " " + m[1] : m[1];
+      else if ((m = l.match(/^\(?([a-f])\s*[).:]\s*(.*)$/i)) && m[1].toLowerCase().charCodeAt(0) - 97 === o.length) {
+        let t = m[2].trim();
+        if (/\*\s*$/.test(t)) { a = o.length; t = t.replace(/\s*\*\s*$/, ""); }
+        o.push(t);
+      }
+      else if ((m = l.match(/^(?:why|reason|explanation|hint)\s*[:.-]\s*(.*)$/i))) why = m[1];
+      else if ((m = l.match(/^ans(?:wer)?\s*[:.-]\s*\(?([a-f])\)?\.?$/i))) a = m[1].toLowerCase().charCodeAt(0) - 97;
+      else if (why) why += " " + l;
+      else if (!o.length) q = q ? q + " " + l : l;
+      else o[o.length - 1] += " " + l;
+    });
+    const n = `Question ${i + 1}`;
+    if (!q) errs.push(`${n}: the question line is missing.`);
+    else if (o.length < 2) errs.push(`${n}: write at least 2 options, as A) … B) …`);
+    else if (o.some(x => !x)) errs.push(`${n}: one option is empty.`);
+    else if (a < 0 || a >= o.length) errs.push(`${n}: mark the right answer with * at the end of it (or write "Answer: B").`);
+    else qs.push(Object.assign({ q, o, a }, why ? { why } : {}));
+  });
+  if (qs.length > 100) errs.push("At most 100 questions in one chapter's quiz.");
+  return { qs, errs };
+}
+const quizText = qs => qs.map(x => [`Q: ${x.q}`, ...x.o.map((o, j) => `${"ABCDEF"[j]}) ${o}${j === x.a ? " *" : ""}`), ...(x.why ? [`Why: ${x.why}`] : [])].join("\n")).join("\n\n");
+async function quizDialog(k) {
+  const c = findChapter(k), ref = doc(db, "quizzes", k);
+  let old = [];
+  try { const s = await getDoc(ref); old = s.exists() ? s.data().qs || [] : []; } catch (ex) { alert(why(ex)); return; }
+  openDialog(`Quiz · ${clsName(c.cls)} Chapter ${c.n}`, `
+    <p class="cat-sub">Students take it from their library, one question at a time, and see the right answer and the "Why" after each. Their best score shows in their reading record.</p>
+    <details><summary><b>How to write it</b> (tap to see an example)</summary>
+      <p class="cat-sub">Start each question with <b>Q:</b>, then options <b>A) B) C) D)</b>. Put <b>*</b> after the right option. A <b>Why:</b> line (optional) explains it. Leave an empty line between questions. Write <b>H_2O</b> for H₂O and <b>Cu^2+</b> for Cu²⁺.</p>
+      <pre class="quiz-eg">${esc(QUIZ_HELP)}</pre></details>
+    <div class="field"><label for="d-quiz">Questions</label><textarea id="d-quiz" rows="14" spellcheck="false" placeholder="Q: …">${esc(quizText(old))}</textarea></div>
+    <div class="cat-sub" id="d-quiz-check" role="status"></div>`,
+    async () => {
+      const { qs, errs } = parseQuiz(val("d-quiz"));
+      if (errs.length) throw new Error(errs.slice(0, 3).join(" "));
+      if (qs.length) await setDoc(ref, { qs, updatedAt: serverTimestamp() });
+      else await deleteAll([ref]);
+      await setDoc(doc(db, "chapters", k), { quiz: qs.length }, { merge: true });
+      chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
+      const row = $(`.chap-row[data-k="${k}"]`); if (row) row.outerHTML = chapRow(c, k, uploaded.get(k));
+    },
+    old.length ? async () => {
+      await deleteAll([ref]);
+      await setDoc(doc(db, "chapters", k), { quiz: 0 }, { merge: true });
+      chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: 0 }));
+      const row = $(`.chap-row[data-k="${k}"]`); if (row) row.outerHTML = chapRow(c, k, uploaded.get(k));
+    } : null);
+  const box = dlg.querySelector("#d-quiz"), check = () => {
+    const { qs, errs } = parseQuiz(box.value), out = dlg.querySelector("#d-quiz-check");
+    out.innerHTML = errs.length ? `<span style="color: var(--bad)">${errs.slice(0, 3).map(esc).join("<br>")}</span>` : qs.length ? `✓ ${qs.length} question${qs.length === 1 ? "" : "s"} ready. Tap Save.` : "Empty: saving removes the quiz.";
+  };
+  box.addEventListener("input", check); check();
+}
+$("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-quiz]"); if (b) quizDialog(b.closest(".chap-row").dataset.k); });
+
+// ---------- make old uploads lighter ----------
+// Chapters uploaded before pages were made 960 pixels wide are made smaller here, page by page,
+// from the pages already in Firebase (no PDF needed). Students download each changed page once more.
+const heavy = () => [...uploaded].filter(([k, u]) => !(u.px <= PAGE_PX) && findChapter(k)).map(([k]) => k);
+function renderLighter() {
+  const box = $("#lighter"), list = heavy();
+  box.hidden = !list.length;
+  if (!list.length) return;
+  const pages = list.reduce((a, k) => a + (uploaded.get(k).pageCount || 0), 0);
+  box.querySelector("p").innerHTML = `<b>${list.length} uploaded chapter${list.length === 1 ? " has" : "s have"} big page images (${pages} pages).</b> Making them lighter cuts about 30% of what every student downloads, and of the Firebase bill. The text stays sharp. No PDF is needed. It takes a few minutes: keep this page open.`;
+}
+$("#lighter").addEventListener("click", async e => {
+  const b = e.target.closest("[data-lighter]");
+  if (!b) return;
+  const status = $("#lighter .status"), list = heavy();
+  b.disabled = true;
+  let lock = null;
+  try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
+  try {
+    for (const [i, k] of list.entries()) {
+      const u = uploaded.get(k), c = findChapter(k);
+      for (let n = 1; n <= u.pageCount; n++) {
+        status.textContent = `Chapter ${i + 1} of ${list.length} (${chName(k)}): page ${n} / ${u.pageCount}…`;
+        const ref = doc(db, "pages", pageId(k, n)), snap = await getDoc(ref);
+        if (!snap.exists()) continue;
+        const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = snap.data().img; });
+        if (img.naturalWidth <= PAGE_PX) continue;
+        const canvas = document.createElement("canvas");
+        canvas.width = PAGE_PX; canvas.height = Math.round(img.naturalHeight * PAGE_PX / img.naturalWidth);
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        await setDoc(ref, { ch: k, n, img: pageImage(canvas) });
+      }
+      // A new upload time makes students' phones fetch the lighter pages once.
+      await updateDoc(doc(db, "chapters", k), { px: PAGE_PX, updatedAt: serverTimestamp() });
+      uploaded.set(k, { ...u, px: PAGE_PX, updatedAt: Timestamp.now() });
+      const row = $(`.chap-row[data-k="${k}"]`); if (row) row.outerHTML = chapRow(c, k, uploaded.get(k));
+    }
+    status.textContent = "Done. Every chapter now has light pages.";
+    renderLighter();
+    $("#lighter").hidden = false; b.hidden = true;
+  } catch (ex) {
+    status.textContent = `Stopped: ${why(ex)} Tap the button again to carry on where it stopped.`;
   } finally {
     b.disabled = false;
     if (lock) lock.release().catch(() => {});

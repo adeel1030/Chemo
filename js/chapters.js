@@ -52,6 +52,16 @@ const onlineDays = () => +(FORMATS.online && FORMATS.online.days) || 365;
 const COMBOS = [];       // { id, name, text, chapters: [keys], price: { online, colour, bw }, mrp: {...}, on }
 let OFFER = null;        // { on, text, until: "YYYY-MM-DD" }: a banner on top of the website
 const SOON_CHAPTERS = []; // chapters set to "Coming soon" in the catalog, in the same shape as CHAPTERS
+let REFERRAL = { on: false, days: 30 }; // "refer a friend": a student whose code a new buyer gives gets this many days free
+// How to pay, shown on the order form: UPI ID, the name shown while paying, and an optional card/net banking link.
+// The admin panel (Books & prices → Payment) can change it.
+const DEFAULT_PAY = { upi: "9953821875@ptaxis", payee: "Mohd Adeel Khan", link: "" };
+let PAY = DEFAULT_PAY;
+// What a class is called. School classes are numbered 1 to 12 ("Class 11"). A university or college book gets
+// a number above 100 and its own label from the catalog, e.g. "B.Sc 1st Year".
+const CLASS_LABEL = {};
+const isUni = cls => +cls > 100;
+const clsName = cls => CLASS_LABEL[cls] || (isUni(cls) ? "University book" : `Class ${cls}`);
 
 // Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).
 const UPCOMING = [];
@@ -316,14 +326,16 @@ function defaultCatalog() {
       cls: c.cls, n: c.n, title: c.title, short: c.short || "", pages: c.pages, soon: false,
       price: Object.assign({}, PRICES[keyOf(c)]), mrp: {}
     })),
-    combos: [], offer: { on: false, text: "", until: "" }
+    combos: [], offer: { on: false, text: "", until: "" },
+    referral: { on: false, days: 30 }, pay: Object.assign({}, DEFAULT_PAY)
   };
 }
 function applyCatalog(cat) {
   if (!cat || !Array.isArray(cat.chapters)) return false;
   const base = new Map(STATIC_CHAPTERS.map(c => [keyOf(c), c]));
   Object.keys(PART).forEach(k => delete PART[k]);
-  (cat.books || []).forEach(b => { PART[b.cls] = b.name; });
+  Object.keys(CLASS_LABEL).forEach(k => delete CLASS_LABEL[k]);
+  (cat.books || []).forEach(b => { PART[b.cls] = b.name; if (b.label) CLASS_LABEL[b.cls] = b.label; });
   Object.keys(PRICES).forEach(k => delete PRICES[k]);
   Object.keys(MRP).forEach(k => delete MRP[k]);
   const live = [], soon = [];
@@ -346,9 +358,13 @@ function applyCatalog(cat) {
   if (cat.formats) FORMAT_IDS.forEach(id => { if (cat.formats[id]) FORMATS[id] = Object.assign({}, FORMATS[id], cat.formats[id]); });
   COMBOS.length = 0; (cat.combos || []).filter(x => x.on !== false && x.chapters && x.chapters.length).forEach(x => COMBOS.push(x));
   OFFER = cat.offer || null;
+  REFERRAL = Object.assign({ on: false, days: 30 }, cat.referral || {});
+  PAY = !cat.pay ? DEFAULT_PAY : cat.pay.upi || cat.pay.link ? cat.pay : null;
   return true;
 }
-// Classes that have a book, in order.
+// A student's "refer a friend" code: the first 6 letters of their account number, in capitals.
+const refCodeOf = uid => String(uid || "").slice(0, 6).toUpperCase();
+// Classes that have a book, in order (school classes first, then university books).
 const classList = () => Object.keys(PART).map(Number).filter(n => n).sort((a, b) => a - b);
 const offerLive = () => !!(OFFER && OFFER.on && OFFER.text && (!OFFER.until || new Date(OFFER.until + "T23:59:59") >= new Date()));
 

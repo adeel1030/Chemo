@@ -127,6 +127,44 @@
 .pw summary { cursor: pointer; font-weight: 600; }
 .pw form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
 .pw .field { flex: 1 1 220px; }
+/* Refer a friend: the student's code and a share button. */
+.refer { display: grid; gap: 10px; background: linear-gradient(135deg, var(--surface), var(--warn-bg)); }
+.refer h2 { font-size: 1.2rem; }
+.refer .code-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.refer .code { font: 800 1.5rem/1 var(--font-display); letter-spacing: .14em; background: var(--surface); border: 2px dashed var(--accent); color: var(--accent); border-radius: 12px; padding: 10px 16px; }
+.refer .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Chapter quiz: one question at a time, full screen. */
+.quiz-btn { margin-left: 6px; }
+.qscore { display: inline-block; margin-top: 4px; font: 700 .72rem var(--font-body); border-radius: 6px; padding: 2px 8px; background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+.quiz { position: fixed; inset: 0; z-index: 60; background: var(--paper); overflow: auto; overscroll-behavior: contain; }
+.quiz-in { max-width: 680px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
+.quiz-top { display: flex; align-items: center; gap: 12px; }
+.quiz-top b { flex: 1; min-width: 0; font: 700 1rem var(--font-display); }
+.quiz-top .x { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 .9rem var(--font-body); cursor: pointer; }
+.quiz .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.quiz .bar i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.quiz .qn { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.quiz .q { font: 700 1.2rem/1.35 var(--font-body); }
+.quiz .opts { display: grid; gap: 10px; }
+.quiz .opt { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; width: 100%; border: 2px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 14px; padding: 12px 14px; font: 500 1rem var(--font-body); cursor: pointer; }
+.quiz .opt .l { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); font-weight: 800; }
+.quiz .opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz .opt:disabled { cursor: default; }
+.quiz .opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
+.quiz .opt.right .l { background: var(--good); color: #fff; }
+.quiz .opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--surface)); }
+.quiz .opt.wrong .l { background: var(--bad); color: #fff; }
+.quiz .why { border-radius: 12px; padding: 12px 14px; background: var(--warn-bg); font-size: .95rem; }
+.quiz .why b { display: block; margin-bottom: 2px; }
+.quiz .end { text-align: center; display: grid; gap: 10px; justify-items: center; padding-top: 10px; }
+.quiz .ring { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--c, var(--good)) calc(var(--p) * 1%), var(--line) 0); }
+.quiz .ring span { width: 120px; height: 120px; border-radius: 50%; background: var(--paper); display: grid; place-items: center; font: 800 1.9rem/1 var(--font-display); }
+.quiz .ring small { display: block; font: 600 .8rem var(--font-body); color: var(--muted); }
+.quiz .review { display: grid; gap: 10px; text-align: left; width: 100%; }
+.quiz .review div { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 14px; font-size: .92rem; }
+.quiz .review .ok { color: var(--good); font-weight: 700; }
+.quiz .review .no { color: var(--bad); font-weight: 700; }
+.quiz .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 </style>
 </head>
 <body>
@@ -230,6 +268,7 @@
       <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
+      <div class="card refer" id="refer" hidden></div>
       <div class="card acct" id="acct-card">
         <h2>My account</h2>
         <dl id="acct"></dl>
@@ -250,6 +289,7 @@
       </div>
     </div>
   </div>
+  <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
 <script src="js/chapters.js"></script>
@@ -274,6 +314,7 @@ const PROMO_PATTERN = /^[A-Z0-9-]{4,20}$/;
 
 function show(id) {
   VIEWS.forEach(v => { $("#" + v).hidden = v !== id; });
+  if (id !== "v-library" && !$("#quiz").hidden) closeQuiz(false);
   window.scrollTo(0, 0);
 }
 
@@ -502,7 +543,8 @@ async function start(user) {
     if (till && till < new Date() && !liveSub(d)) return expired(till, label);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters)
       || (d.expiresAt && d.expiresAt.seconds) !== (me.expiresAt && me.expiresAt.seconds)
-      || JSON.stringify(d.subs || {}) !== JSON.stringify(me.subs || {});
+      || JSON.stringify(d.subs || {}) !== JSON.stringify(me.subs || {})
+      || (d.referrals || 0) !== (me.referrals || 0);
     me = Object.assign(d, { loginId: me.loginId });
     if (changed && !$("#v-library").hidden) renderLibrary();
   });
@@ -596,6 +638,8 @@ async function renderLibrary() {
     readingLoaded = true;
     try { (await getDocs(collection(db, "users", auth.currentUser.uid, "reading"))).forEach(d => reading.set(d.id, d.data())); }
     catch (e) { console.warn("reading", e); }
+    try { (await getDocs(collection(db, "users", auth.currentUser.uid, "quiz"))).forEach(d => quizRes.set(d.id, d.data())); }
+    catch (e) { console.warn("quiz", e); }
   }
   if (loadErr) {
     note.hidden = false; note.className = "msg bad";
@@ -624,7 +668,7 @@ async function renderLibrary() {
       <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${c.n}`}</button>
       <div style="min-width:0"><div class="tag">${started ? "Continue reading" : "Start reading"}</div>
         <h2>${esc(c.title || pick)}</h2>
-        <div class="meta">Class ${c.cls} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
+        <div class="meta">${esc(clsName(c.cls))} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
         ${started ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         <button class="btn btn-sun btn-sm" type="button" data-read="${pick}">${started ? `Continue from page ${pr.last}` : "Open the book"}</button></div>
     </div>`;
@@ -642,7 +686,7 @@ async function renderLibrary() {
 
   const classes = [...new Set(keys.map(k => +k.split("-")[0]))].sort((a, b) => a - b);
   if (!classes.includes(Number(libCls))) libCls = "all";
-  $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), `Class ${c}`])]
+  $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), esc(clsName(c))])]
     .map(([v, l]) => `<button class="chip" type="button" data-cls="${v}" aria-pressed="${libCls === v}">${l}</button>`).join("") : "";
   const card = k => {
     const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k), ac = access(k);
@@ -655,17 +699,18 @@ async function renderLibrary() {
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${open ? "" : ac.open ? " soon" : " locked"}">
       <button class="cv" type="button" ${open ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
-      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h3>${esc(title)}</h3>${plan}
+      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · Chapter ${n}</div><h3>${esc(title)}</h3>${plan}
         <div class="meta">${status}</div>
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
-        ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>`
+        ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
+        ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
           : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">Renew on WhatsApp</a>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
     : classes.filter(cls => libCls === "all" || String(cls) === libCls).map(cls => {
       const list = keys.filter(k => k.startsWith(cls + "-"));
-      return `${classes.length > 1 && libCls === "all" ? `<div class="lib-group">Class ${cls}</div>` : ""}<div class="lib">${list.map(card).join("")}</div>`;
+      return `${classes.length > 1 && libCls === "all" ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(card).join("")}</div>`;
     }).join("");
 
   const rows = me.admin ? [["Logged in as", "Adeel Sir (admin)"]] : [
@@ -680,6 +725,7 @@ async function renderLibrary() {
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
   renderMyReading(keys);
+  renderRefer();
   if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
@@ -708,6 +754,97 @@ $("#pw-form").addEventListener("submit", async e => {
   }
 });
 
+// ---------- refer a friend ----------
+// The student's code is the first 6 letters of their account (refCodeOf in js/chapters.js); the admin finds the
+// friend by it when making the new buyer's ID, and adds REFERRAL.days to the friend's book.
+function renderRefer() {
+  const box = $("#refer");
+  box.hidden = !(REFERRAL.on && !me.admin && !me.promo && auth.currentUser);
+  if (box.hidden) return;
+  const code = refCodeOf(auth.currentUser.uid), days = REFERRAL.days;
+  const link = `${new URL("./", location.href).href}?ref=${code}#pack`;
+  const share = `Hi! I study Chemistry with Chemophile by Adeel Sir: easy Hinglish books with diagrams, solved questions and tests. 📚\n\nUse my code *${code}* when you order: ${link}`;
+  box.innerHTML = `<h2>Refer a friend, get ${days} days free 🎁</h2>
+    <p class="hint">Share your code. When a friend buys the online book with your code, Adeel Sir adds ${days} free days to your book.</p>
+    <div class="code-row"><span class="code" aria-label="Your code">${code}</span>
+      <div class="actions"><a class="btn btn-wa btn-sm" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Share on WhatsApp</a><button class="btn btn-line btn-sm" type="button" id="ref-copy">Copy code</button></div></div>
+    ${me.referrals ? `<p class="hint"><b>${me.referrals}</b> friend${me.referrals === 1 ? "" : "s"} joined with your code · <b>${me.refDays || me.referrals * days}</b> free days earned. Thank you!</p>` : ""}`;
+}
+$("#refer").addEventListener("click", async e => {
+  const b = e.target.closest("#ref-copy");
+  if (!b) return;
+  try { await navigator.clipboard.writeText(refCodeOf(auth.currentUser.uid)); b.textContent = "Copied ✓"; } catch (err) { b.textContent = refCodeOf(auth.currentUser.uid); }
+});
+
+// ---------- chapter quiz ----------
+// quizzes/{chapter} = { qs: [{ q, o: [options], a: index of the right one, why }] }, made in the admin panel.
+// The best score is kept in users/{uid}/quiz/{chapter} and shown to the student and Adeel Sir.
+const quizRes = new Map();
+let qz = null;
+const LETTERS = "ABCDEF";
+// "H_2O" → H₂O, "Cu^2+" → Cu²⁺, "x^{-1}" → x⁻¹ (subscript and superscript in questions).
+const chem = t => esc(t).replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>").replace(/_\{([^}]*)\}/g, "<sub>$1</sub>")
+  .replace(/\^(\d*[+\-−]|\d+)/g, "<sup>$1</sup>").replace(/_(\d+)/g, "<sub>$1</sub>");
+const quizTop = () => { const c = findChapter(qz.k) || {}; return `<div class="quiz-top"><b>Quiz · ${esc(c.short || c.title || qz.k)}</b><button class="x" type="button" data-q="close">Close ✕</button></div>`; };
+async function openQuiz(k) {
+  qz = { k, qs: [], i: 0, picks: [] };
+  const box = $("#quiz"), inn = $("#quiz-in");
+  box.hidden = false; document.body.style.overflow = "hidden";
+  inn.innerHTML = quizTop() + `<div class="spinner" role="status" aria-label="Loading" style="margin: 40px auto"></div>`;
+  try {
+    const s = await getDoc(doc(db, "quizzes", k));
+    qz.qs = s.exists() ? (s.data().qs || []) : [];
+    if (!qz.qs.length) throw new Error("empty");
+    drawQ();
+  } catch (e) {
+    inn.innerHTML = quizTop() + `<p class="msg bad">${e.message === "empty" ? "This quiz has no questions yet." : e.code === "permission-denied" ? "This quiz opens only for chapters you can read now." : "The quiz couldn't load. Check your internet and try again."}</p>`;
+  }
+}
+function drawQ() {
+  const q = qz.qs[qz.i], n = qz.qs.length, p = qz.picks[qz.i], done = p != null;
+  $("#quiz-in").innerHTML = quizTop() + `<div class="bar"><i style="width: ${Math.round(((qz.i + (done ? 1 : 0)) / n) * 100)}%"></i></div>
+    <div class="qn">Question ${qz.i + 1} of ${n}</div><div class="q">${chem(q.q)}</div>
+    <div class="opts">${q.o.map((o, j) => `<button class="opt${done ? (j === q.a ? " right" : j === p ? " wrong" : "") : ""}" type="button" data-opt="${j}"${done ? " disabled" : ""}><span class="l">${LETTERS[j]}</span><span>${chem(o)}</span></button>`).join("")}</div>
+    ${done ? `<div class="why" role="status"><b>${p === q.a ? "✓ Right!" : `✗ Not quite. The right answer is ${LETTERS[q.a]}.`}</b>${q.why ? chem(q.why) : ""}</div>
+      <div class="row"><button class="btn btn-sun" type="button" data-q="next">${qz.i + 1 < n ? "Next question →" : "See my score"}</button></div>` : ""}`;
+  if (done) $("#quiz-in [data-q=next]").focus();
+}
+function drawEnd() {
+  const n = qz.qs.length, score = qz.picks.filter((p, i) => p === qz.qs[i].a).length, pct = Math.round((score / n) * 100);
+  const old = quizRes.get(qz.k) || {}, same = old.total === n;
+  const res = { best: Math.max(same ? old.best || 0 : 0, score), last: score, total: n, tries: (old.tries || 0) + 1 };
+  if (!me.admin) {
+    quizRes.set(qz.k, Object.assign({}, res, { at: Timestamp.now() }));
+    setDoc(doc(db, "users", auth.currentUser.uid, "quiz", qz.k), Object.assign({}, res, { at: serverTimestamp() })).catch(e => console.warn("quiz", e));
+  }
+  const note = pct >= 80 ? "Excellent! 🎉 You know this chapter well." : pct >= 50 ? "Good effort! Revise the ones you missed." : "Read the chapter once more, then try again. You'll do better!";
+  const color = pct >= 80 ? "var(--good)" : pct >= 50 ? "#e0a800" : "var(--bad)";
+  $("#quiz-in").innerHTML = quizTop() + `<div class="end">
+    <div class="ring" style="--p: ${pct}; --c: ${color}"><span>${score}/${n}<small>${pct}%</small></span></div>
+    <h2>${note}</h2>
+    <p class="hint">${me.admin ? "Admin preview: scores are not saved." : `Best score: ${res.best}/${n} · try ${res.tries}`}</p>
+    <div class="row"><button class="btn btn-sun" type="button" data-q="again">Try again</button><button class="btn btn-line" type="button" data-q="review">See all answers</button><button class="btn btn-line" type="button" data-q="close">Back to my chapters</button></div>
+    <div class="review" id="q-review" hidden>${qz.qs.map((q, i) => `<div><b>${i + 1}. ${chem(q.q)}</b><br>
+      ${qz.picks[i] === q.a ? `<span class="ok">✓ ${LETTERS[q.a]}. ${chem(q.o[q.a])}</span>` : `<span class="no">✗ You: ${LETTERS[qz.picks[i]]}. ${chem(q.o[qz.picks[i]])}</span><br><span class="ok">Right: ${LETTERS[q.a]}. ${chem(q.o[q.a])}</span>`}
+      ${q.why ? `<br><span class="hint">${chem(q.why)}</span>` : ""}</div>`).join("")}</div></div>`;
+}
+function closeQuiz(redraw = true) {
+  $("#quiz").hidden = true; document.body.style.overflow = ""; qz = null;
+  if (redraw && me) renderLibrary();
+}
+$("#quiz").addEventListener("click", e => {
+  const o = e.target.closest("[data-opt]"), b = e.target.closest("[data-q]");
+  if (o && qz && qz.picks[qz.i] == null) { qz.picks[qz.i] = +o.dataset.opt; drawQ(); return; }
+  if (!b) return;
+  const a = b.dataset.q;
+  if (a === "close") closeQuiz();
+  if (a === "next") { if (qz.i + 1 < qz.qs.length) { qz.i++; drawQ(); $("#quiz").scrollTo(0, 0); } else drawEnd(); }
+  if (a === "again") { qz.i = 0; qz.picks = []; drawQ(); }
+  if (a === "review") { const r = $("#q-review"); r.hidden = !r.hidden; b.textContent = r.hidden ? "See all answers" : "Hide answers"; }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#quiz").hidden) closeQuiz(); });
+$("#v-library").addEventListener("click", e => { const b = e.target.closest("[data-quiz]"); if (b) openQuiz(b.dataset.quiz); });
+
 // ---------- reading record ----------
 // One Firestore document per chapter (users/{uid}/reading/{chapter}), shown here and in the admin panel.
 const reading = new Map();
@@ -732,7 +869,7 @@ function renderMyReading(keys) {
       const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
       return `<div class="rrow"><div class="t"><span>Ch ${c.n || k.split("-")[1]} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
         <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
-        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}</div></div>`;
+        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div></div>`;
     }).join("")}</div>`;
 }
 // Time counts only while the book is on screen and pages are being turned (5 minutes without a turn = away).
