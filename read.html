@@ -321,7 +321,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; newsCache = null; reading.clear(); readingLoaded = false; $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; reading.clear(); readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -680,6 +680,7 @@ async function renderLibrary() {
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
   renderMyReading(keys);
+  if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
 $("#v-library").addEventListener("click", e => { if (e.target.closest("#lib-retry")) renderLibrary(); });
@@ -775,6 +776,57 @@ function stopTracking() {
 }
 document.addEventListener("visibilitychange", () => { if (document.hidden) flushReading(); else if (track) track.tick = Date.now(); });
 
+// ---------- pages kept on this phone ----------
+// A page downloaded once is kept in this browser (IndexedDB), so reading it again costs no download.
+// Each copy is tied to this login and to the chapter's upload time (a new upload replaces it), only chapters
+// the student can open now are kept, at most PAGE_CACHE_MAX pages stay, and logging out removes them all.
+const PAGE_CACHE_MAX = 500;
+const pageCache = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open("chemophile-pages", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("pages").createIndex("at", "at");
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  const run = async (mode, fn) => {
+    const idb = await open();
+    return new Promise((res, rej) => {
+      const t = idb.transaction("pages", mode), req = fn(t.objectStore("pages"));
+      t.oncomplete = () => res(req && req.result);
+      t.onerror = () => rej(t.error);
+    });
+  };
+  const key = (k, n) => `${auth.currentUser ? auth.currentUser.uid : ""}|${k}|${n}`;
+  return {
+    async get(k, ver, n) {
+      try { const r = await run("readonly", st => st.get(key(k, n))); return r && r.ver === ver ? r.img : null; } catch (e) { return null; }
+    },
+    async put(k, ver, n, img) {
+      try {
+        await run("readwrite", st => st.put({ img, ver, ch: k, uid: auth.currentUser.uid, at: Date.now() }, key(k, n)));
+        const count = await run("readonly", st => st.count());
+        if (count > PAGE_CACHE_MAX) await run("readwrite", st => {
+          let extra = count - PAGE_CACHE_MAX;
+          st.index("at").openCursor().onsuccess = e => { const c = e.target.result; if (c && extra-- > 0) { c.delete(); c.continue(); } };
+        });
+      } catch (e) {}
+    },
+    // Remove pages of other logins and of chapters this student can't open any more.
+    async keepOnly(test) {
+      try {
+        await run("readwrite", st => {
+          st.openCursor().onsuccess = e => { const c = e.target.result; if (!c) return; if (!test(c.value)) c.delete(); c.continue(); };
+        });
+      } catch (e) {}
+    },
+    async clear() { try { await run("readwrite", st => st.clear()); } catch (e) {} },
+    async count() { try { return await run("readonly", st => st.count()); } catch (e) { return 0; } }
+  };
+})();
+window.__pageCache = pageCache;
+const chapterVer = k => { const i = chapterInfo.get(k) || {}; return `${i.updatedAt && i.updatedAt.seconds || 0}-${i.pageCount || 0}`; };
+
 // ---------- book ----------
 function openBook(k) {
   const info = chapterInfo.get(k);
@@ -790,8 +842,12 @@ function openBook(k) {
     onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
     onClose: () => { stopTracking(); book = null; renderLibrary(); },
     loadPage: async n => {
+      const ver = chapterVer(k), kept = await pageCache.get(k, ver, n);
+      if (kept) return drawPage(kept);
       const s = await getDoc(doc(db, "pages", pageId(k, n)));
       if (!s.exists()) throw new Error("missing");
+      window.__pageDownloads = (window.__pageDownloads || 0) + 1;
+      pageCache.put(k, ver, n, s.data().img);
       return drawPage(s.data().img);
     }
   }).open();
