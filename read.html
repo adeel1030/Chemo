@@ -75,6 +75,10 @@
 .cv img { width: 100%; height: 100%; object-fit: cover; }
 .cv:disabled { cursor: default; }
 .book.soon { opacity: .62; }
+.book.locked .cv { filter: grayscale(1); opacity: .55; }
+.book.locked h3 { color: var(--muted); }
+.plan-tag { display: inline-block; margin-top: 4px; font: 700 .72rem var(--font-body); border-radius: 6px; padding: 2px 8px; background: var(--warn-bg); color: var(--fg); }
+.plan-tag.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
 .book .ch { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .book h3 { font: 700 1.08rem/1.2 var(--font-display); margin-top: 2px; }
 .meta { font-size: .82rem; color: var(--muted); margin-top: 6px; }
@@ -443,7 +447,8 @@ async function start(user) {
     return kick("This ID is blocked", "Your ID is blocked right now. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} shows as blocked.`);
   }
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  if (expires && expires < new Date()) return expired(expires, label);
+  // A past end date closes the bought chapters; the ID stays open while a monthly plan is paid.
+  if (expires && expires < new Date() && !liveSub(me)) return expired(expires, label);
   if (!me.deviceId) {
     try {
       await updateDoc(ref, { deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp() });
@@ -470,9 +475,10 @@ async function start(user) {
     if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
     if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
     const till = d.expiresAt && d.expiresAt.toDate ? d.expiresAt.toDate() : null;
-    if (till && till < new Date()) return expired(till, label);
+    if (till && till < new Date() && !liveSub(d)) return expired(till, label);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters)
-      || (d.expiresAt && d.expiresAt.seconds) !== (me.expiresAt && me.expiresAt.seconds);
+      || (d.expiresAt && d.expiresAt.seconds) !== (me.expiresAt && me.expiresAt.seconds)
+      || JSON.stringify(d.subs || {}) !== JSON.stringify(me.subs || {});
     me = Object.assign(d, { loginId: me.loginId });
     if (changed && !$("#v-library").hidden) renderLibrary();
   });
@@ -523,6 +529,18 @@ const firstName = () => {
   if (!w.length) return me.loginId;
   return /^(mr|mrs|ms|miss|dr|prof|sir)\.?$/i.test(w[0]) && w[1] ? `${w[0]} ${w[1]}` : w[0];
 };
+// Monthly plan: me.subs maps each chapter on the plan to the date it is paid till.
+const subTill = (u, k) => u.subs && u.subs[k] && u.subs[k].toDate ? u.subs[k].toDate() : null;
+const liveSub = u => Object.keys(u.subs || {}).some(k => subTill(u, k) > new Date());
+// Can this chapter open now? Bought (and the ID not past its end date), or on a paid monthly plan.
+function access(k) {
+  const now = new Date(), exp = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
+  const bought = (me.chapters || []).includes(k), till = subTill(me, k);
+  if (bought && !(exp && exp < now)) return { open: true };
+  if (till) return { open: till > now, monthly: true, till };
+  return { open: false, till: exp };
+}
+const renewMsg = () => wa(`Hello Adeel Sir, I want to renew my Chemophile monthly plan (ID ${me.loginId}).`);
 // How far the student has read a chapter, from the last page they were on in this browser.
 function progress(k) {
   const info = chapterInfo.get(k), total = info && info.pageCount, last = Number(store.get(`chemophile-last-${k}`)) || 0;
@@ -535,13 +553,13 @@ async function renderLibrary() {
   showNews();
   const now = new Date(), h = now.getHours();
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  const daysLeft = expires ? Math.max(0, Math.ceil((expires - now) / 864e5)) : null;
   $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, ${firstName()}`;
   $("#hero-sub").textContent = me.admin ? "Admin preview: every chapter, on any device." : me.promo ? `Special access with promo code ${me.promo}. Happy reading!` : "Pick up where you left off, or start a new chapter.";
   const note = $("#promo-note");
   note.hidden = !me.admin;
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
-  const keys = me.chapters || [];
+  const subKeys = Object.keys(me.subs || {});
+  const keys = [...new Set([...(me.chapters || []), ...subKeys])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
   // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
   let loadErr = null;
   await Promise.all(keys.map(async k => {
@@ -555,12 +573,16 @@ async function renderLibrary() {
       : loadErr.code === "permission-denied" ? "Your chapters couldn't be checked. Log out and log in again; if it stays, WhatsApp Adeel Sir."
       : "Your chapters couldn't load. Check your internet."} <button class="btn btn-line btn-sm" type="button" id="lib-retry" style="margin-left: 6px">Try again</button>`;
   } else note.className = "msg warn";
-  const ready = keys.filter(k => progress(k).ready);
+  const ready = keys.filter(k => progress(k).ready && access(k).open);
   const pages = ready.reduce((n, k) => n + progress(k).total, 0);
+  // Days left: till the nearest date that will close something the student can read now.
+  const ends = [...((me.chapters || []).length && expires && expires > now ? [expires] : []), ...subKeys.map(k => subTill(me, k)).filter(d => d > now)];
+  const nearest = ends.length ? new Date(Math.min(...ends)) : null;
+  const left = nearest ? Math.max(0, Math.ceil((nearest - now) / 864e5)) : null;
   $("#hero-stats").innerHTML = [
     [keys.length, keys.length === 1 ? "chapter" : "chapters"],
     [pages, "pages to read"],
-    ...(expires ? [[daysLeft, daysLeft === 1 ? "day left" : "days left"]] : []),
+    ...(nearest ? [[left, left === 1 ? "day left" : "days left"]] : []),
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
 
   // Continue reading: the chapter opened last, else the first one that is ready.
@@ -579,25 +601,35 @@ async function renderLibrary() {
   } else $("#continue").innerHTML = "";
   $(".portal").classList.toggle("lift", !!pick);
 
-  $("#upsell").innerHTML = me.promo ? `<div class="card upsell"><div><h3>Enjoying the book?</h3><p class="hint">This promo ends${expires ? ` on ${fmtDate(expires)}` : " soon"}. Get your own ID to keep reading, or order the paperback.</p></div>
-    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices</a><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I read the Chemophile book with promo code ${me.promo}. I want to buy it.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>` : "";
+  // Monthly plan: a reminder a few days before it ends, and a renew card once it has.
+  const subEnd = subKeys.length ? new Date(Math.min(...subKeys.map(k => subTill(me, k)))) : null;
+  const fee = subKeys.reduce((a, k) => { const c = findChapter(k); return a + ((c && priceOf(c, "monthly")) || 0); }, 0);
+  const planCard = subEnd && subEnd < new Date(Date.now() + 3 * 864e5) ? `<div class="card upsell"><div><h3>${subEnd < now ? "Your monthly plan has ended" : "Your monthly plan ends soon"}</h3>
+      <p class="hint">${subEnd < now ? `It ended on ${fmtDate(subEnd)}, so those chapters are locked.` : `It is paid till ${fmtDate(subEnd)}.`} ${fee ? `Pay ₹${fee} to read for ${monthDays()} more days.` : "Pay this month's fee to keep reading."} Your place in each chapter stays saved.</p></div>
+      <div class="actions"><a class="btn btn-wa btn-sm" href="${renewMsg()}" target="_blank" rel="noopener">Renew on WhatsApp</a></div></div>` : "";
+  $("#upsell").innerHTML = planCard || (me.promo ? `<div class="card upsell"><div><h3>Enjoying the book?</h3><p class="hint">This promo ends${expires ? ` on ${fmtDate(expires)}` : " soon"}. Get your own ID to keep reading, or order the paperback.</p></div>
+    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices</a><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I read the Chemophile book with promo code ${me.promo}. I want to buy it.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>` : "");
 
   const classes = [...new Set(keys.map(k => +k.split("-")[0]))].sort((a, b) => a - b);
   if (!classes.includes(Number(libCls))) libCls = "all";
   $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), `Class ${c}`])]
     .map(([v, l]) => `<button class="chip" type="button" data-cls="${v}" aria-pressed="${libCls === v}">${l}</button>`).join("") : "";
   const card = k => {
-    const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k);
+    const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k), ac = access(k);
     const [cls, n] = k.split("-");
     const title = c.title || (info && info.title) || `Chapter ${n}`;
     const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
-    const status = !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
-    return `<div class="card book${pr.ready ? "" : " soon"}">
-      <button class="cv" type="button" ${pr.ready ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
-      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h3>${esc(title)}</h3>
+    const open = pr.ready && ac.open;
+    const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`) : "";
+    const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
+      : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
+    return `<div class="card book${open ? "" : ac.open ? " soon" : " locked"}">
+      <button class="cv" type="button" ${open ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
+      <div style="min-width:0"><div class="ch">Class ${cls} · Chapter ${n}</div><h3>${esc(title)}</h3>${plan}
         <div class="meta">${status}</div>
-        ${pr.ready && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
-        ${pr.ready ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>` : ""}</div>
+        ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
+        ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>`
+          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">Renew on WhatsApp</a>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
@@ -611,7 +643,8 @@ async function renderLibrary() {
     me.promo ? ["Promo code", me.promo] : ["Login ID", me.loginId],
     ["WhatsApp", me.phone || "-"],
     ["This device", me.deviceInfo || "This phone"],
-    ["Access until", expires ? fmtDate(expires) : "No end date"],
+    ...((me.chapters || []).length || !subKeys.length ? [["Access until", expires ? fmtDate(expires) : "No end date"]] : []),
+    ...(subKeys.length ? [["Monthly plan", `${subKeys.length} chapter${subKeys.length > 1 ? "s" : ""}, ${subEnd < now ? "ended" : "paid till"} ${fmtDate(subEnd)}`]] : []),
   ];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
@@ -646,7 +679,7 @@ $("#pw-form").addEventListener("submit", async e => {
 // ---------- book ----------
 function openBook(k) {
   const info = chapterInfo.get(k);
-  if (!info || !info.pageCount) return;
+  if (!info || !info.pageCount || !access(k).open) return;
   store.set("chemophile-recent", k);
   const c = findChapter(k) || {};
   book = new Flipbook({

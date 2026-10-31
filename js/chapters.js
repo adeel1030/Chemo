@@ -32,10 +32,13 @@ const mrpOf = (c, format) => { const v = (MRP[`${c.cls}-${c.n}`] || {})[format],
 // Ways to buy. "on" decides whether the website offers it.
 const FORMATS = {
   online: { on: true, label: "Online book", note: "Log in and read on your phone" },
+  monthly: { on: false, label: "Monthly (online)", note: "Read online, pay every month", days: 30 },
   colour: { on: true, label: "Paperback (colour)", note: "Printed in colour, delivery extra" },
   bw: { on: false, label: "Paperback (B/W)", note: "Black and white print, delivery extra" }
 };
-const FORMAT_IDS = ["online", "colour", "bw"];
+const FORMAT_IDS = ["online", "monthly", "colour", "bw"];
+// "Monthly" is a subscription: its price is for this many days of online reading.
+const monthDays = () => +(FORMATS.monthly && FORMATS.monthly.days) || 30;
 const COMBOS = [];       // { id, name, text, chapters: [keys], price: { online, colour, bw }, mrp: {...}, on }
 let OFFER = null;        // { on, text, until: "YYYY-MM-DD" }: a banner on top of the website
 const SOON_CHAPTERS = []; // chapters set to "Coming soon" in the catalog, in the same shape as CHAPTERS

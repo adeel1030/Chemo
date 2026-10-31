@@ -124,6 +124,15 @@ Admin panel mein **Books & prices** (phone par **Prices**) kholo. Pehli baar wah
 
 Har badlaav ke baad neeche **Save changes** dabana zaroori hai; **Undo all** se bina save kiye badlaav hat jaate hain. Naye chapter ki PDF **Chapters** page se upload karo, aur students ko woh chapter **Chapters & date** se do.
 
+## 13. Monthly plan (har mahine payment)
+
+1. **Books & prices** mein **Monthly (online)** tick karo. **Days paid for** mein 30 (ya jitne din) likho, **Same price for all** mein jaise 25 likh kar **Fill every chapter** dabao, phir **Save changes**. Website par har chapter ke saath "₹25 / 30 days" dikhega aur order form mein Monthly ka option aayega.
+2. Payment milne par **Students → New student ID** mein **How they pay: Monthly plan** chuno. **Paid till** apne aap aaj se 30 din aage bhar jaata hai. Chapters tick karke ID banao.
+3. Har mahine payment aane par student ke card par **Renew +30 days** dabao. Date wahan se 30 din aage badhti hai (ya aaj se, agar plan khatam ho chuka tha). Saath mein "Tell … on WhatsApp" link aata hai.
+4. Plan khatam hone se 3 din pehle aur khatam hone ke baad **Overview** par naam dikhta hai, **Remind** dabakar WhatsApp par payment reminder bhej do. Student ke card par bhi **Payment reminder** button hai.
+5. Date nikalte hi woh chapters lock ho jaate hain (Firebase rules bhi rokte hain). Student ko "Your monthly plan has ended" aur **Renew on WhatsApp** dikhta hai. Renew karte hi turant khul jaate hain; padhai ki jagah yaad rehti hai.
+6. Ek hi student ke paas khareede hue aur monthly dono chapters ho sakte hain: **Chapters & date** mein dono list alag hain.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

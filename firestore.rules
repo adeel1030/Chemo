@@ -100,15 +100,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Page images. A student can open a page only if their ID is active, locked to a device,
-    // not past its promo date, and the page's chapter is in their list.
+    // Page images. A student can open a page only if their ID is active and locked to a device, and either
+    // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
+    // that is paid till a later date (subs is a map: chapter → paid-till time).
     match /pages/{pageId} {
       allow read: if isAdmin() || (
         signedIn()
         && student().active == true
         && student().deviceId != null
-        && (student().get('expiresAt', null) == null || request.time < student().expiresAt)
-        && resource.data.ch in student().chapters
+        && (
+          (resource.data.ch in student().chapters
+            && (student().get('expiresAt', null) == null || request.time < student().expiresAt))
+          || request.time < student().get('subs', {}).get(resource.data.ch, timestamp.value(0))
+        )
       );
       allow write: if isAdmin();
     }
