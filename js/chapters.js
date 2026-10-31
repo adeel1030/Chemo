@@ -7,7 +7,7 @@ const BUSINESS = {
   owner: "Mohd Adeel Khan",
   supportedBy: "M A Products India and Olife Gold Olive Oil",
   email: "chemhabibs@gmail.com",
-  address: "",
+  address: "M A Products India, 1310B, Near Bada Chaman Wada, Tilak Bazar, Delhi 110006",
   freeResetsPerYear: 2
 };
 // Default price of each chapter in rupees. Key = "class-chapter", e.g. "11-1" is Class 11 Chapter 1.
