@@ -37,13 +37,30 @@ service cloud.firestore {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
       allow create: if isAdmin() || validPromoSignup(uid);
       allow delete: if isAdmin();
-      // A student may only lock their ID to a device when it is not locked yet. Only the admin can unlock it.
+      // A student may only lock their ID to a device when it is not locked yet (only the admin can unlock it),
+      // and may stamp the time they last opened a book.
       allow update: if isAdmin() || (
         signedIn() && request.auth.uid == uid
         && resource.data.deviceId == null
         && request.resource.data.deviceId is string
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deviceId', 'deviceInfo', 'boundAt'])
+      ) || (
+        signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastReadAt'])
+        && request.resource.data.lastReadAt == request.time
       );
+
+      // Reading record, one document per chapter: last page, highest page, pages seen, minutes, times opened.
+      // The student keeps their own; the admin can read it.
+      match /reading/{ch} {
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow write: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['last', 'max', 'seen', 'minutes', 'opens', 'total', 'updatedAt'])
+          && request.resource.data.seen is list && request.resource.data.seen.size() <= 2000
+          && request.resource.data.minutes is number
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isAdmin();
+      }
 
       // Log of logins tried from another device, shown to the admin.
       match /attempts/{attemptId} {

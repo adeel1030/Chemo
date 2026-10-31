@@ -77,6 +77,16 @@
 .book.soon { opacity: .62; }
 .book.locked .cv { filter: grayscale(1); opacity: .55; }
 .book.locked h3 { color: var(--muted); }
+.myread { display: grid; gap: 14px; }
+.myread .sums { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 130px), 1fr)); gap: 10px; }
+.myread .sums div { background: var(--paper); border-radius: 12px; padding: 10px 12px; }
+.myread .sums b { display: block; font: 800 1.3rem/1.1 var(--font-display); color: var(--accent); }
+.myread .sums span { font-size: .78rem; color: var(--muted); }
+.rrow { display: grid; gap: 4px; padding: 10px 0; border-top: 1px dashed var(--line); }
+.rrow:first-of-type { border-top: 0; }
+.rrow .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-size: .95rem; }
+.rrow .t span:last-child { color: var(--muted); font-weight: 500; font-size: .84rem; white-space: nowrap; }
+.rrow .m { font-size: .82rem; color: var(--muted); }
 .plan-tag { display: inline-block; margin-top: 4px; font: 700 .72rem var(--font-body); border-radius: 6px; padding: 2px 8px; background: var(--warn-bg); color: var(--fg); }
 .plan-tag.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
 .book .ch { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -172,7 +182,7 @@
         <p class="hint">The book opens on this phone, in this browser, until the code's last date.</p>
       </form>
 
-      <p class="hint auth-foot">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.</p>
+      <p class="hint auth-foot">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.<br><a href="policies.html">Terms, refund and privacy policies</a></p>
     </div>
   </div>
 
@@ -207,10 +217,12 @@
       <div id="upsell"></div>
       <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
       <div id="lib"></div>
+      <div class="card myread" id="myread" hidden></div>
       <div class="card acct" id="acct-card">
         <h2>My account</h2>
         <dl id="acct"></dl>
         <p class="hint" id="acct-tip"></p>
+        <p class="hint"><a href="policies.html#online">Online book rules</a> · <a href="policies.html#refund">Refunds</a> · <a href="policies.html#privacy">Privacy</a></p>
         <div class="actions">
           <a class="btn btn-wa btn-sm" id="help-wa" href="#" target="_blank" rel="noopener">Need help? WhatsApp Adeel Sir</a>
           <button class="btn btn-line btn-sm" type="button" id="logout-2">Log out</button>
@@ -233,7 +245,7 @@
 <script src="js/flipbook.js"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, getDocs, query, where, setDoc, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -297,7 +309,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; newsCache = null; $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; reading.clear(); readingLoaded = false; $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -543,7 +555,8 @@ function access(k) {
 const renewMsg = () => wa(`Hello Adeel Sir, I want to renew my Chemophile monthly plan (ID ${me.loginId}).`);
 // How far the student has read a chapter, from the last page they were on in this browser.
 function progress(k) {
-  const info = chapterInfo.get(k), total = info && info.pageCount, last = Number(store.get(`chemophile-last-${k}`)) || 0;
+  const info = chapterInfo.get(k), total = info && info.pageCount;
+  const last = Number(store.get(`chemophile-last-${k}`)) || ((reading.get(k) || {}).last) || 0;
   if (!total) return { ready: false };
   const pct = last > 1 ? Math.min(100, Math.round((last / total) * 100)) : 0;
   return { ready: true, total, last, pct, done: last >= total };
@@ -567,6 +580,11 @@ async function renderLibrary() {
     try { const s = await getDoc(doc(db, "chapters", k)); chapterInfo.set(k, s.exists() ? s.data() : null); }
     catch (e) { loadErr = e; console.error("chapter", k, e); }
   }));
+  if (!me.admin && !readingLoaded) {
+    readingLoaded = true;
+    try { (await getDocs(collection(db, "users", auth.currentUser.uid, "reading"))).forEach(d => reading.set(d.id, d.data())); }
+    catch (e) { console.warn("reading", e); }
+  }
   if (loadErr) {
     note.hidden = false; note.className = "msg bad";
     note.innerHTML = `${loadErr.code === "resource-exhausted" ? "Too many readers right now, so your chapters couldn't load. Please try again in a few hours."
@@ -649,6 +667,7 @@ async function renderLibrary() {
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
+  renderMyReading(keys);
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
 $("#v-library").addEventListener("click", e => { if (e.target.closest("#lib-retry")) renderLibrary(); });
@@ -676,19 +695,88 @@ $("#pw-form").addEventListener("submit", async e => {
   }
 });
 
+// ---------- reading record ----------
+// One Firestore document per chapter (users/{uid}/reading/{chapter}), shown here and in the admin panel.
+const reading = new Map();
+let readingLoaded = false, track = null;
+const fmtMins = m => m < 1 ? "under 1 min" : m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
+const ago = d => { const days = Math.floor((Date.now() - d) / 864e5); return days <= 0 ? "today" : days === 1 ? "yesterday" : `${days} days ago`; };
+function renderMyReading(keys) {
+  const box = $("#myread");
+  if (me.admin) { box.hidden = true; return; }
+  const rows = keys.map(k => [k, reading.get(k)]).filter(([, r]) => r);
+  box.hidden = false;
+  if (!rows.length) { box.innerHTML = `<h2>My reading</h2><p class="hint">Your reading record shows here once you start reading: pages read, time spent and when you last read each chapter.</p>`; return; }
+  const mins = rows.reduce((a, [, r]) => a + (r.minutes || 0), 0);
+  const pages = rows.reduce((a, [, r]) => a + (r.seen || []).length, 0);
+  const done = rows.filter(([, r]) => r.total && r.max >= r.total).length;
+  const lastAt = Math.max(...rows.map(([, r]) => r.updatedAt && r.updatedAt.toDate ? r.updatedAt.toDate().getTime() : 0));
+  box.innerHTML = `<h2>My reading</h2>
+    <div class="sums"><div><b>${fmtMins(mins)}</b><span>time spent reading</span></div><div><b>${pages}</b><span>pages read</span></div>
+      <div><b>${done}</b><span>chapter${done === 1 ? "" : "s"} finished</span></div>${lastAt ? `<div><b>${ago(lastAt)}</b><span>last read</span></div>` : ""}</div>
+    <div>${rows.map(([k, r]) => {
+      const c = findChapter(k) || {}, total = r.total || (chapterInfo.get(k) || {}).pageCount || 0, seen = (r.seen || []).length;
+      const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
+      return `<div class="rrow"><div class="t"><span>Ch ${c.n || k.split("-")[1]} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
+        <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
+        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}</div></div>`;
+    }).join("")}</div>`;
+}
+// Time counts only while the book is on screen and pages are being turned (5 minutes without a turn = away).
+function trackTick() {
+  if (!track) return;
+  const now = Date.now();
+  if (!document.hidden && now - track.active < 5 * 60e3) track.ms += now - track.tick;
+  track.tick = now;
+}
+function flushReading() {
+  if (!track || me.admin) return;
+  trackTick();
+  const t = track, base = reading.get(t.k) || {};
+  const data = {
+    last: t.last, max: Math.max(base.max || 0, t.max), seen: [...t.seen].sort((a, b) => a - b).slice(0, 2000),
+    minutes: Math.round(((base.minutes || 0) + t.ms / 60000) * 10) / 10, opens: t.opens, total: t.total, updatedAt: serverTimestamp()
+  };
+  t.ms = 0;
+  reading.set(t.k, Object.assign({}, data, { updatedAt: Timestamp.now() }));
+  setDoc(doc(db, "users", auth.currentUser.uid, "reading", t.k), data).catch(e => console.warn("reading", e));
+}
+function startTracking(k, total) {
+  if (me.admin) return;
+  const r = reading.get(k) || {};
+  track = { k, total, seen: new Set(r.seen || []), last: r.last || 1, max: r.max || 0, opens: (r.opens || 0) + 1, ms: 0, active: Date.now(), tick: Date.now() };
+  track.timers = [setInterval(trackTick, 15000), setInterval(flushReading, 90000)];
+  // Stamp "last read" on the ID for the admin, at most once every half hour.
+  const lr = me.lastReadAt && me.lastReadAt.toDate ? me.lastReadAt.toDate() : null;
+  if (!lr || Date.now() - lr > 30 * 60e3) updateDoc(doc(db, "users", auth.currentUser.uid), { lastReadAt: serverTimestamp() }).catch(() => {});
+}
+function pageSeen(n) {
+  if (!track) return;
+  track.active = Date.now();
+  track.seen.add(n); track.last = n; track.max = Math.max(track.max, n);
+}
+function stopTracking() {
+  if (!track) return;
+  flushReading();
+  track.timers.forEach(clearInterval);
+  track = null;
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) flushReading(); else if (track) track.tick = Date.now(); });
+
 // ---------- book ----------
 function openBook(k) {
   const info = chapterInfo.get(k);
   if (!info || !info.pageCount || !access(k).open) return;
   store.set("chemophile-recent", k);
   const c = findChapter(k) || {};
+  startTracking(k, info.pageCount);
   book = new Flipbook({
     title: c.short || c.title || info.title || k,
     pageCount: info.pageCount,
-    start: store.get(`chemophile-last-${k}`) || 1,
+    start: store.get(`chemophile-last-${k}`) || (reading.get(k) || {}).last || 1,
     toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
-    onPage: n => store.set(`chemophile-last-${k}`, n),
-    onClose: () => { book = null; renderLibrary(); },
+    onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
+    onClose: () => { stopTracking(); book = null; renderLibrary(); },
     loadPage: async n => {
       const s = await getDoc(doc(db, "pages", pageId(k, n)));
       if (!s.exists()) throw new Error("missing");

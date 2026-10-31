@@ -176,6 +176,12 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .subline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .86rem; color: var(--muted); }
 .edit-part { display: grid; gap: 8px; padding: 10px 0; border-top: 1px dashed var(--line); }
 .edit-part:first-child { border-top: 0; padding-top: 0; }
+.reading-box { display: grid; gap: 8px; background: var(--paper); border-radius: 10px; padding: 12px 14px; }
+.reading-box .sums { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .9rem; }
+.reading-box .sums b { color: var(--accent); }
+.rrow { display: grid; gap: 4px; padding: 8px 0; border-top: 1px dashed var(--line); font-size: .88rem; }
+.rrow .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; }
+.rrow .m { color: var(--muted); font-size: .82rem; }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 </style>
 </head>
@@ -375,7 +381,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 
@@ -389,6 +395,14 @@ const endOfDay = v => v ? Timestamp.fromDate(new Date(v + "T23:59:59")) : null;
 const toInput = ts => { if (!ts || !ts.toDate) return ""; const d = ts.toDate(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const isOver = s => !!(s.expiresAt && s.expiresAt.toDate && s.expiresAt.toDate() < new Date());
 // Monthly plan: s.subs maps each chapter on the plan to the date it is paid till.
+// Device resets in the last 365 days; BUSINESS.freeResetsPerYear of them are free (see policies.html).
+// Reading: s.lastReadAt is stamped by the reader when a book is opened; details live in users/{uid}/reading.
+const lastRead = s => s.lastReadAt && s.lastReadAt.toDate ? s.lastReadAt.toDate() : null;
+const daysSince = d => Math.floor((Date.now() - d) / 864e5);
+const agoText = d => { const n = daysSince(d); return n <= 0 ? "today" : n === 1 ? "yesterday" : `${n} days ago`; };
+const isInactive = s => s.active !== false && !!s.deviceId && !!lastRead(s) && daysSince(lastRead(s)) >= 7;
+const fmtMins = m => m < 1 ? "under 1 min" : m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
+const resetsThisYear = s => (s.resets || []).filter(t => t.toDate && t.toDate() > new Date(Date.now() - 365 * 864e5)).length;
 const subKeys = s => Object.keys(s.subs || {});
 const subLive = s => subKeys(s).filter(k => s.subs[k].toDate() > new Date());
 const subEnd = s => subKeys(s).map(k => s.subs[k]).sort((a, b) => a.toMillis() - b.toMillis())[0] || null;
@@ -486,6 +500,7 @@ function renderDash() {
     ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} not uploaded yet. Students can't read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters")] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
+    ...(ids.filter(isInactive).length ? [item("", `${ids.filter(isInactive).length} student${ids.filter(isInactive).length > 1 ? "s haven't" : " hasn't"} opened the book for 7 days or more.`, "See", "t-students", ` data-filter="inactive"`)] : []),
     ...(waiting.length ? [item("", `${waiting.length} ${waiting.length === 1 ? "student has" : "students have"} not logged in yet.`, "See", "t-students", ` data-filter="waiting"`)] : []),
   ];
   $("#todo").innerHTML = todo.length ? todo.join("") : `<p class="empty">All good. Nothing needs you right now.</p>`;
@@ -625,11 +640,12 @@ $("#creds-copy").addEventListener("click", async () => {
 });
 
 // ---------- deleting ----------
-// A student's records: the log of tries from other devices, the saved password, then the user document itself.
+// A student's records: the log of tries from other devices, their reading record, the saved password, then the user document itself.
 async function studentRefs(uid) {
   const tries = await getDocs(collection(db, "users", uid, "attempts"));
+  const reads = await getDocs(collection(db, "users", uid, "reading")).catch(() => ({ docs: [] }));
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {
@@ -677,6 +693,7 @@ const FILTERS = [
   ["expired", "Expired", isOver],
   ["monthly", "Monthly plan", s => subKeys(s).length > 0],
   ["subover", "Monthly unpaid", subOver],
+  ["inactive", "Not reading 7+ days", isInactive],
   ["promo", "Promo", s => !!s.promo],
 ];
 let stuFilter = "all";
@@ -696,6 +713,8 @@ function renderStudents() {
           ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) ? "" : `<span class="pill good">Active</span>`}
           ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
           ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
+          ${lastRead(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last read ${agoText(lastRead(s))}</span>` : ""}
+          ${resetsThisYear(s) ? `<span class="pill${resetsThisYear(s) >= BUSINESS.freeResetsPerYear ? " bad" : ""}">Resets this year: ${resetsThisYear(s)}/${BUSINESS.freeResetsPerYear}</span>` : ""}
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
         </div>
       </div>
@@ -706,17 +725,23 @@ function renderStudents() {
         <a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>
         ${subKeys(s).length ? `<button class="btn btn-sun btn-sm" type="button" data-act="renew">Renew +${monthDays()} days</button><a class="btn btn-line btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Payment reminder</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="edit">${isOver(s) ? "Renew" : "Chapters & date"}</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <span class="spacer"></span>
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
         <button class="btn btn-danger btn-sm" type="button" data-act="del">Delete</button>
       </div>
-      <div class="confirm" role="alertdialog" aria-label="Delete ${esc(s.name)}" hidden>
+      <div class="confirm del-confirm" role="alertdialog" aria-label="Delete ${esc(s.name)}" hidden>
         <p><b>Delete ${esc(s.name)} for ever?</b></p>
         <p>${s.promo
           ? `Their book closes right away on their phone, and this cannot be undone. The promo code's used count does not go down, so their place on code ${esc(s.promo)} stays used.`
           : `Their book closes right away on every device, and this cannot be undone. The login ID <b>${esc(s.loginId)}</b> cannot be given to anyone again, so a new ID is needed if they come back. To stop access only for a while, use <b>Block</b> instead.`}</p>
         <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-act="del-yes">Yes, delete</button><button class="btn btn-line btn-sm" type="button" data-act="del-no">Cancel</button></div>
+      </div>
+      <div class="reading-box" hidden></div>
+      <div class="confirm reset-confirm" role="alertdialog" aria-label="Device reset" hidden>
+        <p><b>${esc(s.name)} has already had ${resetsThisYear(s)} device reset${resetsThisYear(s) === 1 ? "" : "s"} this year.</b> The policy gives ${BUSINESS.freeResetsPerYear} free resets a year; more only in exceptional cases.</p>
+        <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-act="reset-yes">Reset anyway</button><button class="btn btn-line btn-sm" type="button" data-act="reset-no">Cancel</button></div>
       </div>
       <div class="edit" hidden>
         <div class="edit-part"><b>Bought chapters</b>
@@ -776,17 +801,39 @@ $("#students").addEventListener("click", async e => {
       m.className = "msg good"; m.hidden = false;
       m.innerHTML = `Renewed till <b>${fmtDate(till)}</b>. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`;
     }
-    if (b.dataset.act === "reset") {
-      await updateDoc(ref, { deviceId: null, deviceInfo: null, boundAt: null });
-      s.deviceId = null; s.deviceInfo = null; renderStudents();
+    if (b.dataset.act === "reading") {
+      const box = row.querySelector(".reading-box");
+      if (!box.hidden) { box.hidden = true; return; }
+      box.hidden = false; box.textContent = "Loading…";
+      const docs = (await getDocs(collection(db, "users", s.uid, "reading"))).docs.map(d => [d.id, d.data()]);
+      if (!docs.length) { box.innerHTML = `<p class="hint">${esc(s.name)} hasn't opened a book yet${s.deviceId ? " (or read before reading records started)" : ""}.</p>`; return; }
+      const mins = docs.reduce((a, [, r]) => a + (r.minutes || 0), 0), pages = docs.reduce((a, [, r]) => a + (r.seen || []).length, 0);
+      const done = docs.filter(([, r]) => r.total && r.max >= r.total).length;
+      box.innerHTML = `<div class="sums"><span><b>${fmtMins(mins)}</b> reading</span><span><b>${pages}</b> pages read</span><span><b>${done}</b> finished</span>${lastRead(s) ? `<span>Last read <b>${agoText(lastRead(s))}</b></span>` : ""}</div>` +
+        docs.sort((a, b) => ((b[1].updatedAt && b[1].updatedAt.toMillis()) || 0) - ((a[1].updatedAt && a[1].updatedAt.toMillis()) || 0)).map(([k, r]) => {
+          const total = r.total || 0, seen = (r.seen || []).length, pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
+          return `<div class="rrow"><div class="t"><span>${esc(chName(k))}</span><span>${pct}%</span></div><div class="meter"><i style="width: ${pct}%"></i></div>
+            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}</div></div>`;
+        }).join("");
+    }
+    if (b.dataset.act === "reset" && resetsThisYear(s) >= BUSINESS.freeResetsPerYear) { row.querySelector(".reset-confirm").hidden = false; return; }
+    if (b.dataset.act === "reset-no") row.querySelector(".reset-confirm").hidden = true;
+    if (b.dataset.act === "reset" || b.dataset.act === "reset-yes") {
+      const at = Timestamp.now();
+      await updateDoc(ref, { deviceId: null, deviceInfo: null, boundAt: null, resets: arrayUnion(at) });
+      s.deviceId = null; s.deviceInfo = null; s.resets = [...(s.resets || []), at]; renderStudents();
+      const r = $(`.stu[data-uid="${s.uid}"]`), m = r.querySelector(".msg");
+      m.className = "msg good"; m.hidden = false;
+      const n = resetsThisYear(s), free = BUSINESS.freeResetsPerYear;
+      m.textContent = `Device reset. ${n <= free ? `${n} of ${free} free resets used this year.` : `That was reset number ${n} this year (${free} are free).`} ${s.name.split(" ")[0]} can now log in on the new phone.`;
     }
     if (b.dataset.act === "toggle") {
       const active = s.active === false;
       await updateDoc(ref, { active });
       s.active = active; renderStudents();
     }
-    if (b.dataset.act === "del") { const c = row.querySelector(".confirm"); c.hidden = false; c.querySelector("[data-act=del-no]").focus(); }
-    if (b.dataset.act === "del-no") row.querySelector(".confirm").hidden = true;
+    if (b.dataset.act === "del") { const c = row.querySelector(".del-confirm"); c.hidden = false; c.querySelector("[data-act=del-no]").focus(); }
+    if (b.dataset.act === "del-no") row.querySelector(".del-confirm").hidden = true;
     if (b.dataset.act === "del-yes") {
       b.disabled = true;
       await deleteAll(await studentRefs(s.uid));
