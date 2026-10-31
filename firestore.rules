@@ -12,6 +12,20 @@ service cloud.firestore {
     function promoPath(code) { return /databases/$(database)/documents/promos/$(code); }
     function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
 
+    // Can the signed-in student open this chapter now? Their ID is active and locked to a device, and either
+    // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
+    // that is paid till a later date (subs is a map: chapter → paid-till time).
+    function canOpen(ch) {
+      return signedIn()
+        && student().active == true
+        && student().deviceId != null
+        && (
+          (ch in student().chapters
+            && (student().get('expiresAt', null) == null || request.time < student().expiresAt))
+          || request.time < student().get('subs', {}).get(ch, timestamp.value(0))
+        );
+    }
+
     // A promo code may be used while it is switched on, before its last date, and under its limit.
     function promoOpen(p) { return p.active == true && request.time < p.expiresAt && p.used < p.maxUses; }
 
@@ -59,6 +73,18 @@ service cloud.firestore {
           && request.resource.data.seen is list && request.resource.data.seen.size() <= 2000
           && request.resource.data.minutes is number
           && request.resource.data.updatedAt == request.time;
+        allow delete: if isAdmin();
+      }
+
+      // Quiz score, one document per chapter: best, last, number of questions, tries. The admin can read it.
+      match /quiz/{ch} {
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow write: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['best', 'last', 'total', 'tries', 'at'])
+          && request.resource.data.best is number && request.resource.data.last is number
+          && request.resource.data.total is number && request.resource.data.tries is number
+          && request.resource.data.best <= request.resource.data.total
+          && request.resource.data.at == request.time;
         allow delete: if isAdmin();
       }
 
@@ -111,26 +137,21 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Chapter info (title, number of pages uploaded).
+    // Chapter quizzes, made by the admin. A student can open the quiz of a chapter they can read now.
+    match /quizzes/{ch} {
+      allow read: if isAdmin() || canOpen(ch);
+      allow write: if isAdmin();
+    }
+
+    // Chapter info (title, number of pages uploaded, number of quiz questions).
     match /chapters/{chapterId} {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
 
-    // Page images. A student can open a page only if their ID is active and locked to a device, and either
-    // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
-    // that is paid till a later date (subs is a map: chapter → paid-till time).
+    // Page images: only for a chapter the student can open now (see canOpen above).
     match /pages/{pageId} {
-      allow read: if isAdmin() || (
-        signedIn()
-        && student().active == true
-        && student().deviceId != null
-        && (
-          (resource.data.ch in student().chapters
-            && (student().get('expiresAt', null) == null || request.time < student().expiresAt))
-          || request.time < student().get('subs', {}).get(resource.data.ch, timestamp.value(0))
-        )
-      );
+      allow read: if isAdmin() || canOpen(resource.data.ch);
       allow write: if isAdmin();
     }
   }
