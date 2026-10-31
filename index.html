@@ -763,14 +763,16 @@ if (FORMATS.online.on && paperId) OPTS.push({ id: "both", label: `Online + ${FOR
 const optOf = id => OPTS.find(o => o.id === id) || OPTS[0];
 let fmt = store.get("chemophile-fmt");
 if (!OPTS.some(o => o.id === fmt)) fmt = OPTS[0] ? OPTS[0].id : "online";
-const isPaper = id => optOf(id).parts.some(p => p !== "online");
+const isPaper = id => optOf(id).parts.some(p => p === "colour" || p === "bw");
 // Price of one chapter in a format (null if it isn't sold that way), and its MRP if that is higher.
 const priceFor = (c, id) => { const ps = optOf(id).parts.map(p => priceOf(c, p)); return ps.every(v => v) ? ps.reduce((a, v) => a + v, 0) : null; };
 const mrpFor = (c, id) => { const p = priceFor(c, id); if (!p) return null; const m = optOf(id).parts.reduce((a, f) => a + (mrpOf(c, f) || priceOf(c, f)), 0); return m > p ? m : null; };
 const pctOff = (mrp, p) => Math.round((1 - p / mrp) * 100);
-const money = (p, mrp) => `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}<b>${rupee(p)}</b>${mrp ? `<span class="off">${pctOff(mrp, p)}% off</span>` : ""}`;
+// A monthly price is for a stretch of days, so it says so.
+const per = id => id === "monthly" ? ` / ${monthDays()} days` : "";
+const money = (p, mrp, id) => `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}<b>${rupee(p)}</b>${id === "monthly" ? `<small>${per(id)}</small>` : ""}${mrp ? `<span class="off">${pctOff(mrp, p)}% off</span>` : ""}`;
 const priceChips = c => `<div class="price-row">${FORMAT_IDS.filter(f => FORMATS[f].on && priceOf(c, f)).map(f =>
-    `<span class="price">${esc(FORMATS[f].label)} ${money(priceOf(c, f), mrpOf(c, f))}</span>`).join("")}</div>`;
+    `<span class="price">${esc(FORMATS[f].label)} ${money(priceOf(c, f), mrpOf(c, f), f)}</span>`).join("")}</div>`;
 document.querySelectorAll("#fmt-opts").forEach(box => {
   box.innerHTML = OPTS.map(o => `<label><input type="radio" name="fmt" value="${o.id}"${o.id === fmt ? " checked" : ""}>${esc(o.label)}<small>${esc(o.note)}</small></label>`).join("");
 });
@@ -850,7 +852,7 @@ function renderPick() {
       list.map(c => {
         const ck = key(c), v = priceFor(c, fmt), mrp = mrpFor(c, fmt);
         return `<li><label><input type="checkbox" id="pick-${ck}" data-pick="${ck}"${pack.has(ck) ? " checked" : ""}>
-      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}` : "Ask"}</span></label></li>`;
+      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}${per(fmt)}` : "Ask"}</span></label></li>`;
       }).join("");
   }).join("");
   $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Remove all" : "All chapters";
@@ -865,13 +867,15 @@ function renderSummary() {
     <dt>Format</dt><dd>${esc(label)}</dd>
     <dt>Chapters</dt><dd>${chosen.length}</dd>
     ${save ? `<dt>You save</dt><dd>${rupee(save)}</dd>` : ""}
-    <div class="total" style="display:contents"><dt>Total</dt><dd>${chosen.length ? rupee(total) + (ask ? " +" : "") : "–"}</dd></div>`;
+    <div class="total" style="display:contents"><dt>Total</dt><dd>${chosen.length ? rupee(total) + (ask ? " +" : "") + per(fmt) : "–"}</dd></div>`;
   $("#summary-note").textContent = !chosen.length
     ? "Tick at least one chapter."
     : (ask ? `${ask} chapter${ask > 1 ? "s have" : " has"} no price in this format yet; Adeel Sir will tell you. ` : "")
-      + (paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp." : "After payment, Adeel Sir will send your login ID and password on WhatsApp.");
+      + (paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp."
+        : fmt === "monthly" ? `Pay every ${monthDays()} days to keep reading; stop any time. After payment, Adeel Sir will send your login ID and password on WhatsApp.`
+        : "After payment, Adeel Sir will send your login ID and password on WhatsApp.");
   const lines = chosen.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)} (${priceFor(c, fmt) ? rupee(priceFor(c, fmt)) : "price on request"})`);
-  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${per(fmt)}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
   const btn = $("#order-btn");
   btn.href = chosen.length ? wa(msg) : "#pack";
   btn.setAttribute("aria-disabled", String(!chosen.length));
@@ -879,7 +883,7 @@ function renderSummary() {
   const bar = $("#order-bar");
   bar.hidden = !chosen.length;
   document.body.classList.toggle("has-pack", !!chosen.length);
-  $("#order-bar-txt").innerHTML = `<b>${chosen.length}</b> chapter${chosen.length > 1 ? "s" : ""} · ${esc(label)} · <b>${rupee(total)}</b>`;
+  $("#order-bar-txt").innerHTML = `<b>${chosen.length}</b> chapter${chosen.length > 1 ? "s" : ""} · ${esc(label)} · <b>${rupee(total)}</b>${per(fmt)}`;
   store.set("chemophile-pack", [...pack]);
   store.set("chemophile-fmt", fmt);
 }
@@ -903,8 +907,8 @@ function renderCombos() {
     const classes = [...new Set(chs.map(c => c.cls))].map(k => `Class ${k}`).join(" + ");
     const buys = FORMAT_IDS.filter(f => FORMATS[f].on && (x.price || {})[f] > 0).map(f => {
       const p = +x.price[f], m = +(x.mrp || {})[f] > p ? +x.mrp[f] : null, paper = f !== "online";
-      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}\nPrice: ${rupee(p)}${paper ? " + delivery" : ""}\nChapters:\n${chs.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
-      return `<a href="${wa(msg)}" target="_blank" rel="noopener"><span>${esc(FORMATS[f].label)}</span><span>${money(p, m)}</span></a>`;
+      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}\nPrice: ${rupee(p)}${per(f)}${paper ? " + delivery" : ""}\nChapters:\n${chs.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+      return `<a href="${wa(msg)}" target="_blank" rel="noopener"><span>${esc(FORMATS[f].label)}</span><span>${money(p, m, f)}</span></a>`;
     }).join("");
     return `<div class="combo"><div class="count">${chs.length} chapters · ${classes}</div><h3>${esc(x.name)}</h3>${x.text ? `<p>${esc(x.text)}</p>` : ""}
       <p>${chs.map(c => `Ch ${c.n} ${esc(nameOf(c))}`).join(", ")}</p><div class="buy">${buys}</div></div>`;
