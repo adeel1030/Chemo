@@ -82,6 +82,12 @@ service cloud.firestore {
       }
     }
 
+    // The catalog (books, chapters, prices, combos, offer) that the website shows. Anyone may read it.
+    match /catalog/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Announcements from the admin, shown on top of the reader.
     match /announcements/{id} {
       allow read: if signedIn();

@@ -112,6 +112,18 @@ Dhyan rakhne wali baatein:
 3. **Post announcement** dabao. Students ko reader kholte hi library ke upar yeh message dikhega. Message mein link ho to woh click ho jaata hai.
 4. Student × dabakar message apne phone se hata sakta hai. Aap **Switch off** se sabse hata sakte ho, ya **Delete** kar sakte ho.
 
+## 12. Books & prices (website par kya bikta hai)
+
+Admin panel mein **Books & prices** (phone par **Prices**) kholo. Pehli baar wahan website ki abhi wali list aur prices bhari milengi; check karke ek baar **Save changes** dabao. Uske baad website isi page se chalti hai.
+
+- **Ways to buy:** Online book, Paperback (colour), Paperback (B/W). Jo tick hoga wahi website par bikega; naam aur chhota note bhi badal sakte ho. Online aur paperback dono chalu hon to "Online + Paperback" ka option apne aap aata hai.
+- **Offer banner:** website ke sabse upar ek patti, jaise "Diwali offer…", chaho to aakhri date ke saath.
+- **Classes, books aur chapters:** har class ki book ka naam, har chapter ka naam, pages, aur **Live** ya **Coming soon**. Naya class/book (jaise Class 10) aur naye chapter bhi jod sakte ho. Naye chapter ke topics bhi likh sakte ho (har line: naam | page).
+- **Price aur MRP:** har format ki price. MRP zyada likhoge to website par MRP kati hui aur "% off" dikhega. Jis format mein chapter nahi bechna, uski price khaali chhod do.
+- **Combos:** chapters ka set ek special price par (jaise "Class 11 full book"). Website par alag "Combos" hissa banta hai, har format ka WhatsApp order button ke saath.
+
+Har badlaav ke baad neeche **Save changes** dabana zaroori hai; **Undo all** se bina save kiye badlaav hat jaate hain. Naye chapter ki PDF **Chapters** page se upload karo, aur students ko woh chapter **Chapters & date** se do.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**
