@@ -1,0 +1,17 @@
+{
+  "id": "./read.html",
+  "name": "Chemophile Reader",
+  "short_name": "Chemophile",
+  "description": "Read your Chemophile chemistry books by Adeel Sir.",
+  "start_url": "./read.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15134a",
+  "theme_color": "#15134a",
+  "icons": [
+    { "src": "assets/logo/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "./admin.html",
+  "name": "Chemophile Admin",
+  "short_name": "Chemo Admin",
+  "description": "Chemophile admin panel: students, promo codes, chapters, prices.",
+  "start_url": "./admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15134a",
+  "theme_color": "#15134a",
+  "icons": [
+    { "src": "assets/logo/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
