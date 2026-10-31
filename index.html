@@ -622,6 +622,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
         <details><summary>If I study in Hinglish, how will I write the exam in English?</summary><p>The explanations are in Hinglish, but every topic has an "Exam mein aise likho" box with the full board answer in English.</p></details>
         <details><summary>What is the difference between Online and Paperback?</summary><p>The content is the same. You read the online book on your phone or tablet with your own login. The paperback is a printed booklet you can write in, tick and colour.</p></details>
         <details><summary>How do I read the online book?</summary><p>After your order and payment, Adeel Sir sends you a login ID and password. Tap "Login" on this website, enter them, and read your chapters. One ID works on one device only, so don't share it. If you change your phone, contact Adeel Sir.</p></details>
+        <details><summary>How long can I read the online book?</summary><p>A bought online book is valid for 1 year (365 days) from the day you get your login. If a monthly plan is offered, you can also pay month by month and stop any time.</p></details>
         <details><summary>How much does it cost?</summary><p>Each chapter's Online and Paperback price is shown under its cover. Pick chapters in "Build your pack" and the total adds up automatically. Delivery is charged extra for the paperback.</p></details>
         <details><summary>How do I order?</summary><p>Choose a format and chapters in "Build your pack" above, then tap "Send order on WhatsApp". Adeel Sir will share payment and delivery details on WhatsApp.</p></details>
         <details><summary>Can I see the book before buying?</summary><p>Yes. There is a free sample for both Class 11 and Class 12, with one complete topic from every chapter. Flip through it in "Free sample" above, or download the PDF.</p></details>
@@ -757,7 +758,10 @@ const store = {
 // ---------- pack state ----------
 const pack = new Set((store.get("chemophile-pack") || []).filter(k => CHAPTERS.some(c => key(c) === k)));
 // Formats on sale, from the catalog, plus "Online + paperback" when both kinds are sold.
-const OPTS = FORMAT_IDS.filter(f => FORMATS[f].on).map(f => ({ id: f, label: FORMATS[f].label, note: FORMATS[f].note || "", parts: [f] }));
+// The online book is valid for onlineDays() (365), so its note says so.
+const validity = () => `valid for ${onlineDays() === 365 ? "1 year (365 days)" : onlineDays() + " days"}`;
+const validityShort = () => `${onlineDays()} days validity`;
+const OPTS = FORMAT_IDS.filter(f => FORMATS[f].on).map(f => ({ id: f, label: FORMATS[f].label, note: (FORMATS[f].note || "") + (f === "online" ? ` · ${validity()}` : ""), parts: [f] }));
 const paperId = ["colour", "bw"].find(f => FORMATS[f].on);
 if (FORMATS.online.on && paperId) OPTS.push({ id: "both", label: `Online + ${FORMATS[paperId].label}`, note: "Read now, keep the print too", parts: ["online", paperId] });
 const optOf = id => OPTS.find(o => o.id === id) || OPTS[0];
@@ -873,9 +877,9 @@ function renderSummary() {
     : (ask ? `${ask} chapter${ask > 1 ? "s have" : " has"} no price in this format yet; Adeel Sir will tell you. ` : "")
       + (paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp."
         : fmt === "monthly" ? `Pay every ${monthDays()} days to keep reading; stop any time. After payment, Adeel Sir will send your login ID and password on WhatsApp.`
-        : "After payment, Adeel Sir will send your login ID and password on WhatsApp.");
+        : `The online book is ${validity()}. After payment, Adeel Sir will send your login ID and password on WhatsApp.`);
   const lines = chosen.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)} (${priceFor(c, fmt) ? rupee(priceFor(c, fmt)) : "price on request"})`);
-  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${per(fmt)}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+  const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}${optOf(fmt).parts.includes("online") ? `, ${validityShort()}` : ""}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${per(fmt)}${paper ? " + delivery" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
   const btn = $("#order-btn");
   btn.href = chosen.length ? wa(msg) : "#pack";
   btn.setAttribute("aria-disabled", String(!chosen.length));
@@ -907,7 +911,7 @@ function renderCombos() {
     const classes = [...new Set(chs.map(c => c.cls))].map(k => `Class ${k}`).join(" + ");
     const buys = FORMAT_IDS.filter(f => FORMATS[f].on && (x.price || {})[f] > 0).map(f => {
       const p = +x.price[f], m = +(x.mrp || {})[f] > p ? +x.mrp[f] : null, paper = f !== "online";
-      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}\nPrice: ${rupee(p)}${per(f)}${paper ? " + delivery" : ""}\nChapters:\n${chs.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}${f === "online" ? `, ${validityShort()}` : ""}\nPrice: ${rupee(p)}${per(f)}${paper ? " + delivery" : ""}\nChapters:\n${chs.map(c => `- Class ${c.cls}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
       return `<a href="${wa(msg)}" target="_blank" rel="noopener"><span>${esc(FORMATS[f].label)}</span><span>${money(p, m, f)}</span></a>`;
     }).join("");
     return `<div class="combo"><div class="count">${chs.length} chapters · ${classes}</div><h3>${esc(x.name)}</h3>${x.text ? `<p>${esc(x.text)}</p>` : ""}

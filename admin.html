@@ -258,7 +258,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         </div>
         <div class="field"><label>How they pay</label>
           <div class="plan" role="radiogroup" aria-label="How they pay">
-            <label><input type="radio" name="s-plan" value="buy" checked>Bought<small>Paid once; reads till the date above</small></label>
+            <label><input type="radio" name="s-plan" value="buy" checked>Bought<small>Paid once; valid for a year (365 days)</small></label>
             <label><input type="radio" name="s-plan" value="monthly">Monthly plan<small>Pays every month; renew with one tap</small></label>
           </div>
         </div>
@@ -401,7 +401,8 @@ function remindMessage(s) {
   const end = subEnd(s), over = end && end.toDate() < new Date(), total = planPrice(subKeys(s));
   return `Hello ${(s.name || "").split(" ")[0]}! Your Chemophile monthly plan (${subKeys(s).length} chapter${subKeys(s).length > 1 ? "s" : ""}) ${over ? "ended" : "ends"} on ${fmtDate(end)}.${total ? ` Pay ₹${total} to keep reading for ${monthDays()} more days.` : " Pay this month's fee to keep reading."}\n\nChapters: ${subKeys(s).map(chName).join(", ")}\n- Adeel Sir`;
 }
-const inAYear = () => { const d = new Date(Date.now() + 365 * 864e5); return toInput({ toDate: () => d }); };
+// A bought online book is valid for onlineDays() (365 unless changed in Books & prices).
+const inAYear = () => { const d = new Date(Date.now() + onlineDays() * 864e5); return toInput({ toDate: () => d }); };
 
 if (!configured || !ADMIN_EMAIL) show("v-setup");
 else onAuthStateChanged(auth, async user => {
@@ -549,7 +550,7 @@ $("#s-till").value = inAYear();
 function planUI() {
   const monthly = document.querySelector('input[name="s-plan"]:checked').value === "monthly";
   $("#s-till-label").textContent = monthly ? "Paid till" : "Access until";
-  $("#s-till-hint").textContent = monthly ? `One month (${monthDays()} days) from today. The chapters lock after this date until you renew.` : "The ID stops working after 11:59 pm that day. Leave it empty for no end date.";
+  $("#s-till-hint").textContent = monthly ? `One month (${monthDays()} days) from today. The chapters lock after this date until you renew.` : `The online book is valid for ${onlineDays()} days, so this is ${onlineDays()} days from today. Leave it empty for no end date.`;
   $("#new-ch-title").textContent = monthly ? "Chapters on the monthly plan" : "Chapters bought";
   $("#s-till").value = monthly ? inDays(monthDays()) : inAYear();
 }
@@ -1030,6 +1031,7 @@ function startCatalog(saved) {
   catDirty = false;
   $("#cat-first").hidden = !!saved;
   picks($("#new-ch")); picks($("#p-ch"));
+  planUI();
   renderCatalog();
 }
 const onFormats = () => FORMAT_IDS.filter(f => cat.formats[f] && cat.formats[f].on);
@@ -1046,6 +1048,7 @@ function renderCatalog() {
     <div class="field"><label>Name on the website</label><input data-f="formats.${f}.label" value="${esc(cat.formats[f].label)}"></div>
     <div class="field"><label>Short note</label><input data-f="formats.${f}.note" value="${esc(cat.formats[f].note || "")}"></div>
     ${cat.formats[f].on ? `<div class="cat-row" style="grid-column: 2 / -1">
+      ${f === "online" ? `<div class="field sm"><label>Valid for (days)</label><input type="number" min="1" max="3660" inputmode="numeric" data-f="formats.online.days" data-num value="${numVal(cat.formats.online.days || 365)}"></div>` : ""}
       ${f === "monthly" ? `<div class="field sm"><label>Days paid for</label><input type="number" min="1" max="366" inputmode="numeric" data-f="formats.monthly.days" data-num value="${numVal(cat.formats.monthly.days || 30)}"></div>` : ""}
       <div class="field sm"><label>Same price for all</label><input type="number" min="0" inputmode="numeric" data-bulk="${f}" placeholder="₹"></div>
       <button class="btn btn-line btn-sm" type="button" data-cat="bulk" data-f="${f}">Fill every chapter</button>
