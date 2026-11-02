@@ -178,6 +178,15 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 - **Free access haath se:** student ke card par **Free access**: chapters tick karo, din likho. **Remove free access** se hata sakte ho. Filter: **Free access**, **Teachers**.
 - **Teachers ke liye 30 din free:** teacher **Sign up** mein "Teacher" chunta hai (website par "Request free access" button seedha yahin laata hai). Library mein school ID card ki photo bhejta hai. Admin → **Promo codes** ke upar **Teacher requests**: photo dekho (tap karke badi), **Approve** (class ke chapters pehle se tick, din badal sakte ho) ya **Reject** (wajah ke saath; teacher dobara bhej sakta hai). Dono ke baad WhatsApp ka taiyaar message milta hai.
 
+## 20. Doubts, streak, certificate, tour, topic search, dark mode
+
+- **Doubts:** student kitaab mein ❓ dabakar (ya library mein **Ask a doubt**) us page ka sawaal bhejta hai, chahe to photo bhi. Admin → **Doubts** (naya menu): jawab likho → **Send answer**. Student ki library mein turant "💬 new answer" aata hai. **Answer on WhatsApp** se wahi jawab WhatsApp par bhi bhej sakte ho.
+- **Streak:** roz 5 minute padhne par din ginta hai (🔥 streak), 15 minute ka roz ka goal ring mein dikhta hai, aur hafte ke 7 din ke gole. Admin mein card par "🔥 N-day streak" aur Excel mein columns.
+- **Certificate:** chapter ke 70% pages padhne par (aur quiz ho to usme 80%) chapter card par **🏅 My certificate**. Naam, chapter, quiz score, tareekh aur Adeel Sir ke naam ke saath image banti hai: download ya share (WhatsApp status).
+- **Tour:** pehli baar login par 4 chhoti slides. Baad mein **My account → How to use**.
+- **Topic search:** library mein "🔎 Search a topic": topic ya sub-topic likho, us page par seedha kitaab khulti hai.
+- **Dark mode:** phone ki setting ke hisaab se apne aap; upar ◐ / ☾ / ☀ button se badal bhi sakte hain (website, app, admin, sab mein).
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

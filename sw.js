@@ -2,10 +2,10 @@
 // Our own files: always try the network first (so a new version shows at once), fall back to the copy
 // saved last time when offline. Versioned libraries from CDNs: saved copy first. Firebase data
 // (Firestore, login) is never touched here, so book pages are never stored on the phone by this file.
-const CACHE = "chemophile-v1";
+const CACHE = "chemophile-v2";
 const SHELL = [
   "read.html", "admin.html", "css/app.css", "js/chapters.js", "js/fb.js", "js/flipbook.js", "js/install.js",
-  "js/firebase-config.js", "assets/logo/icon-192.png", "assets/logo/icon-512.png", "assets/logo/icon-96.png"
+  "js/firebase-config.js", "js/theme.js", "assets/logo/icon-192.png", "assets/logo/icon-512.png", "assets/logo/icon-96.png"
 ];
 const CDN = ["www.gstatic.com", "cdn.jsdelivr.net", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 

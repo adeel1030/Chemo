@@ -13,6 +13,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <meta name="theme-color" content="#15134a">
+<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="js/theme.js" defer></script>
 <link rel="stylesheet" href="css/app.css">
 <style>
 /* One page with every policy: a contents strip, then one card per policy. */
@@ -34,12 +36,14 @@
 .contact dt { font-size: .76rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
 .contact dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere; }
 .updated { color: var(--muted); font-size: .88rem; }
+.theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.theme-btn:hover { background: rgba(255,255,255,.12); }
 </style>
 </head>
 <body>
 <header class="app-head">
   <div class="wrap"><a class="brand" href="index.html"><img src="assets/logo/icon-96.png" alt="" width="38" height="38"><span>Chemophile<small>Policies</small></span></a>
-    <div class="head-actions"><a class="btn btn-ghost btn-sm" href="index.html">Website</a><a class="btn btn-ghost btn-sm" href="read.html">Login</a></div></div>
+    <div class="head-actions"><button class="theme-btn" type="button" data-theme-toggle aria-label="Theme">◐</button><a class="btn btn-ghost btn-sm" href="index.html">Website</a><a class="btn btn-ghost btn-sm" href="read.html">Login</a></div></div>
 </header>
 
 <main>

@@ -13,6 +13,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <meta name="theme-color" content="#15134a">
+<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="js/theme.js" defer></script>
 <meta property="og:title" content="Chemophile by Adeel Sir: Chemistry samajh aayegi, ratni nahi padegi">
 <meta property="og:description" content="Class 11 &amp; 12 Chemistry in easy Hinglish: everyday examples, 800+ diagrams, 631 solved examples and English board answers. Free sample inside!">
 <meta property="og:image" content="https://chemophile.maproductsindia.com/assets/logo/og.png">
@@ -714,6 +716,8 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 .upi-id button { border: 0; background: none; color: var(--accent); font: 700 .84rem var(--font-body); cursor: pointer; padding: 2px 4px; }
 .pay .fine { margin: 0; }
 @media (max-width: 380px) { .pay-grid { grid-template-columns: minmax(0, 1fr); } .pay-qr { margin-inline: auto; } }
+.theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.theme-btn:hover { background: rgba(255,255,255,.12); }
 </style>
 </head>
 <body>
@@ -729,6 +733,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <a href="#plans">Plans</a>
       <a href="#faq">FAQ</a>
       <a href="read.html#signup">Sign up free</a>
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Theme">◐</button>
       <a class="login" href="read.html">Login</a>
       <a class="btn btn-sun" href="#pack">Order now</a>
     </nav>

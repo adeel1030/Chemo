@@ -13,6 +13,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <meta name="theme-color" content="#15134a">
+<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="js/theme.js" defer></script>
 <link rel="manifest" href="admin.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,9 +33,9 @@ body { background: var(--paper); }
 @media (max-width: 440px) { .admin-head .brand > span { display: none; } .admin-head .bar { gap: 8px; } }
 
 .desk { display: grid; grid-template-columns: minmax(0, 1fr); }
-.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
+.side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
 .nav-btn .long { display: none; }
-@media (max-width: 420px) { .nav-btn { font-size: .66rem; padding: 7px 2px; } }
+@media (max-width: 420px) { .nav-btn { font-size: .62rem; padding: 7px 1px; } .nav-btn svg { width: 20px; height: 20px; } }
 @media (min-width: 900px) { .nav-btn .long { display: inline; } .nav-btn .short { display: none; } }
 .nav-btn { display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--night-muted); font: 600 .72rem var(--font-body); padding: 7px 4px; border-radius: 10px; cursor: pointer; position: relative; }
 .nav-btn svg { width: 22px; height: 22px; }
@@ -229,6 +231,8 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .dlg-foot { display: flex; gap: 8px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line); }
 .dlg-foot .spacer { flex: 1; }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
+.theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.theme-btn:hover { background: rgba(255,255,255,.12); }
 </style>
 </head>
 <body>
@@ -237,6 +241,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
   <div class="bar">
     <a class="brand" href="index.html"><img src="assets/logo/icon-96.png" alt="" width="38" height="38"><span>Chemophile</span></a><span class="badge-admin">Admin panel</span>
     <div class="head-actions">
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Theme">◐</button>
       <button class="btn btn-ghost btn-sm" type="button" data-install hidden>Install app</button>
       <span class="who" id="who"></span>
       <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
@@ -271,6 +276,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
       <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-doubts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5"/><path d="M12 16.5h.01"/></svg>Doubts<span class="dot" id="dot-doubts" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
       <button class="nav-btn" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
@@ -379,6 +385,14 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <div class="card">
         <div class="section-title"><h2>All promo codes <span class="hint" id="promo-count"></span></h2></div>
         <div class="students" id="promos"></div>
+      </div>
+    </section>
+
+    <section id="t-doubts" class="stack" hidden>
+      <div class="page-head"><div><h1>Doubts</h1><p>Questions students asked about a page. Your answer shows in their library at once.</p></div></div>
+      <div class="card">
+        <div class="list-tools"><div class="chips" id="doubt-filters" role="group" aria-label="Show"></div></div>
+        <div class="students" id="doubts"></div>
       </div>
     </section>
 
@@ -553,6 +567,9 @@ ${over ? "Renew to open it again" : "Renew now to keep reading"} for another ${o
 - Adeel Sir`;
 }
 // Free sign-ups from the reader: an ID with no chapters and no plan yet. They read the free sample until they buy.
+// Reading streak: the days in a row (up to today or yesterday) the student read at least 5 minutes.
+const dKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function streakOf(s) { const set = new Set(s.readDays || []), d = new Date(); if (!set.has(dKey(d))) d.setDate(d.getDate() - 1); let n = 0; while (set.has(dKey(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
 // Free access (users/{uid}/grants/{chapter}): from a promo code entered on an ID, or given here (e.g. to a teacher).
 const grantsOf = s => s.grants || [];
 const liveGrants = s => grantsOf(s).filter(g => g.till && g.till.toDate() > new Date());
@@ -595,6 +612,7 @@ else onAuthStateChanged(auth, async user => {
   run("Promo codes", loadPromos);
   run("Chapters", loadChapters, ex => { $("#chap-rows").innerHTML = `<p class="msg bad">Couldn't check which chapters are uploaded. ${esc(why(ex))}</p>`; });
   run("Announcements", loadNews, ex => { $("#news").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
+  run("Doubts", loadDoubts, ex => { $("#doubts").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
 });
 // Firestore error codes, in words the admin can act on. Nothing is deleted in any of these cases.
 function why(ex) {
@@ -642,6 +660,7 @@ function renderDash() {
   ].join("");
   const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
   const todo = [
+    ...(doubts.filter(d => d.status === "open").length ? [item("warn", `${doubts.filter(d => d.status === "open").length} doubt${doubts.filter(d => d.status === "open").length === 1 ? " is" : "s are"} waiting for your answer.`, "Answer", "t-doubts")] : []),
     ...(teacherReqs.filter(r => r.status === "pending").length ? [item("warn", `${teacherReqs.filter(r => r.status === "pending").length} teacher${teacherReqs.filter(r => r.status === "pending").length === 1 ? " is" : "s are"} waiting for free access. Check their ID card.`, "Check", "t-promos")] : []),
     ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
     ...soonDue.map(s => `<div class="todo-item warn"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ends on ${fmtDate(subEnd(s))}.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
@@ -664,7 +683,7 @@ function renderDash() {
 }
 
 // ---------- navigation ----------
-const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-news", "t-catalog"];
+const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-doubts", "t-news", "t-catalog"];
 function go(tab) {
   document.querySelectorAll(".nav-btn").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
   TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
@@ -822,8 +841,9 @@ async function studentRefs(uid) {
   const marks = await getDocs(collection(db, "users", uid, "marks")).catch(() => ({ docs: [] }));
   const grantDocs = await getDocs(collection(db, "users", uid, "grants")).catch(() => ({ docs: [] }));
   const req = await getDoc(doc(db, "teacherRequests", uid)).catch(() => null);
+  const asked = await getDocs(query(collection(db, "doubts"), where("uid", "==", uid))).catch(() => ({ docs: [] }));
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...grantDocs.docs.map(d => d.ref), ...(req && req.exists() ? [req.ref] : []), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...grantDocs.docs.map(d => d.ref), ...(req && req.exists() ? [req.ref] : []), ...asked.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {
@@ -912,6 +932,7 @@ function renderStudents() {
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
           ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
           ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
+          ${streakOf(s) >= 2 ? `<span class="pill good">🔥 ${streakOf(s)}-day streak</span>` : ""}
           ${s.role === "teacher" ? `<span class="pill">${s.teacher === "verified" ? "✓ Verified teacher" : "Teacher"}</span>` : ""}
         </div>
       </div>
@@ -982,7 +1003,7 @@ const shownStudents = () => {
 const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
 function studentsCsv(list) {
   const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Class", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
-    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent", "I am", "School", "City", "Free access"];
+    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent", "I am", "School", "City", "Free access", "Reading streak (days)", "Days read"];
   const rows = list.map(s => {
     const plan = s.promo ? "Promo" : isSignup(s) ? "Signed up (not bought)" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
     const status = s.active === false ? "Blocked" : isOver(s) ? "Expired" : subOver(s) && !subLive(s).length && !(s.chapters || []).length ? "Monthly unpaid" : "Active";
@@ -990,7 +1011,7 @@ function studentsCsv(list) {
     return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", classesText(s), plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
       subKeys(s).map(chName).join("; "), subKeys(s).length ? dmy(subEnd(s)) : "", status, s.deviceId ? "Yes" : "No", s.deviceInfo || "", dmy(lastRead(s)), dmy(s.createdAt),
       resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt), s.role || "", s.school || "", s.city || "",
-      grantsOf(s).map(g => `${chName(g.ch)} till ${dmy(g.till)}`).join("; ")];
+      grantsOf(s).map(g => `${chName(g.ch)} till ${dmy(g.till)}`).join("; "), streakOf(s) || "", (s.readDays || []).length || ""];
   });
   // Quote every cell; a cell starting with = + - @ is kept as text so a spreadsheet never runs it as a formula.
   const cell = v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
@@ -1451,6 +1472,65 @@ $("#treqs").addEventListener("click", async e => {
       teacherReqs = teacherReqs.filter(x => x !== r); renderTeacherReqs();
     }
   } catch (ex) { note("Not saved: " + why(ex), "bad"); }
+});
+
+// ---------- doubts ----------
+let doubts = [], doubtFilter = "open";
+async function loadDoubts() {
+  doubts = (await getDocs(collection(db, "doubts"))).docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0));
+  renderDoubts();
+}
+function renderDoubts() {
+  const F = [["open", "Waiting", d => d.status === "open"], ["answered", "Answered", d => d.status === "answered"], ["all", "All", () => true]];
+  const test = F.find(f => f[0] === doubtFilter)[2], list = doubts.filter(test), open = doubts.filter(d => d.status === "open").length;
+  $("#doubt-filters").innerHTML = F.map(([k, l, f]) => `<button class="chip" type="button" data-dfilter="${k}" aria-pressed="${k === doubtFilter}">${l} <b>${doubts.filter(f).length}</b></button>`).join("");
+  const dot = $("#dot-doubts"); dot.hidden = !open; dot.textContent = open;
+  $("#doubts").innerHTML = list.length ? list.map(d => `<div class="stu" data-did="${d.id}">
+    <div class="stu-top">
+      ${isPhoto(d.photo) ? `<button class="idthumb" type="button" data-dact="photo" aria-label="See the photo"><img src="${d.photo}" alt=""></button>` : `<div class="avatar" aria-hidden="true">?</div>`}
+      <div style="min-width:0"><h3>${esc(d.name || d.loginId || "Student")}</h3><div class="sub">${esc(d.title || d.ch)}${d.page ? ` · <b>page ${d.page}</b>` : ""}${d.at ? " · " + agoText(d.at.toDate()) : ""}${d.loginId ? " · " + esc(d.loginId) : ""}</div></div>
+      <div class="pills">${d.status === "answered" ? `<span class="pill good">Answered${d.seen ? " · seen" : ""}</span>` : `<span class="pill warn">Waiting</span>`}</div>
+    </div>
+    <p class="news-text" style="font-weight: 600">${esc(d.text)}</p>
+    <div class="field"><label for="ans-${d.id}">${d.status === "answered" ? "Your answer (edit and send again if needed)" : "Your answer"}</label><textarea id="ans-${d.id}" rows="3" maxlength="2000" placeholder="Write the explanation…">${esc(d.answer || "")}</textarea></div>
+    <div class="actions">
+      <button class="btn btn-sun btn-sm" type="button" data-dact="send">${d.status === "answered" ? "Update answer" : "Send answer"}</button>
+      <a class="btn btn-wa btn-sm" data-dact="wa" href="#" target="_blank" rel="noopener">Answer on WhatsApp</a>
+      <span class="spacer"></span>
+      <button class="btn btn-danger btn-sm" type="button" data-dact="del">Delete</button>
+    </div>
+    <div class="msg" role="status" hidden></div>
+  </div>`).join("") : `<p class="empty">${doubtFilter === "open" ? "No doubts waiting. 🎉" : "No doubts here yet."}</p>`;
+  renderDash();
+}
+$("#doubt-filters").addEventListener("click", e => { const b = e.target.closest("[data-dfilter]"); if (b) { doubtFilter = b.dataset.dfilter; renderDoubts(); } });
+$("#doubts").addEventListener("click", async e => {
+  const b = e.target.closest("[data-dact]"); if (!b) return;
+  const row = b.closest("[data-did]"), d = doubts.find(x => x.id === row.dataset.did), answer = row.querySelector("textarea").value.trim();
+  const note = (t, cls = "good") => { const m = row.querySelector(".msg"); m.className = "msg " + cls; m.innerHTML = t; m.hidden = false; };
+  const a = b.dataset.dact;
+  if (a === "photo") return openDialog(`Photo · ${d.name}`, `<img src="${d.photo}" alt="" style="width: 100%; border-radius: 10px">`, null, null);
+  if (a === "wa") {
+    const s = students.find(x => x.uid === d.uid);
+    b.href = waLink((s && s.phone) || d.phone, `Hello ${(d.name || "").split(" ")[0]}! About your doubt (${d.title}${d.page ? ", page " + d.page : ""}):\n"${d.text}"\n\n${answer || "…"}\n- Adeel Sir`);
+    return;
+  }
+  try {
+    if (a === "send") {
+      if (answer.length < 2) return note("Write the answer first.", "bad");
+      b.disabled = true;
+      await updateDoc(doc(db, "doubts", d.id), { answer, status: "answered", answeredAt: serverTimestamp(), seen: false });
+      Object.assign(d, { answer, status: "answered", seen: false });
+      renderDoubts();
+      const r2 = $(`[data-did="${d.id}"]`); if (r2) { const m = r2.querySelector(".msg"); m.className = "msg good"; m.hidden = false; m.textContent = "Sent. The student sees it in their library now."; }
+    }
+    if (a === "del") {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
+      await deleteAll([doc(db, "doubts", d.id)]);
+      doubts = doubts.filter(x => x !== d); renderDoubts();
+    }
+  } catch (ex) { b.disabled = false; note("Not saved: " + why(ex), "bad"); }
 });
 
 // ---------- announcements ----------

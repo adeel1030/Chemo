@@ -13,6 +13,8 @@
 <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <meta name="theme-color" content="#15134a">
+<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="js/theme.js" defer></script>
 <link rel="manifest" href="read.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -162,6 +164,60 @@
 .about[hidden] { display: none; }
 .about .card { width: min(460px, 100%); display: grid; gap: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
 .about h2 { font-size: 1.35rem; }
+/* Streak, goal ring and this week (in the top section). */
+.hero-side { display: grid; gap: 10px; justify-items: start; }
+.streak { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, rgba(255, 138, 76, .22), rgba(255, 210, 74, .12)); border: 1px solid rgba(255, 210, 74, .35); border-radius: 18px; padding: 10px 14px; }
+.ring { --p: 0; width: 58px; height: 58px; border-radius: 50%; flex: none; display: grid; place-items: center; background: conic-gradient(var(--sun) calc(var(--p) * 1%), rgba(255,255,255,.14) 0); }
+.ring span { width: 46px; height: 46px; border-radius: 50%; background: var(--night); display: grid; place-items: center; font: 800 .95rem/1 var(--font-display); color: var(--night-fg); text-align: center; }
+.ring span small { display: block; font: 600 .56rem var(--font-body); color: var(--night-muted); }
+.streak b { display: block; font: 800 1.1rem/1.1 var(--font-display); color: var(--night-fg); }
+.streak .sub { font-size: .76rem; color: var(--night-muted); }
+.week { display: flex; gap: 5px; margin-top: 6px; }
+.week i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 700 .58rem var(--font-body); font-style: normal; color: var(--night-muted); border: 1px solid rgba(255,255,255,.18); }
+.week i.on { background: linear-gradient(135deg, #ff8a4c, var(--sun)); color: #2a1300; border-color: transparent; }
+.week i.today { outline: 2px solid var(--sun); outline-offset: 1px; }
+.new-chip { display: inline-flex; gap: 6px; align-items: center; background: var(--sun); color: var(--sun-ink); border: 0; border-radius: 999px; padding: 4px 12px; font: 700 .8rem var(--font-body); cursor: pointer; margin-top: 10px; }
+/* Topic search */
+.tsearch { position: relative; margin: 10px 0 14px; }
+.tsearch input { width: 100%; font: 1rem var(--font-body); padding: 12px 16px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+.tsearch input:focus { outline: none; border-color: var(--accent); }
+.tresults { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 18px 40px rgba(20,18,70,.18); max-height: 360px; overflow-y: auto; }
+.tresults button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 11px 14px; font: inherit; color: var(--fg); cursor: pointer; }
+.tresults button:hover { background: var(--paper); }
+.tresults .w { display: block; font-size: .76rem; color: var(--muted); }
+.tresults mark { background: var(--warn-bg); color: inherit; border-radius: 3px; }
+.tresults .pg { font: 700 .8rem var(--font-body); color: var(--accent); white-space: nowrap; }
+.tresults .none { padding: 14px; color: var(--muted); font-size: .9rem; }
+/* My doubts */
+.doubts { display: grid; gap: 10px; }
+.doubts .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dq { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 6px; }
+.dq.new { border-color: var(--sun); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sun) 30%, transparent); }
+.dq .w { font-size: .76rem; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.dq .q { font-weight: 600; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dq .a { background: color-mix(in srgb, var(--good) 10%, var(--surface)); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dq .a b { display: block; font-size: .78rem; color: var(--good); margin-bottom: 2px; }
+.dq .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip-s { font: 700 .72rem var(--font-body); border-radius: 999px; padding: 2px 9px; background: var(--warn-bg); color: var(--fg); }
+.chip-s.ok { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.doubt-dlg, .cert-dlg, .tour { z-index: 90; }
+.doubt-dlg .idprev { max-width: 180px; border-radius: 10px; margin-top: 6px; }
+/* Certificate */
+.cert-dlg .card { width: min(720px, 100%); }
+.cert-dlg img { width: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.cert-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cert-btn { background: linear-gradient(135deg, #ffd24a, #ff9f43); color: #2a1300; border: 0; }
+.cert-hint { font-size: .76rem; color: var(--muted); }
+/* First-time tour */
+.tour .card { text-align: center; justify-items: center; }
+.tour-art { width: 120px; height: 120px; border-radius: 32px; display: grid; place-items: center; font-size: 3.4rem; background: linear-gradient(135deg, var(--night), #4a3fd6); box-shadow: 0 16px 40px rgba(59, 47, 184, .35); animation: tourpop .45s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes tourpop { from { transform: scale(.7) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.tour p { color: var(--muted); max-width: 34ch; }
+.tour-dots { display: flex; gap: 6px; }
+.tour-dots i { width: 8px; height: 8px; border-radius: 99px; background: var(--line); transition: width .2s; }
+.tour-dots i.on { width: 22px; background: var(--accent); }
+.tour-nav { display: flex; gap: 8px; width: 100%; justify-content: space-between; }
+@media (prefers-reduced-motion: reduce) { .tour-art { animation: none; } }
 /* Refer a friend: the student's code and a share button. */
 .refer { display: grid; gap: 10px; background: linear-gradient(135deg, var(--surface), var(--warn-bg)); }
 .refer h2 { font-size: 1.2rem; }
@@ -200,6 +256,8 @@
 .quiz .review .ok { color: var(--good); font-weight: 700; }
 .quiz .review .no { color: var(--bad); font-weight: 700; }
 .quiz .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.theme-btn:hover { background: rgba(255,255,255,.12); }
 </style>
 </head>
 <body>
@@ -208,6 +266,7 @@
   <div class="wrap">
     <a class="brand" href="index.html"><img src="assets/logo/icon-96.png" alt="" width="38" height="38"><span>Chemophile<small>Read online</small></span></a>
     <div class="head-actions">
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Theme">◐</button>
       <button class="btn btn-ghost btn-sm" type="button" data-install hidden>Install app</button>
       <span class="who" id="who"></span>
       <button class="btn btn-ghost btn-sm" type="button" id="logout" hidden>Logout</button>
@@ -302,7 +361,7 @@
     <section class="portal-hero">
       <div class="wrap hero-in">
         <div><div class="auth-eyebrow">Your Chemophile library</div><h1 id="hello"></h1><p class="lede" id="hero-sub"></p></div>
-        <div class="hero-stats" id="hero-stats"></div>
+        <div class="hero-side"><div class="streak" id="streak" hidden></div><div class="hero-stats" id="hero-stats"></div></div>
       </div>
     </section>
     <div class="wrap portal">
@@ -326,8 +385,10 @@
         <div class="msg" id="redeem-msg" role="status" hidden></div>
       </div>
       <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
+      <div class="tsearch"><input id="tsearch" type="search" autocomplete="off" placeholder="🔎 Search a topic: molarity, Hund's rule, pH…" aria-label="Search a topic in your chapters"><div class="tresults" id="tresults" hidden></div></div>
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
+      <div class="card doubts" id="doubts-card" hidden></div>
       <div class="card refer" id="refer" hidden></div>
       <div class="card acct" id="acct-card">
         <h2>My account</h2>
@@ -337,6 +398,7 @@
         <div class="actions">
           <a class="btn btn-wa btn-sm" id="help-wa" href="#" target="_blank" rel="noopener">Need help? WhatsApp Adeel Sir</a>
           <button class="btn btn-line btn-sm" type="button" id="edit-about">Edit my details</button>
+          <button class="btn btn-line btn-sm" type="button" id="tour-again">How to use</button>
           <button class="btn btn-line btn-sm" type="button" id="logout-2">Log out</button>
         </div>
         <details class="pw" id="pw-box">
@@ -360,6 +422,26 @@
     <div class="msg bad" id="ab-err" role="alert" hidden></div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn btn-sun" type="submit" id="ab-btn">Save and continue</button><button class="btn btn-line" type="button" id="ab-later" hidden>Cancel</button></div>
   </form></div>
+  <div class="about doubt-dlg" id="doubt" role="dialog" aria-modal="true" aria-labelledby="doubt-title" hidden><form class="card" id="doubt-form" novalidate>
+    <div><h2 id="doubt-title">Ask Adeel Sir</h2><p class="hint" style="margin-top: 4px" id="doubt-where"></p></div>
+    <div class="field" id="doubt-ch-row" hidden><label for="doubt-ch">Chapter</label><select id="doubt-ch"></select></div>
+    <div class="field" style="max-width: 160px"><label for="doubt-page">Page</label><input id="doubt-page" type="number" min="0" inputmode="numeric"></div>
+    <div class="field"><label for="doubt-text">Your doubt</label><textarea id="doubt-text" maxlength="1000" rows="4" placeholder="Write it in Hinglish or English, e.g. Example 3 mein molality temperature se kyun nahi badalti?"></textarea></div>
+    <div class="field"><label for="doubt-photo">Photo of your working (optional)</label><input id="doubt-photo" type="file" accept="image/*"><img class="idprev" id="doubt-prev" alt="" hidden></div>
+    <div class="msg" id="doubt-msg" role="status" hidden></div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn btn-sun" type="submit" id="doubt-btn">Send doubt</button><button class="btn btn-line" type="button" id="doubt-close">Close</button></div>
+  </form></div>
+  <div class="about cert-dlg" id="cert" role="dialog" aria-modal="true" aria-label="Your certificate" hidden><div class="card">
+    <img id="cert-img" alt="Your Chemophile certificate">
+    <div class="cert-actions"><a class="btn btn-sun" id="cert-dl" download>Download</a><button class="btn btn-wa" type="button" id="cert-share">Share</button><button class="btn btn-line" type="button" id="cert-close">Close</button></div>
+    <p class="hint" style="margin: 0">Put it on your WhatsApp status and tag your friends. Well done! 🎉</p>
+  </div></div>
+  <div class="about tour" id="tour" role="dialog" aria-modal="true" aria-label="How to use Chemophile" hidden><div class="card">
+    <div class="tour-art" id="tour-art" aria-hidden="true"></div>
+    <h2 id="tour-h"></h2><p id="tour-p"></p>
+    <div class="tour-dots" id="tour-dots"></div>
+    <div class="tour-nav"><button class="btn btn-line" type="button" id="tour-skip">Skip</button><button class="btn btn-sun" type="button" id="tour-next">Next</button></div>
+  </div></div>
   <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
@@ -443,7 +525,8 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
+      if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -663,6 +746,7 @@ async function start(user) {
 
   // Keep watching: if Adeel Sir blocks the ID or resets the device, this device logs out.
   if (unwatch) unwatch();
+  watchDoubts(user.uid);
   unwatch = onSnapshot(ref, s => {
     const d = s.data();
     if (!d) {
@@ -856,6 +940,7 @@ async function renderLibrary() {
         <div class="meta">${status}</div>
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
+        ${open && certReady(k) ? `<button class="btn btn-sm cert-btn" type="button" data-cert="${k}">🏅 My certificate</button><br>` : ""}
         ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
           : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} Chapter ${n} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
     </div>`;
@@ -881,6 +966,7 @@ async function renderLibrary() {
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
   renderMyReading(keys);
+  searchKeys = keys; renderStreak(); renderDoubts(); showTour();
   renderRefer();
   if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
@@ -945,6 +1031,7 @@ function renderFree() {
         <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
   }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
   $("#myread").hidden = true; $("#refer").hidden = true;
+  searchKeys = chs.map(chapterKey); renderStreak(); renderDoubts(); showTour();
   const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ...(me.role ? [["I am a", me.role === "teacher" ? "Teacher" : "Student"]] : []),
     ...(me.school ? [["School", me.school + (me.city ? ", " + me.city : "")]] : []), ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
@@ -1120,6 +1207,226 @@ $("#teach").addEventListener("submit", async e => {
   } catch (ex) { fail(ex.code === "permission-denied" ? "Your request is already with Adeel Sir." : "Could not send. Check your internet and try again."); $("#t-btn").disabled = false; }
 });
 
+// ---------- reading streak and daily goal ----------
+// A day counts for the streak after STREAK_MIN minutes of reading; the ring fills to GOAL_MIN minutes.
+// Minutes of today are kept on this phone; the days read are saved on the account (readDays).
+const GOAL_MIN = 15, STREAK_MIN = 5;
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayKey = () => `chemophile-today-${auth.currentUser ? auth.currentUser.uid : "x"}`;
+function today() { try { const v = JSON.parse(localStorage.getItem(todayKey())); if (v && v.d === dayKey()) return v; } catch (e) {} return { d: dayKey(), ms: 0 }; }
+function addToday(ms) {
+  if (!me || me.admin || ms <= 0 || ms > 60e3) return;
+  const v = today(), before = v.ms;
+  v.ms += ms;
+  try { localStorage.setItem(todayKey(), JSON.stringify(v)); } catch (e) {}
+  if (before < STREAK_MIN * 60e3 && v.ms >= STREAK_MIN * 60e3) markDay();
+  if (before < GOAL_MIN * 60e3 && v.ms >= GOAL_MIN * 60e3 && book && book.toast) book.toast(`🎯 ${GOAL_MIN} minutes today! 🔥 ${streak()}-day streak`);
+}
+function markDay() {
+  const d = dayKey(), days = me.readDays || [];
+  if (days.includes(d)) return;
+  me.readDays = [...days, d].slice(-400);
+  updateDoc(doc(db, "users", auth.currentUser.uid), { readDays: me.readDays }).catch(e => console.warn("streak", e));
+}
+function streak() {
+  const set = new Set(me.readDays || []), d = new Date();
+  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (set.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function renderStreak() {
+  const box = $("#streak");
+  box.hidden = !!me.admin;
+  if (me.admin) return;
+  const min = Math.floor(today().ms / 60e3), n = streak(), set = new Set(me.readDays || []);
+  const week = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d; });
+  box.innerHTML = `<div class="ring" style="--p: ${Math.min(100, Math.round(min / GOAL_MIN * 100))}" role="img" aria-label="${min} of ${GOAL_MIN} minutes read today"><span>${Math.min(min, 99)}<small>/${GOAL_MIN} min</small></span></div>
+    <div><b>${n ? `🔥 ${n}-day streak` : "Start your streak 🔥"}</b><div class="sub">${min >= GOAL_MIN ? "Today's goal done! 🎯" : set.has(dayKey()) ? `✓ Today counts · ${GOAL_MIN - min} min to today's goal` : n ? `Read ${STREAK_MIN - min} min more today to keep it` : `Read ${STREAK_MIN} minutes today to start`}</div>
+      <div class="week">${week.map(d => `<i class="${set.has(dayKey(d)) ? "on" : ""}${dayKey(d) === dayKey() ? " today" : ""}" title="${d.toLocaleDateString("en-IN", { weekday: "long" })}">${"SMTWTFS"[d.getDay()]}</i>`).join("")}</div></div>`;
+}
+
+// ---------- certificate ----------
+// A chapter's certificate opens after reading CERT_READ of its pages and, if it has a quiz, scoring CERT_QUIZ.
+const CERT_READ = 0.7, CERT_QUIZ = 0.8;
+function certReady(k) {
+  if (me.admin) return false;
+  const info = chapterInfo.get(k) || {}, r = reading.get(k), total = info.pageCount || (r && r.total);
+  if (!total || !r || (r.seen || []).length < Math.ceil(total * CERT_READ)) return false;
+  if (!info.quiz) return true;
+  const q = quizRes.get(k);
+  return !!(q && q.total && q.best / q.total >= CERT_QUIZ);
+}
+async function makeCert(k) {
+  const c = findChapter(k) || {}, q = quizRes.get(k), W = 1600, H = 1131;
+  try { await Promise.all(['800 64px "Baloo 2"', '600 28px "Fira Sans"', '700 40px "Kalam"'].map(f => document.fonts.load(f))); } catch (e) {}
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#15134a"); g.addColorStop(1, "#3b2fb8");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#fffdf6"; x.beginPath(); x.roundRect(48, 48, W - 96, H - 96, 28); x.fill();
+  x.strokeStyle = "#ffd24a"; x.lineWidth = 6; x.beginPath(); x.roundRect(72, 72, W - 144, H - 144, 20); x.stroke();
+  const logo = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = "assets/logo/icon-192.png"; });
+  if (logo) x.drawImage(logo, W / 2 - 60, 110, 120, 120);
+  x.textAlign = "center"; x.fillStyle = "#3b2fb8";
+  x.font = '700 26px "Fira Sans", Arial'; x.fillText("C H E M O P H I L E   ·   B Y   A D E E L   S I R", W / 2, 278);
+  x.fillStyle = "#15134a"; x.font = '800 74px "Baloo 2", Arial'; x.fillText("Certificate of Completion", W / 2, 370);
+  x.fillStyle = "#5d5b80"; x.font = '500 30px "Fira Sans", Arial'; x.fillText("This is proudly given to", W / 2, 440);
+  x.fillStyle = "#1b1a45"; x.font = '800 86px "Baloo 2", Arial'; x.fillText(me.name || me.loginId, W / 2, 540, W - 260);
+  x.fillStyle = "#ffd24a"; x.fillRect(W / 2 - 200, 562, 400, 6);
+  x.fillStyle = "#5d5b80"; x.font = '500 30px "Fira Sans", Arial'; x.fillText("for completing", W / 2, 630);
+  x.fillStyle = "#3b2fb8"; x.font = '800 46px "Baloo 2", Arial'; x.fillText(`${clsName(c.cls)} · Chapter ${c.n}: ${String(c.title || "").replace(/<[^>]+>/g, "")}`, W / 2, 700, W - 220);
+  x.fillStyle = "#5d5b80"; x.font = '500 28px "Fira Sans", Arial';
+  x.fillText(q && q.total ? `with a quiz score of ${q.best}/${q.total} (${Math.round(q.best / q.total * 100)}%)` : "reading the chapter page by page", W / 2, 760);
+  const id = "CHEMO-" + [...(auth.currentUser.uid + k)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 7);
+  x.textAlign = "left"; x.fillStyle = "#1b1a45"; x.font = '700 44px "Kalam", cursive'; x.fillText("Adeel Sir", 170, 930);
+  x.fillStyle = "#1b1a45"; x.fillRect(170, 950, 330, 3);
+  x.font = '600 24px "Fira Sans", Arial'; x.fillStyle = "#5d5b80"; x.fillText("Mohd Adeel Khan, MSc BEd (JMI)", 170, 990);
+  x.textAlign = "right"; x.font = '700 30px "Fira Sans", Arial'; x.fillStyle = "#1b1a45"; x.fillText(new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }), W - 170, 930);
+  x.fillRect(W - 500, 950, 330, 3);
+  x.font = '600 24px "Fira Sans", Arial'; x.fillStyle = "#5d5b80"; x.fillText(`Date · ${id}`, W - 170, 990);
+  x.textAlign = "center"; x.font = '500 22px "Fira Sans", Arial'; x.fillStyle = "#8f8cc4"; x.fillText("chemophile.maproductsindia.com", W / 2, 1040);
+  x.font = "64px serif"; x.fillText("🏅", W / 2, 960);
+  return cv;
+}
+$("#v-library").addEventListener("click", async e => {
+  const b = e.target.closest("[data-cert]");
+  if (!b) return;
+  b.disabled = true;
+  const cv = await makeCert(b.dataset.cert), url = cv.toDataURL("image/png"), c = findChapter(b.dataset.cert) || {};
+  $("#cert-img").src = url;
+  $("#cert-dl").href = url; $("#cert-dl").download = `Chemophile-certificate-${clsName(c.cls).replace(/\s+/g, "")}-Ch${c.n}.png`;
+  $("#cert-share").hidden = !(navigator.canShare && navigator.share);
+  $("#cert-share").onclick = async () => {
+    try { const blob = await (await fetch(url)).blob(), file = new File([blob], $("#cert-dl").download, { type: "image/png" });
+      await navigator.share({ files: [file], text: `I completed ${clsName(c.cls)} Chapter ${c.n} on Chemophile! 🏅` }); } catch (err) {}
+  };
+  $("#cert").hidden = false; b.disabled = false;
+});
+$("#cert-close").addEventListener("click", () => { $("#cert").hidden = true; });
+
+// ---------- doubts ----------
+// A doubt about a page goes to Adeel Sir (doubts collection); his answer appears here, live.
+let myDoubts = [], unwatchDoubts = null, doubtAt = null;
+function watchDoubts(uid) {
+  if (unwatchDoubts) unwatchDoubts();
+  unwatchDoubts = onSnapshot(query(collection(db, "doubts"), where("uid", "==", uid)), snap => {
+    myDoubts = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0));
+    if (!$("#v-library").hidden) renderDoubts();
+  }, e => console.warn("doubts", e));
+}
+function renderDoubts() {
+  const box = $("#doubts-card");
+  box.hidden = !!(me.admin || !me.loginId);
+  if (box.hidden) return;
+  const fresh = myDoubts.filter(d => d.status === "answered" && !d.seen).length;
+  box.innerHTML = `<div class="head"><h2>My doubts ${fresh ? `<span class="chip-s ok">${fresh} new answer${fresh > 1 ? "s" : ""}</span>` : ""}</h2><button class="btn btn-sun btn-sm" type="button" data-doubt-new>❓ Ask a doubt</button></div>
+    ${myDoubts.length ? myDoubts.slice(0, 8).map(d => `<div class="dq${d.status === "answered" && !d.seen ? " new" : ""}" data-did="${d.id}">
+      <div class="w"><span>${esc(d.title || d.ch)}${d.page ? " · page " + d.page : ""}</span><span class="chip-s${d.status === "answered" ? " ok" : ""}">${d.status === "answered" ? "Answered ✓" : "Waiting for Adeel Sir"}</span>${d.at ? `<span>${ago(d.at.toDate())}</span>` : ""}</div>
+      <div class="q">${esc(d.text)}</div>
+      ${d.answer ? `<div class="a"><b>Adeel Sir</b>${esc(d.answer)}</div>` : ""}
+      <div class="actions">${d.page && access(d.ch).open && (chapterInfo.get(d.ch) || {}).pageCount ? `<button class="btn btn-line btn-sm" type="button" data-read-page="${d.ch}|${d.page}">Open page ${d.page}</button>` : ""}${d.status === "answered" && !d.seen ? `<button class="btn btn-line btn-sm" type="button" data-doubt-seen="${d.id}">Got it ✓</button>` : ""}</div>
+    </div>`).join("") : `<p class="hint">Stuck on a page? Tap ❓ in the book (or above) and Adeel Sir answers here.</p>`}`;
+  const chip = $("#hero-sub");
+  const old = document.querySelector(".new-chip"); if (old) old.remove();
+  if (fresh) chip.insertAdjacentHTML("afterend", `<button class="new-chip" type="button" data-goto-doubts>💬 ${fresh} new answer${fresh > 1 ? "s" : ""} from Adeel Sir</button>`);
+}
+function openDoubt(k, page) {
+  doubtAt = k;
+  const c = k ? findChapter(k) || {} : null;
+  $("#doubt-ch-row").hidden = !!k;
+  if (!k) $("#doubt-ch").innerHTML = (searchKeys || []).filter(x => access(x).open).map(x => { const cc = findChapter(x) || {}; return `<option value="${x}">${esc(clsName(cc.cls))} · Ch ${cc.n} ${esc(cc.short || cc.title || x)}</option>`; }).join("");
+  $("#doubt-where").textContent = c ? `${clsName(c.cls)} · Chapter ${c.n}: ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}` : "Choose the chapter and page your doubt is about.";
+  $("#doubt-page").value = page || "";
+  $("#doubt-text").value = ""; $("#doubt-photo").value = ""; delete $("#doubt-photo").dataset.photo; $("#doubt-prev").hidden = true;
+  $("#doubt-msg").hidden = true; $("#doubt-btn").disabled = false;
+  $("#doubt").hidden = false;
+  setTimeout(() => $("#doubt-text").focus(), 50);
+}
+$("#doubt-close").addEventListener("click", () => { $("#doubt").hidden = true; });
+$("#doubt-photo").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const url = await shrinkPhoto(f); e.target.dataset.photo = url; $("#doubt-prev").src = url; $("#doubt-prev").hidden = false; }
+  catch (ex) { const m = $("#doubt-msg"); m.className = "msg bad"; m.textContent = ex.message; m.hidden = false; }
+});
+$("#doubt-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const m = $("#doubt-msg"), say = (t, cls) => { m.className = "msg " + cls; m.innerHTML = t; m.hidden = false; };
+  const k = doubtAt || $("#doubt-ch").value, c = findChapter(k) || {}, text = $("#doubt-text").value.trim(), page = Math.max(0, parseInt($("#doubt-page").value, 10) || 0), photo = $("#doubt-photo").dataset.photo;
+  if (!k) return say("Choose the chapter.", "bad");
+  if (text.length < 3) return say("Write your doubt.", "bad");
+  $("#doubt-btn").disabled = true;
+  try {
+    await addDoc(collection(db, "doubts"), { uid: auth.currentUser.uid, name: me.name || "", loginId: me.loginId || "", phone: me.phone || "", ch: k, title: `${clsName(c.cls)} · Ch ${c.n} ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}`, page, text, ...(photo ? { photo } : {}), status: "open", at: serverTimestamp() });
+    say(`✓ Sent! Adeel Sir's answer will appear in <b>My doubts</b> in your library. <a href="${wa(`Hello Adeel Sir, I sent a doubt on Chemophile (${clsName(c.cls)} Ch ${c.n}, page ${page}).`)}" target="_blank" rel="noopener">Also tell him on WhatsApp</a>`, "good");
+    $("#doubt-text").value = "";
+  } catch (ex) { say("Could not send. Check your internet and try again.", "bad"); $("#doubt-btn").disabled = false; }
+});
+$("#v-library").addEventListener("click", e => {
+  const n = e.target.closest("[data-doubt-new]"), s = e.target.closest("[data-doubt-seen]"), r = e.target.closest("[data-read-page]"), g = e.target.closest("[data-goto-doubts]");
+  if (n) openDoubt(null, "");
+  if (s) { const d = myDoubts.find(x => x.id === s.dataset.doubtSeen); if (d) { d.seen = true; renderDoubts(); updateDoc(doc(db, "doubts", d.id), { seen: true }).catch(() => {}); } }
+  if (r) { const [k, p] = r.dataset.readPage.split("|"); openBook(k, +p); }
+  if (g) $("#doubts-card").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// ---------- topic search ----------
+// Every topic and sub-topic of the chapters in the library (from the booklets' contents pages), with its page.
+let searchKeys = [];
+const plainT = h => String(h || "").replace(/<[^>]+>/g, "");
+function topicHits(q) {
+  const out = [], ql = q.toLowerCase();
+  searchKeys.forEach(k => {
+    const c = findChapter(k); if (!c) return;
+    (c.topics || []).forEach(([name, sec, page, subs], ti) => {
+      if (plainT(name).toLowerCase().includes(ql) || String(sec).toLowerCase().includes(ql)) out.push({ k, c, name: plainT(name), where: `Topic ${ti + 1} · ${sec}`, page });
+      String(subs || "").split(" · ").forEach(sb => { const m = sb.match(/^(.*)\s(\d+)$/); const nm = plainT(m ? m[1] : sb); if (nm.toLowerCase().includes(ql)) out.push({ k, c, name: nm, where: `Topic ${ti + 1}: ${plainT(name)}`, page: m ? +m[2] : page }); });
+    });
+  });
+  return out.slice(0, 30);
+}
+$("#tsearch").addEventListener("input", () => {
+  const q = $("#tsearch").value.trim(), box = $("#tresults");
+  if (q.length < 2) { box.hidden = true; return; }
+  const hits = topicHits(q), re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+  box.innerHTML = hits.length ? hits.map(h => { const open = access(chapterKey(h.c)).open && (chapterInfo.get(h.k) || {}).pageCount;
+    return `<button type="button" data-hit="${h.k}|${h.page}"${open ? "" : ' data-locked="1"'}><span>${esc(h.name).replace(re, s => `<mark>${s}</mark>`)}<span class="w">${esc(clsName(h.c.cls))} · Ch ${h.c.n} ${esc(plainT(h.c.short || h.c.title))} · ${esc(h.where)}</span></span><span class="pg">${open ? "p. " + h.page + " ›" : "🔒"}</span></button>`; }).join("")
+    : `<div class="none">No topic found for "${esc(q)}". Try another word, like "mole" or "bond".</div>`;
+  box.hidden = false;
+});
+$("#tresults").addEventListener("click", e => {
+  const b = e.target.closest("[data-hit]"); if (!b) return;
+  const [k, p] = b.dataset.hit.split("|");
+  $("#tresults").hidden = true;
+  if (b.dataset.locked) { location.href = "index.html#pack"; return; }
+  openBook(k, +p);
+});
+document.addEventListener("click", e => { if (!e.target.closest(".tsearch")) $("#tresults").hidden = true; });
+
+// ---------- first-time tour ----------
+const TOUR = [
+  ["📚", "Your library", "All your chapters live here. Tap a cover to start reading; it opens right where you stopped."],
+  ["👆", "Read like a book", "Tap the right or left side to turn. Pinch or double-tap to zoom. ⭐ bookmarks a page, and View has Scroll and Night mode."],
+  ["❓", "Stuck? Ask a doubt", "Tap ❓ on any page and send your doubt to Adeel Sir. His answer comes back right here."],
+  ["🔥", "Streaks and certificates", `Read ${GOAL_MIN} minutes a day to grow your streak. Finish a chapter and its quiz to unlock a 🏅 certificate to share.`]
+];
+let tourAt = 0;
+function drawTour() {
+  const [art, h, p] = TOUR[tourAt];
+  $("#tour-art").textContent = art; $("#tour-h").textContent = h; $("#tour-p").textContent = p;
+  $("#tour-art").style.animation = "none"; void $("#tour-art").offsetWidth; $("#tour-art").style.animation = "";
+  $("#tour-dots").innerHTML = TOUR.map((_, i) => `<i class="${i === tourAt ? "on" : ""}"></i>`).join("");
+  $("#tour-next").textContent = tourAt === TOUR.length - 1 ? "Let's start 🚀" : "Next";
+}
+function showTour(force) {
+  if (!force && (me.admin || !me.role || store.get("chemophile-tour-done") || !$("#about").hidden)) return;
+  tourAt = 0; drawTour(); $("#tour").hidden = false;
+}
+const endTour = () => { $("#tour").hidden = true; store.set("chemophile-tour-done", "1"); };
+$("#tour-next").addEventListener("click", () => { if (tourAt < TOUR.length - 1) { tourAt++; drawTour(); } else endTour(); });
+$("#tour-skip").addEventListener("click", endTour);
+$("#tour-again").addEventListener("click", () => showTour(true));
+
 // ---------- refer a friend ----------
 // The student's code is the first 6 letters of their account (refCodeOf in js/chapters.js); the admin finds the
 // friend by it when making the new buyer's ID, and adds REFERRAL.days to the friend's book.
@@ -1235,14 +1542,15 @@ function renderMyReading(keys) {
       const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
       return `<div class="rrow"><div class="t"><span>Ch ${c.n || k.split("-")[1]} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
         <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
-        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div></div>`;
+        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div>
+        ${certReady(k) ? `<div class="cert-hint">🏅 Certificate ready: open it from the chapter card.</div>` : `<div class="cert-hint">🏅 Certificate: read ${CERT_READ * 100}% of the pages${(chapterInfo.get(k) || {}).quiz ? ` and score ${CERT_QUIZ * 100}% in the quiz` : ""}.</div>`}</div>`;
     }).join("")}</div>`;
 }
 // Time counts only while the book is on screen and pages are being turned (5 minutes without a turn = away).
 function trackTick() {
   if (!track) return;
   const now = Date.now();
-  if (!document.hidden && now - track.active < 5 * 60e3) track.ms += now - track.tick;
+  if (!document.hidden && now - track.active < 5 * 60e3) { track.ms += now - track.tick; addToday(now - track.tick); }
   track.tick = now;
 }
 function flushReading() {
@@ -1349,7 +1657,7 @@ async function syncMarks(k) {
 }
 
 // ---------- book ----------
-function openBook(k) {
+function openBook(k, page) {
   const info = chapterInfo.get(k);
   if (!info || !info.pageCount || !access(k).open) return;
   store.set("chemophile-recent", k);
@@ -1358,7 +1666,8 @@ function openBook(k) {
   book = new Flipbook({
     title: c.short || c.title || info.title || k,
     pageCount: info.pageCount,
-    start: store.get(`chemophile-last-${k}`) || (reading.get(k) || {}).last || 1,
+    start: page || store.get(`chemophile-last-${k}`) || (reading.get(k) || {}).last || 1,
+    onDoubt: me.admin ? null : n => openDoubt(k, n),
     toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
     onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
     // Bookmarks: kept on this phone at once, and in Firebase (users/{uid}/marks/{chapter}) so they survive.

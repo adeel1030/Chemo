@@ -7,6 +7,7 @@
 //     start: 1, toc: [[name, page], ...], onPage: n => {}, onClose: () => {},
 //     download: { href, label },       // optional button
 //     marks: [pages], onMarks: list => {}   // optional bookmarks (both needed to show the ★ button)
+//     onDoubt: page => {}                   // optional "Ask a doubt" button (the page being read is passed)
 //   }).open();
 //
 // Two ways to read: Book (pages turn; two facing pages on a wide screen) and Scroll (pages one under another).
@@ -159,6 +160,7 @@
           <div class="fb-title"><b>${esc(o.title)}</b><span data-fb="count"></span></div>
           ${o.download ? `<a class="fb-btn sun fb-opt" href="${esc(o.download.href)}" download>${esc(o.download.label)}</a>` : ""}
           ${this.marksOn ? `<button class="fb-btn" type="button" data-fb="mark" aria-pressed="false" aria-label="Bookmark this page" title="Bookmark this page (B)">${ICON.star}</button>` : ""}
+          ${o.onDoubt ? `<button class="fb-btn" type="button" data-fb="doubt" aria-label="Ask Adeel Sir a doubt about this page" title="Ask a doubt about this page">❓<span class="fb-lbl">Doubt</span></button>` : ""}
           <button class="fb-btn" type="button" data-fb="view" aria-label="View settings" title="View: book or scroll, night mode, zoom, full screen">${ICON.view}<span class="fb-lbl">View</span></button>
           <button class="fb-btn sun" type="button" data-fb="toc">${o.toc.length ? "Topics" : "Pages"}</button>
         </div>
@@ -703,6 +705,7 @@
       ({
         close: () => this.close(), prev: () => this.turn(-1), next: () => this.turn(1),
         toc: () => this.panel("toc"), view: () => this.panel("view"), "panel-close": () => this.panel(null),
+        doubt: () => this.o.onDoubt && this.o.onDoubt(this.cur),
         zin: () => this.zoomStep(1), zout: () => this.zoomStep(-1), zfit: () => this.zoomTo(1),
         night: () => this.setNight(!this.p.night), full: () => this.fullscreen(), mark: () => this.toggleMark()
       }[a] || (() => {}))();

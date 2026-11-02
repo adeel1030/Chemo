@@ -109,6 +109,11 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'school', 'city', 'classes', 'profileAt'])
         && validProfile(request.resource.data)
         && request.resource.data.profileAt == request.time
+      ) || (
+        // The days they read (for the reading streak), as "YYYY-MM-DD" strings.
+        signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readDays'])
+        && request.resource.data.readDays is list && request.resource.data.readDays.size() <= 800
       );
 
       // Free access to one chapter till a date: from a promo code (see validGrant), or given by the admin
@@ -197,6 +202,25 @@ service cloud.firestore {
         );
         allow read, delete: if isAdmin();
       }
+    }
+
+    // Doubts: a reader asks about a page; only they and the admin see it; only the admin answers.
+    // The reader may only mark an answer as seen.
+    match /doubts/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn() && exists(userPath(request.auth.uid)) && validDoubt();
+      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen']) && request.resource.data.seen == true);
+      allow delete: if isAdmin();
+    }
+    function validDoubt() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'name', 'loginId', 'phone', 'ch', 'title', 'page', 'text', 'photo', 'status', 'at'])
+        && d.uid == request.auth.uid && d.status == 'open'
+        && d.text is string && d.text.size() >= 3 && d.text.size() <= 1000
+        && d.ch is string && d.ch.size() <= 12 && d.page is int && d.page >= 0 && d.page <= 2000
+        && (!('photo' in d) || (d.photo is string && d.photo.size() < 700000))
+        && d.at == request.time;
     }
 
     // The admin lists every student's free access at once.
