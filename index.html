@@ -210,6 +210,22 @@
     },
     {
      "@type": "Question",
+     "name": "I am a teacher. Can I see the full book?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Sign up as a teacher and send a photo of your school or college ID card from your library. Once Adeel Sir checks it, every chapter of your classes opens free for 30 days. For your students, ask for a promo code for your class."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "I already have a login ID. Can I use a promo code?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Open your library, enter the code under \"Have a promo code?\", and its chapters open on your same ID till the code's last date."
+     }
+    },
+    {
+     "@type": "Question",
      "name": "Can I sign up without buying?",
      "acceptedAnswer": {
       "@type": "Answer",
@@ -668,6 +684,10 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 .refer-band h3 span { color: var(--sun); }
 .refer-band p { color: var(--night-muted); font-size: .95rem; margin-top: 4px; }
 .refer-band .btn { white-space: nowrap; }
+.teacher-band { background: radial-gradient(circle at 95% 0%, rgba(59, 47, 184, .25), transparent 50%), var(--surface); color: var(--fg); border: 2px solid var(--line); margin-top: 16px; }
+.teacher-band p { color: var(--muted); }
+.teacher-band h3 span { color: var(--accent); }
+.teacher-band .gift { background: var(--night); }
 @media (max-width: 640px) { .refer-band { grid-template-columns: minmax(0, 1fr); } }
 .perks { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px 10px; }
 .perks li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: .88rem; font-weight: 600; }
@@ -866,6 +886,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <p class="sec-intro">Read on your phone for a whole year, start with one chapter a month, or keep the printed book on your desk. Same chapters, same Adeel Sir, same "aha!" moments.</p>
       <div class="plans" id="plan-cards"></div>
       <div class="refer-band" id="refer-band" hidden></div>
+      <div class="refer-band teacher-band" id="teacher-band"></div>
       <ul class="perks" id="perks"></ul>
     </div>
   </section>
@@ -921,6 +942,8 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
         <details><summary>How much does it cost?</summary><p>Each chapter's Online and Paperback price is shown under its cover. Pick chapters in "Build your pack" and the total adds up automatically. Delivery is charged extra for the paperback.</p></details>
         <details><summary>How do I order?</summary><p>Choose a format and chapters in "Build your pack" above, pay by UPI right there, then tap "Send order on WhatsApp" with the payment screenshot. Your login ID and password come on WhatsApp.</p></details>
         <details><summary>How do I pay?</summary><p>By UPI: scan the QR code on the order form, or tap "Pay with UPI app" on your phone (Google Pay, PhonePe, Paytm or any UPI app). For the paperback, Adeel Sir first tells you the delivery charge on WhatsApp, then you pay.</p></details>
+        <details><summary>I am a teacher. Can I see the full book?</summary><p>Yes. Sign up as a teacher and send a photo of your school or college ID card from your library. Once Adeel Sir checks it, every chapter of your classes opens free for 30 days. For your students, ask for a promo code for your class.</p></details>
+        <details><summary>I already have a login ID. Can I use a promo code?</summary><p>Yes. Open your library, enter the code under "Have a promo code?", and its chapters open on your same ID till the code's last date.</p></details>
         <details><summary>Can I sign up without buying?</summary><p>Yes, it's free. Tap "Sign up free", tick your class, and the free sample of your class stays in your own library. When you buy chapters, they open on the same login ID.</p></details>
         <details><summary>Can I see the book before buying?</summary><p>Yes. There is a free sample for both Class 11 and Class 12, with one complete topic from every chapter. Flip through it in "Free sample" above, or download the PDF.</p></details>
       </div>
@@ -1270,6 +1293,10 @@ function renderPlans() {
     <div><h3>Refer a friend, get <span>${REFERRAL.days} days free</span></h3>
       <p>Every Chemophile student has a personal code in their library. When a friend orders the online book with it, your book gets ${REFERRAL.days} extra days. Refer 3 friends and that's ${REFERRAL.days * 3} days free. Got a code from a friend? Type it in your order below.</p></div>
     <a class="btn btn-sun" href="read.html">Get my code</a>`;
+  $("#teacher-band").innerHTML = `<div class="gift" aria-hidden="true">🎓</div>
+    <div><h3>Teachers: <span>${BUSINESS.teacherFreeDays} days free</span></h3>
+      <p>Sign up as a teacher and send a photo of your school or college ID card. Adeel Sir checks it and opens every chapter of your classes, free. Want it for your students too? Ask for a promo code for your class.</p></div>
+    <a class="btn btn-sun" href="read.html#teacher">Request free access</a>`;
   $("#perks").innerHTML = [
     PAY && PAY.upi && "Pay by UPI: GPay, PhonePe, Paytm", "Free sample before you buy", "Login ID on WhatsApp after payment",
     "1 ID = 1 phone: your copy stays yours", "Sign up free: the sample stays in your library", "Hinglish explanations, English exam answers"

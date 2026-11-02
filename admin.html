@@ -76,6 +76,8 @@ body { background: var(--paper); }
 .todo-item.warn .ic { background: #e0a800; }
 .todo-item span { flex: 1; min-width: 0; }
 .todo-item small { display: block; margin-top: 2px; }
+.idthumb { width: 64px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; cursor: zoom-in; background: var(--paper); flex: none; }
+.idthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .quick { display: grid; gap: 10px; }
 .quick .btn { justify-content: flex-start; }
 .recent { display: grid; gap: 6px; font-size: .9rem; }
@@ -267,7 +269,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
     <nav class="side" aria-label="Admin sections">
       <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview<span class="dot" id="dot-home" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
-      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span></button>
+      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
       <button class="nav-btn" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
@@ -344,6 +346,11 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
     <section id="t-promos" class="stack" hidden>
       <div class="page-head"><div><h1>Promo codes</h1><p>Free, time-limited access for teachers, schools or demos.</p></div></div>
+      <div class="card" id="treq-card" hidden>
+        <div class="section-title"><h2>Teacher requests <span class="hint" id="treq-count"></span></h2></div>
+        <p class="hint" style="margin-top: 0">Teachers who signed up and sent their school ID card for free access (<span data-tdays>30</span> days). Check the photo, then approve or reject.</p>
+        <div class="students" id="treqs"></div>
+      </div>
       <details class="panel" id="promo-box">
         <summary><span class="plus" aria-hidden="true">+</span>New promo code<span class="hint">For teachers, schools or demos</span></summary>
       <form class="stack" id="promo-form" novalidate>
@@ -471,7 +478,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <div class="dlg-foot">
           <button class="btn btn-danger btn-sm" type="button" data-dlg="delete" hidden>Delete</button>
           <span class="spacer"></span>
-          <button class="btn btn-line" value="cancel">Cancel</button>
+          <button class="btn btn-line" value="cancel" data-dlg="cancel">Cancel</button>
           <button class="btn btn-sun" type="button" data-dlg="save">Save</button>
         </div>
       </form>
@@ -499,7 +506,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 
@@ -546,7 +553,10 @@ ${over ? "Renew to open it again" : "Renew now to keep reading"} for another ${o
 - Adeel Sir`;
 }
 // Free sign-ups from the reader: an ID with no chapters and no plan yet. They read the free sample until they buy.
-const unpaid = s => !s.promo && !(s.chapters || []).length && !subKeys(s).length;
+// Free access (users/{uid}/grants/{chapter}): from a promo code entered on an ID, or given here (e.g. to a teacher).
+const grantsOf = s => s.grants || [];
+const liveGrants = s => grantsOf(s).filter(g => g.till && g.till.toDate() > new Date());
+const unpaid = s => !s.promo && !(s.chapters || []).length && !subKeys(s).length && !liveGrants(s).length;
 const isSignup = s => !!s.signup && unpaid(s);
 const classesText = s => (s.classes || []).map(clsName).join(" + ");
 function followMessage(s) {
@@ -632,6 +642,7 @@ function renderDash() {
   ].join("");
   const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
   const todo = [
+    ...(teacherReqs.filter(r => r.status === "pending").length ? [item("warn", `${teacherReqs.filter(r => r.status === "pending").length} teacher${teacherReqs.filter(r => r.status === "pending").length === 1 ? " is" : "s are"} waiting for free access. Check their ID card.`, "Check", "t-promos")] : []),
     ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
     ...soonDue.map(s => `<div class="todo-item warn"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ends on ${fmtDate(subEnd(s))}.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...unpaid.map(s => `<div class="todo-item bad"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Chapters are locked till they pay.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
@@ -809,8 +820,10 @@ async function studentRefs(uid) {
   const reads = await getDocs(collection(db, "users", uid, "reading")).catch(() => ({ docs: [] }));
   const quiz = await getDocs(collection(db, "users", uid, "quiz")).catch(() => ({ docs: [] }));
   const marks = await getDocs(collection(db, "users", uid, "marks")).catch(() => ({ docs: [] }));
+  const grantDocs = await getDocs(collection(db, "users", uid, "grants")).catch(() => ({ docs: [] }));
+  const req = await getDoc(doc(db, "teacherRequests", uid)).catch(() => null);
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...grantDocs.docs.map(d => d.ref), ...(req && req.exists() ? [req.ref] : []), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {
@@ -842,6 +855,16 @@ async function loadStudents() {
     try { s.attempts = (await getCountFromServer(collection(db, "users", s.uid, "attempts"))).data().count; }
     catch (e) { s.attempts = 0; }
   }));
+  // Free access of every student at once, and teachers' requests.
+  try {
+    (await getDocs(collectionGroup(db, "grants"))).forEach(d => {
+      const s = students.find(x => x.uid === d.ref.parent.parent.id);
+      if (s) (s.grants = s.grants || []).push({ ch: d.id, ...d.data() });
+    });
+  } catch (e) { console.warn("grants", e); }
+  try { teacherReqs = (await getDocs(collection(db, "teacherRequests"))).docs.map(d => ({ uid: d.id, ...d.data() })).sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0)); }
+  catch (e) { teacherReqs = []; console.warn("teacher requests", e); }
+  renderTeacherReqs();
   // Saved passwords (needs the latest Firestore rules; without them the messages just leave the password out).
   try { (await getDocs(collection(db, "secrets"))).forEach(d => { const s = students.find(x => x.uid === d.id); if (s) s.password = d.data().password; }); }
   catch (e) {}
@@ -849,6 +872,7 @@ async function loadStudents() {
   if (!students.length) $("#new-box").open = true;
   renderStudents();
 }
+let teacherReqs = [];
 const FILTERS = [
   ["all", "All", () => true],
   ["active", "Active", s => s.active !== false],
@@ -862,13 +886,15 @@ const FILTERS = [
   ["renew", "Ending in 30 days", s => endingSoon(s) || endedLately(s)],
   ["promo", "Promo", s => !!s.promo],
   ["signup", "Signed up, not bought", isSignup],
+  ["free", "Free access", s => liveGrants(s).length > 0],
+  ["teacher", "Teachers", s => s.role === "teacher"],
 ];
 let stuFilter = "all";
 const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
 function renderStudents() {
   const q = $("#stu-search").value.trim().toLowerCase();
   const test = FILTERS.find(f => f[0] === stuFilter)[2];
-  const list = students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
+  const list = students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone, s.school, s.city].some(v => (v || "").toLowerCase().includes(q))));
   $("#stu-count").textContent = `(${students.length})`;
   $("#stu-filters").innerHTML = FILTERS.map(([k, label, f]) => `<button class="chip" type="button" data-filter="${k}" aria-pressed="${k === stuFilter}">${label} <b>${students.filter(f).length}</b></button>`).join("");
   $("#students").innerHTML = list.length ? list.map(s => `
@@ -886,8 +912,13 @@ function renderStudents() {
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
           ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
           ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
+          ${s.role === "teacher" ? `<span class="pill">${s.teacher === "verified" ? "✓ Verified teacher" : "Teacher"}</span>` : ""}
         </div>
       </div>
+      ${s.school || s.city ? `<div class="sub">🏫 ${esc([s.school, s.city].filter(Boolean).join(", "))}${(s.classes || []).length ? ` · ${esc(classesText(s))}` : ""}</div>` : ""}
+      ${grantsOf(s).length ? `<div class="subline"><span class="pill ${liveGrants(s).length ? "good" : "bad"}">Free access · ${liveGrants(s).length ? "till " + fmtDate(liveGrants(s).map(g => g.till).sort((a, b) => b.toMillis() - a.toMillis())[0]) : "ended"}</span>
+        <span>${grantsOf(s).map(g => esc(chName(g.ch))).join(", ")} <span class="hint">(${esc([...new Set(grantsOf(s).map(g => g.code === "TEACHER" ? "teacher access" : g.code === "ADMIN" ? "given by you" : "code " + g.code))].join(", "))})</span></span>
+        <button class="btn btn-line btn-sm" type="button" data-act="ungrant">Remove free access</button></div>` : ""}
       ${isSignup(s) ? "" : (s.chapters || []).length || !subKeys(s).length ? `<details class="chs"><summary>${esc(bookSummary(s.chapters || []) || "No chapters")}${subKeys(s).length ? " (bought)" : ""}</summary><div>${(s.chapters || []).map(k => esc(chName(k))).join(", ")}</div></details>` : ""}
       ${!isSignup(s) && subKeys(s).length ? `<div class="subline"><span class="pill ${subOver(s) ? "bad" : "warn"}">Monthly · ${subOver(s) ? "ended" : "paid till"} ${fmtDate(subEnd(s))}</span>
         <span>${subKeys(s).length} chapter${subKeys(s).length > 1 ? "s" : ""}: ${subKeys(s).map(k => esc(chName(k))).join(", ")}${planPrice(subKeys(s)) ? ` · ₹${planPrice(subKeys(s))}/month` : ""}</span></div>` : ""}
@@ -897,6 +928,8 @@ function renderStudents() {
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
         <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="details">Edit details</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="give">Free access</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <span class="spacer"></span>
         <button class="btn ${s.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-act="toggle">${s.active === false ? "Unblock" : "Block"}</button>
@@ -949,14 +982,15 @@ const shownStudents = () => {
 const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
 function studentsCsv(list) {
   const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Class", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
-    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent"];
+    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent", "I am", "School", "City", "Free access"];
   const rows = list.map(s => {
     const plan = s.promo ? "Promo" : isSignup(s) ? "Signed up (not bought)" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
     const status = s.active === false ? "Blocked" : isOver(s) ? "Expired" : subOver(s) && !subLive(s).length && !(s.chapters || []).length ? "Monthly unpaid" : "Active";
     const by = s.referredBy && students.find(x => x.uid === s.referredBy);
     return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", classesText(s), plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
       subKeys(s).map(chName).join("; "), subKeys(s).length ? dmy(subEnd(s)) : "", status, s.deviceId ? "Yes" : "No", s.deviceInfo || "", dmy(lastRead(s)), dmy(s.createdAt),
-      resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt)];
+      resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt), s.role || "", s.school || "", s.city || "",
+      grantsOf(s).map(g => `${chName(g.ch)} till ${dmy(g.till)}`).join("; ")];
   });
   // Quote every cell; a cell starting with = + - @ is kept as text so a spreadsheet never runs it as a formula.
   const cell = v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
@@ -1023,6 +1057,15 @@ $("#students").addEventListener("click", async e => {
       const text = `Hello ${(s.name || "").split(" ")[0]}! Payment received, thank you. Your Chemophile monthly plan is renewed till ${fmtDate(till)}. Happy reading!\n- Adeel Sir`;
       m.className = "msg good"; m.hidden = false;
       m.innerHTML = `Renewed till <b>${fmtDate(till)}</b>. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`;
+    }
+    if (b.dataset.act === "details") return detailsDialog(s);
+    if (b.dataset.act === "give") return giveDialog(s);
+    if (b.dataset.act === "ungrant") {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to remove"; return; }
+      await deleteAll(grantsOf(s).map(g => doc(db, "users", s.uid, "grants", g.ch)));
+      await updateDoc(ref, { grantsAt: serverTimestamp() });
+      s.grants = []; renderStudents();
+      return;
     }
     if (b.dataset.act === "reading") {
       const box = row.querySelector(".reading-box");
@@ -1161,6 +1204,7 @@ function renderPromos() {
       <div><div class="sub">${esc(bookSummary(p.chapters))}</div><div class="meter" title="${p.used || 0} of ${p.maxUses} places used"><i style="width: ${pct}%"></i></div></div>
       <div class="actions">
         <a class="btn btn-wa btn-sm" href="${waLink("", promoMessage(p))}" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <button class="btn btn-sun btn-sm" type="button" data-pact="edit">Edit / extend</button>
         <button class="btn btn-line btn-sm" type="button" data-pact="who">Who used it</button>
         <span class="spacer"></span>
         <button class="btn ${p.active === false ? "btn-line" : "btn-danger"} btn-sm" type="button" data-pact="toggle">${p.active === false ? "Switch on" : "Switch off"}</button>
@@ -1188,18 +1232,22 @@ $("#promos").addEventListener("click", async e => {
     if (b.dataset.pact === "del") {
       // Say how many people have the book open with this code, and let the admin remove them too.
       const n = (await promoUsers()).size, opt = box.querySelector("label");
-      opt.hidden = !n;
+      const idUsers = students.filter(s => grantsOf(s).some(g => g.code === p.code)).length;
+      opt.hidden = !n && !idUsers;
       opt.querySelector(".del-users").checked = false;
-      opt.querySelector("span").textContent = `Also remove the ${n === 1 ? "1 person" : n + " people"} who opened the book with this code. Their book closes right away. If you leave this unticked, they keep reading until ${fmtDate(p.expiresAt)}.`;
+      opt.querySelector("span").textContent = `Also close the book for the ${n + idUsers === 1 ? "1 person" : n + idUsers + " people"} who used this code${idUsers ? ` (${idUsers} with their own ID keep their ID and bought chapters)` : ""}. If you leave this unticked, they keep reading until ${fmtDate(p.expiresAt)}.`;
       box.hidden = false;
       box.querySelector("[data-pact=del-no]").focus();
     }
+    if (b.dataset.pact === "edit") return promoDialog(p);
     if (b.dataset.pact === "del-no") box.hidden = true;
     if (b.dataset.pact === "del-yes") {
       b.disabled = true;
       const refs = [];
       if (box.querySelector(".del-users").checked) {
         for (const u of (await promoUsers()).docs) refs.push(...await studentRefs(u.id));
+        // Students with their own ID who entered this code lose only the chapters it opened.
+        students.forEach(s => grantsOf(s).filter(g => g.code === p.code).forEach(g => refs.push(doc(db, "users", s.uid, "grants", g.ch))));
       }
       const reds = await getDocs(collection(db, "promos", p.code, "redemptions"));
       refs.push(...reds.docs.map(d => d.ref), doc(db, "promos", p.code));
@@ -1223,6 +1271,186 @@ $("#promos").addEventListener("click", async e => {
     b.disabled = false;
     const m = row.querySelector(".msg"); m.className = "msg bad"; m.textContent = "Not saved: " + (ex.message || ex.code); m.hidden = false;
   }
+});
+
+// Many writes in groups of 400 (Firestore takes at most 500 in one batch).
+async function writeAll(ops) {
+  for (let i = 0; i < ops.length; i += 400) { const w = writeBatch(db); ops.slice(i, i + 400).forEach(f => f(w)); await w.commit(); }
+}
+const pickedIn = sel => [...dlg.querySelectorAll(sel + " input:checked")].map(i => i.value);
+
+// ---------- edit a promo code (date, places, chapters) ----------
+// Changes can also reach the people who already used the code: promo-code readers get the new date and
+// chapters on their account; students with their own ID get the same free access on their ID.
+async function promoDialog(p) {
+  const reds = (await getDocs(collection(db, "promos", p.code, "redemptions"))).docs.map(d => d.id);
+  openDialog(`Promo code ${p.code}`, `
+    <div class="cat-row">
+      <div class="field"><label for="d-pnote">Who it is for</label><input id="d-pnote" value="${esc(p.note || "")}"></div>
+      <div class="field sm"><label for="d-pmax">Places</label><input id="d-pmax" type="number" min="${Math.max(1, p.used || 0)}" max="5000" inputmode="numeric" value="${p.maxUses}"></div>
+    </div>
+    <div class="cat-row">
+      <div class="field"><label for="d-ptill">Last date</label><input id="d-ptill" type="date" value="${toInput(p.expiresAt)}"><span class="hint">Quick: <a href="#" data-ext="7">+7 days</a> · <a href="#" data-ext="15">+15</a> · <a href="#" data-ext="30">+30</a></span></div>
+      <label class="cat-check" style="align-self: end"><input type="checkbox" id="d-pon"${p.active !== false ? " checked" : ""}> Switched on</label>
+    </div>
+    <div><b>Chapters it opens</b><div class="chap-picks" id="d-ppicks"></div></div>
+    ${reds.length ? `<label class="cat-check"><input type="checkbox" id="d-papply" checked> Also apply the new date and chapters to the ${reds.length} ${reds.length === 1 ? "person" : "people"} who already used it</label>` : ""}`,
+    async () => {
+      const till = val("d-ptill"), maxUses = parseInt(val("d-pmax"), 10), chapters = pickedIn("#d-ppicks");
+      if (!till) throw new Error("Choose the last date.");
+      if (new Date(till + "T23:59:59") < new Date()) throw new Error("The last date must be today or later.");
+      if (!(maxUses >= Math.max(1, p.used || 0))) throw new Error(`Places: at least ${Math.max(1, p.used || 0)} (already used).`);
+      if (!chapters.length) throw new Error("Tick at least one chapter.");
+      const expiresAt = endOfDay(till), update = { note: val("d-pnote"), maxUses, expiresAt, chapters, active: dlg.querySelector("#d-pon").checked };
+      await updateDoc(doc(db, "promos", p.code), update);
+      let reached = 0;
+      if (reds.length && dlg.querySelector("#d-papply").checked) {
+        const ops = [];
+        reds.forEach(uid => {
+          const s = students.find(x => x.uid === uid);
+          if (!s) return;
+          reached++;
+          if (s.promo === p.code) { ops.push(w => w.update(doc(db, "users", uid), { expiresAt, chapters })); return; }
+          if (s.promo) return;
+          chapters.forEach(k => ops.push(w => w.set(doc(db, "users", uid, "grants", k), { till: expiresAt, code: p.code, at: serverTimestamp() })));
+          grantsOf(s).filter(g => g.code === p.code && !chapters.includes(g.ch)).forEach(g => ops.push(w => w.delete(doc(db, "users", uid, "grants", g.ch))));
+          ops.push(w => w.update(doc(db, "users", uid), { grantsAt: serverTimestamp() }));
+        });
+        await writeAll(ops);
+      }
+      Object.assign(p, update); renderPromos();
+      if (reached) loadStudents();
+      const m = $(`.stu[data-code="${p.code}"] .msg`);
+      if (m) { m.className = "msg good"; m.hidden = false; m.textContent = `Saved: valid till ${fmtDate(expiresAt)}, ${maxUses} places.${reached ? ` Updated for ${reached} ${reached === 1 ? "person" : "people"} who used it.` : ""}`; }
+    });
+  picks(dlg.querySelector("#d-ppicks"), p.chapters || []);
+  dlg.querySelector("#dlg-body").addEventListener("click", e => {
+    const a = e.target.closest("[data-ext]");
+    if (!a) return;
+    e.preventDefault();
+    const cur = val("d-ptill"), from = cur && new Date(cur + "T12:00") > new Date() ? new Date(cur + "T12:00") : new Date();
+    dlg.querySelector("#d-ptill").value = toInput({ toDate: () => new Date(from.getTime() + (+a.dataset.ext) * 864e5) });
+  });
+}
+
+// ---------- edit a student's details ----------
+function detailsDialog(s) {
+  const cls = (s.classes || []).map(Number);
+  openDialog(`Details · ${s.name}`, `
+    <div class="cat-row">
+      <div class="field"><label for="d-sname">Name</label><input id="d-sname" value="${esc(s.name || "")}" maxlength="60"></div>
+      <div class="field"><label for="d-sphone">WhatsApp number</label><input id="d-sphone" inputmode="tel" value="${esc(s.phone || "")}"></div>
+    </div>
+    <div class="cat-row">
+      <div class="field sm"><label for="d-srole">I am a</label><select id="d-srole"><option value="">Not told</option><option value="student"${s.role === "student" ? " selected" : ""}>Student</option><option value="teacher"${s.role === "teacher" ? " selected" : ""}>Teacher</option></select></div>
+      <div class="field"><label for="d-sschool">School or college</label><input id="d-sschool" value="${esc(s.school || "")}" maxlength="100"></div>
+      <div class="field"><label for="d-scity">City</label><input id="d-scity" value="${esc(s.city || "")}" maxlength="60"></div>
+    </div>
+    <div><b>Class</b><div class="chap-picks" id="d-scls">${classList().map(c => `<label><input type="checkbox" value="${c}"${cls.includes(c) ? " checked" : ""}> ${esc(clsName(c))}</label>`).join("")}</div></div>
+    ${s.promo ? "" : `<p class="cat-sub">The login ID (${esc(s.loginId)}) can't be changed. To change the password, the student uses "Change password" in their library.</p>`}`,
+    async () => {
+      const name = val("d-sname"), phone = val("d-sphone").replace(/\D/g, "").slice(-10);
+      if (name.length < 2) throw new Error("Write the name.");
+      if (phone && phone.length !== 10) throw new Error("WhatsApp number: 10 digits.");
+      const update = { name, phone, role: dlg.querySelector("#d-srole").value || null, school: val("d-sschool"), city: val("d-scity"), classes: pickedIn("#d-scls").map(Number) };
+      await updateDoc(doc(db, "users", s.uid), update);
+      Object.assign(s, update); renderStudents();
+    });
+}
+
+// ---------- give free access by hand ----------
+// For a demo, a teacher, or as a gift: chapters open on the student's ID for the days chosen.
+function giveDialog(s, opts = {}) {
+  const days = opts.days || BUSINESS.teacherFreeDays, cls = (opts.classes || []).map(Number);
+  const pre = CHAPTERS.filter(c => cls.includes(c.cls)).map(chapterKey);
+  openDialog(opts.title || `Free access · ${s.name}`, `
+    <p class="cat-sub">${opts.intro || "The ticked chapters open on this student's own ID till the date below, on top of anything they bought. They see it in their library at once."}</p>
+    <div class="field sm" style="max-width: 220px"><label for="d-gdays">For how many days</label><input id="d-gdays" type="number" min="1" max="730" inputmode="numeric" value="${days}"></div>
+    <div><b>Chapters</b><div class="chap-picks" id="d-gpicks"></div></div>`,
+    async () => {
+      const n = parseInt(val("d-gdays"), 10), chapters = pickedIn("#d-gpicks");
+      if (!(n >= 1 && n <= 730)) throw new Error("Days: 1 to 730.");
+      if (!chapters.length) throw new Error("Tick at least one chapter.");
+      const till = endOfDay(inDays(n)), code = opts.code || "ADMIN";
+      await writeAll([...chapters.map(k => w => w.set(doc(db, "users", s.uid, "grants", k), { till, code, at: serverTimestamp() })),
+        w => w.update(doc(db, "users", s.uid), { grantsAt: serverTimestamp(), ...(opts.userUpdate || {}) })]);
+      s.grants = [...grantsOf(s).filter(g => !chapters.includes(g.ch)), ...chapters.map(k => ({ ch: k, till, code }))];
+      Object.assign(s, opts.userUpdate || {});
+      if (opts.after) await opts.after(till, chapters);
+      renderStudents();
+      const text = opts.message ? opts.message(till) : `Hello ${(s.name || "").split(" ")[0]}! 🎁 I have opened ${chapters.length} Chemophile chapter${chapters.length > 1 ? "s" : ""} for you, free till ${fmtDate(till)}. Open ${readerLink()} and log in with your ID ${s.loginId}. Happy reading!\n- Adeel Sir`;
+      const m = (opts.msgEl && opts.msgEl()) || $(`.stu[data-uid="${s.uid}"] .msg`);
+      if (m) { m.className = "msg good"; m.hidden = false; m.innerHTML = `Free access given till <b>${fmtDate(till)}</b>. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`; }
+    }, null, { saveLabel: opts.saveLabel || "Give free access" });
+  picks(dlg.querySelector("#d-gpicks"), [...new Set([...pre, ...liveGrants(s).map(g => g.ch)])]);
+}
+
+// ---------- teacher requests ----------
+const TSTATE = { pending: `<span class="pill warn">Waiting</span>`, approved: `<span class="pill good">Approved</span>`, rejected: `<span class="pill bad">Rejected</span>` };
+const isPhoto = u => typeof u === "string" && u.startsWith("data:image/");
+function renderTeacherReqs() {
+  document.querySelectorAll("[data-tdays]").forEach(e => { e.textContent = BUSINESS.teacherFreeDays; });
+  const card = $("#treq-card"), list = [...teacherReqs].sort((a, b) => (a.status === "pending" ? 0 : 1) - (b.status === "pending" ? 0 : 1));
+  card.hidden = !list.length;
+  const waiting = list.filter(r => r.status === "pending").length;
+  $("#treq-count").textContent = waiting ? `(${waiting} waiting)` : `(${list.length})`;
+  const dot = $("#dot-promo"); dot.hidden = !waiting; dot.textContent = waiting;
+  $("#treqs").innerHTML = list.map(r => `<div class="stu" data-treq="${r.uid}">
+    <div class="stu-top">
+      ${isPhoto(r.photo) ? `<button class="idthumb" type="button" data-tact="photo" aria-label="See the ID card of ${esc(r.name)}"><img src="${r.photo}" alt=""></button>` : `<div class="avatar">ID</div>`}
+      <div style="min-width:0"><h3>${esc(r.name)}</h3><div class="sub">${esc(r.school)}${r.city ? ", " + esc(r.city) : ""} · ${esc(r.subject || "")} · ${esc((r.classes || []).map(clsName).join(" + "))}${r.phone ? " · " + esc(r.phone) : ""}${r.at ? " · sent " + fmtDate(r.at) : ""}</div>
+        ${r.note ? `<div class="sub">"${esc(r.note)}"</div>` : ""}${r.status === "rejected" && r.reason ? `<div class="sub">Reason: ${esc(r.reason)}</div>` : ""}${r.status === "approved" && r.till ? `<div class="sub">Free till ${fmtDate(r.till)}</div>` : ""}</div>
+      <div class="pills">${TSTATE[r.status] || ""}</div>
+    </div>
+    <div class="actions">
+      ${r.status !== "approved" ? `<button class="btn btn-sun btn-sm" type="button" data-tact="approve">Approve</button>` : ""}
+      ${r.status === "pending" ? `<button class="btn btn-line btn-sm" type="button" data-tact="reject">Reject</button>` : ""}
+      <a class="btn btn-wa btn-sm" href="${waLink(r.phone, `Hello ${(r.name || "").split(" ")[0]}, this is Adeel Sir about your Chemophile teacher request.`)}" target="_blank" rel="noopener">WhatsApp</a>
+      <span class="spacer"></span>
+      ${r.status !== "pending" ? `<button class="btn btn-danger btn-sm" type="button" data-tact="del">Delete request</button>` : ""}
+    </div>
+    <div class="msg" role="status" hidden></div>
+  </div>`).join("");
+  renderDash();
+}
+$("#treqs").addEventListener("click", async e => {
+  const b = e.target.closest("[data-tact]");
+  if (!b) return;
+  const row = b.closest("[data-treq]"), r = teacherReqs.find(x => x.uid === row.dataset.treq), s = students.find(x => x.uid === r.uid);
+  const note = (t, cls = "good") => { const m = row.querySelector(".msg"); m.className = "msg " + cls; m.innerHTML = t; m.hidden = false; };
+  const a = b.dataset.tact;
+  try {
+    if (a === "photo") return openDialog(`ID card · ${r.name}`, `<img src="${r.photo}" alt="ID card of ${esc(r.name)}" style="width: 100%; border-radius: 10px">`, null, null);
+    if (a === "approve") {
+      if (!s) return note("This teacher's account was deleted.", "bad");
+      return giveDialog(s, {
+        title: `Approve ${r.name}`, classes: r.classes, code: "TEACHER", saveLabel: "Approve and open chapters", userUpdate: { teacher: "verified", role: "teacher" },
+        intro: `Check the ID card first. Approving opens the ticked chapters on ${esc(r.name)}'s ID for the days below.`,
+        after: async till => { await updateDoc(doc(db, "teacherRequests", r.uid), { status: "approved", till, decidedAt: serverTimestamp() }); Object.assign(r, { status: "approved", till }); renderTeacherReqs(); },
+        message: till => `Hello ${(r.name || "").split(" ")[0]}! ✅ Your teacher ID is verified. Your free Chemophile access is open till ${fmtDate(till)}. Open ${readerLink()} and log in with your ID ${s.loginId}.\n\nFor your students, ask me for a special promo code for your class.\n- Adeel Sir`,
+        msgEl: () => $(`[data-treq="${r.uid}"] .msg`)
+      });
+    }
+    if (a === "reject") {
+      return openDialog(`Reject ${r.name}`, `
+        <div class="field"><label for="d-reason">Reason (the teacher sees it and can send again)</label>
+        <select id="d-reason"><option>The ID card photo is not clear. Please send a clearer photo.</option><option>The name on the ID card does not match.</option><option>This is not a school or college ID card.</option><option value="">Other (write below)</option></select></div>
+        <div class="field"><label for="d-reason2">Other reason</label><input id="d-reason2" maxlength="200"></div>`,
+        async () => {
+          const reason = val("d-reason2") || val("d-reason");
+          if (!reason) throw new Error("Write the reason.");
+          await updateDoc(doc(db, "teacherRequests", r.uid), { status: "rejected", reason, decidedAt: serverTimestamp() });
+          if (s) await updateDoc(doc(db, "users", s.uid), { grantsAt: serverTimestamp() });
+          Object.assign(r, { status: "rejected", reason }); renderTeacherReqs();
+          note(`Rejected. <a href="${waLink(r.phone, `Hello ${(r.name || "").split(" ")[0]}, your Chemophile teacher request could not be approved: ${reason}\nYou can send it again from your library.\n- Adeel Sir`)}" target="_blank" rel="noopener">Tell ${esc((r.name || "").split(" ")[0])} on WhatsApp</a>`);
+        }, null, { saveLabel: "Reject" });
+    }
+    if (a === "del") {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
+      await deleteAll([doc(db, "teacherRequests", r.uid)]);
+      teacherReqs = teacherReqs.filter(x => x !== r); renderTeacherReqs();
+    }
+  } catch (ex) { note("Not saved: " + why(ex), "bad"); }
 });
 
 // ---------- announcements ----------
@@ -1381,13 +1609,16 @@ $("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; 
 // ---------- the edit dialog ----------
 const dlg = $("#cat-dlg");
 let dlgSave = null, dlgDelete = null;
-function openDialog(title, body, onSave, onDelete) {
+function openDialog(title, body, onSave, onDelete, opts) {
   $("#dlg-title").textContent = title;
   $("#dlg-body").innerHTML = body;
   $("#dlg-err").hidden = true;
   const del = dlg.querySelector('[data-dlg="delete"]');
   del.hidden = !onDelete; del.textContent = "Delete"; delete del.dataset.armed;
   dlgSave = onSave; dlgDelete = onDelete;
+  // A dialog that only shows something (e.g. an ID card photo) has a Close button and no Save.
+  const save = dlg.querySelector('[data-dlg="save"]'), cancel = dlg.querySelector('[data-dlg="cancel"]');
+  save.hidden = !onSave; save.textContent = (opts && opts.saveLabel) || "Save"; cancel.textContent = onSave ? "Cancel" : "Close";
   dlg.showModal();
   const first = dlg.querySelector(".dlg-body input:not([type=checkbox]), .dlg-body textarea");
   if (first) first.focus();

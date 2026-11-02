@@ -142,6 +142,26 @@
 .unlock ul { margin: 0; padding-left: 18px; color: var(--night-fg); font-size: .92rem; display: grid; gap: 4px; }
 .unlock .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .book .price-tag { display: inline-block; margin-top: 4px; font: 700 .8rem var(--font-body); color: var(--accent); }
+/* Promo code on an existing ID, teacher request, and the one-time "about you" card. */
+.redeem { display: grid; gap: 10px; }
+.redeem form { display: flex; flex-wrap: wrap; gap: 8px; }
+.redeem input { flex: 1 1 180px; font: 700 1rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); }
+.teach { display: grid; gap: 12px; border-left: 4px solid var(--accent); }
+.teach .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.teach .idprev { max-width: 220px; border-radius: 10px; border: 1px solid var(--line); }
+.teach .state { display: inline-flex; gap: 6px; align-items: center; font: 700 .78rem var(--font-body); border-radius: 999px; padding: 3px 10px; background: var(--warn-bg); }
+.teach .state.ok { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+.teach .state.no { background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); }
+.who-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.who-pick label { border: 2px solid var(--line); border-radius: 14px; padding: 10px; text-align: center; font-weight: 700; cursor: pointer; background: var(--surface); }
+.who-pick label small { display: block; font-weight: 400; font-size: .76rem; color: var(--muted); }
+.who-pick label { position: relative; }
+.who-pick input { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.who-pick label:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.about { position: fixed; inset: 0; z-index: 65; background: rgba(15, 13, 50, .72); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.about[hidden] { display: none; }
+.about .card { width: min(460px, 100%); display: grid; gap: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.about h2 { font-size: 1.35rem; }
 /* Refer a friend: the student's code and a share button. */
 .refer { display: grid; gap: 10px; background: linear-gradient(135deg, var(--surface), var(--warn-bg)); }
 .refer h2 { font-size: 1.2rem; }
@@ -242,7 +262,12 @@
         <p class="hint" style="margin: 0">Free. Read the sample booklet of your class right away; buy chapters whenever you're ready.</p>
         <div class="field"><label for="su-name">Your name</label><input id="su-name" autocomplete="name" maxlength="60"></div>
         <div class="field"><label for="su-phone">WhatsApp number</label><input id="su-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
-        <div class="field"><label>Your class (tick one or more)</label><div class="cls-picks" id="su-cls"></div></div>
+        <div class="field"><label>I am a</label><div class="who-pick" role="radiogroup" aria-label="I am a">
+          <label><input type="radio" name="su-role" value="student" checked>Student<small>Read and study</small></label>
+          <label><input type="radio" name="su-role" value="teacher">Teacher<small>30 days free, with school ID</small></label></div></div>
+        <div class="field"><label for="su-school" id="su-school-lbl">School or college</label><input id="su-school" autocomplete="organization" maxlength="100" placeholder="e.g. DPS Noida"></div>
+        <div class="field"><label for="su-city">City</label><input id="su-city" autocomplete="address-level2" maxlength="60" placeholder="e.g. Delhi"></div>
+        <div class="field"><label id="su-cls-lbl">Your class (tick one or more)</label><div class="cls-picks" id="su-cls"></div></div>
         <div class="field"><label for="su-id">Choose a login ID</label><input id="su-id" autocapitalize="none" spellcheck="false" autocomplete="username" placeholder="e.g. rahul2026"><span class="hint">Small letters and numbers, 3 to 24 characters</span></div>
         <div class="field"><label for="su-pw">Choose a password</label><input id="su-pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
         <div class="msg bad" id="su-err" role="alert" hidden></div>
@@ -292,7 +317,14 @@
       <div id="continue"></div>
       <div id="promo-note" class="msg warn" hidden></div>
       <div id="news" class="news"></div>
+      <div class="card teach" id="teach" hidden></div>
       <div id="upsell"></div>
+      <div class="card redeem" id="redeem" hidden>
+        <h2 style="font-size: 1.15rem">Have a promo code?</h2>
+        <p class="hint" style="margin: 0">Got a code from Adeel Sir, your teacher or your school? Enter it here: its chapters open on this same ID till the code's last date.</p>
+        <form id="redeem-form" novalidate><input id="redeem-code" autocapitalize="characters" spellcheck="false" autocomplete="off" maxlength="20" placeholder="e.g. DPS2026" aria-label="Promo code"><button class="btn btn-sun" type="submit" id="redeem-btn">Apply code</button></form>
+        <div class="msg" id="redeem-msg" role="status" hidden></div>
+      </div>
       <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
@@ -304,6 +336,7 @@
         <p class="hint"><a href="policies.html#online">Online book rules</a> · <a href="policies.html#refund">Refunds</a> · <a href="policies.html#privacy">Privacy</a></p>
         <div class="actions">
           <a class="btn btn-wa btn-sm" id="help-wa" href="#" target="_blank" rel="noopener">Need help? WhatsApp Adeel Sir</a>
+          <button class="btn btn-line btn-sm" type="button" id="edit-about">Edit my details</button>
           <button class="btn btn-line btn-sm" type="button" id="logout-2">Log out</button>
         </div>
         <details class="pw" id="pw-box">
@@ -317,6 +350,16 @@
       </div>
     </div>
   </div>
+  <div class="about" id="about" role="dialog" aria-modal="true" aria-labelledby="about-title" hidden><form class="card" id="about-form" novalidate>
+    <div><h2 id="about-title">Tell us about you</h2><p class="hint" style="margin-top: 4px">One time only. It helps Adeel Sir send you the right chapters and updates.</p></div>
+    <div class="field"><label>I am a</label><div class="who-pick" role="radiogroup" aria-label="I am a">
+      <label><input type="radio" name="ab-role" value="student">Student</label><label><input type="radio" name="ab-role" value="teacher">Teacher</label></div></div>
+    <div class="field"><label for="ab-school">School or college</label><input id="ab-school" maxlength="100" autocomplete="organization" placeholder="e.g. Kendriya Vidyalaya, Delhi"></div>
+    <div class="field"><label for="ab-city">City</label><input id="ab-city" maxlength="60" autocomplete="address-level2" placeholder="e.g. Delhi"></div>
+    <div class="field"><label id="ab-cls-lbl">Your class</label><div class="cls-picks" id="ab-cls"></div></div>
+    <div class="msg bad" id="ab-err" role="alert" hidden></div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn btn-sun" type="submit" id="ab-btn">Save and continue</button><button class="btn btn-line" type="button" id="ab-later" hidden>Cancel</button></div>
+  </form></div>
   <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
@@ -386,7 +429,13 @@ document.querySelector(".tabs").addEventListener("click", e => {
   $("#auth-title").textContent = t; $("#auth-sub").textContent = sub;
 });
 // read.html#signup opens the sign-up tab (links from the website).
-if (location.hash === "#signup") document.querySelector('.tabs [data-tab="signup-form"]').click();
+if (location.hash === "#signup" || location.hash === "#teacher") document.querySelector('.tabs [data-tab="signup-form"]').click();
+if (location.hash === "#teacher") document.querySelector('input[name="su-role"][value="teacher"]').checked = true;
+// A teacher ticks the classes they teach; the school field says "School or college" either way.
+const suRole = () => document.querySelector('input[name="su-role"]:checked').value;
+function suRoleUI() { $("#su-cls-lbl").textContent = suRole() === "teacher" ? "Classes you teach (tick one or more)" : "Your class (tick one or more)"; }
+document.querySelectorAll('input[name="su-role"]').forEach(r => r.addEventListener("change", suRoleUI));
+suRoleUI();
 
 if (!configured) {
   show("v-setup");
@@ -394,7 +443,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
-      me = null; newsCache = null; reading.clear(); quizRes.clear(); readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
+      me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
     }
@@ -461,8 +510,10 @@ $("#signup-form").addEventListener("submit", async e => {
   const name = $("#su-name").value.trim(), phone = $("#su-phone").value.replace(/\D/g, "").slice(-10);
   const classes = [...document.querySelectorAll("#su-cls input:checked")].map(i => +i.value);
   const id = $("#su-id").value.trim().toLowerCase(), pw = $("#su-pw").value;
+  const role = suRole(), school = $("#su-school").value.trim(), city = $("#su-city").value.trim();
   if (name.length < 2) return fail("Enter your name.");
   if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
+  if (school.length < 2) return fail("Enter your school or college name.");
   if (!classes.length) return fail("Tick your class.");
   if (!ID_PATTERN.test(id)) return fail("Login ID: small letters and numbers (and . _ -), 3 to 24 characters.");
   if (pw.length < 6) return fail("Use at least 6 characters for the password.");
@@ -475,6 +526,7 @@ $("#signup-form").addEventListener("submit", async e => {
     user = (await createUserWithEmailAndPassword(auth, idToEmail(id), pw)).user;
     await setDoc(doc(db, "users", user.uid), {
       name, phone, loginId: id, classes, chapters: [], active: true, signup: true,
+      role, school, city, profileAt: serverTimestamp(),
       deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp(), createdAt: serverTimestamp()
     });
     // Adeel Sir's copy of the password, so he can send it again if it is forgotten.
@@ -583,6 +635,7 @@ async function start(user) {
     return kick("Account not ready", "No chapters are linked to this login ID. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile login ID "${loginId}" is not working.`);
   }
   me = snap.data();
+  if (!me.promo) await loadGrants(user.uid);
   const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
   const mine = deviceId();
   if (!mine) {
@@ -593,7 +646,7 @@ async function start(user) {
   }
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
   // A past end date closes the bought chapters; the ID stays open while a monthly plan is paid.
-  if (expires && expires < new Date() && !liveSub(me)) return expired(expires, label);
+  if (expires && expires < new Date() && !liveSub(me) && !liveGrant()) return expired(expires, label);
   if (!me.deviceId) {
     try {
       await updateDoc(ref, { deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp() });
@@ -620,13 +673,16 @@ async function start(user) {
     if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
     if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
     const till = d.expiresAt && d.expiresAt.toDate ? d.expiresAt.toDate() : null;
-    if (till && till < new Date() && !liveSub(d)) return expired(till, label);
+    if (till && till < new Date() && !liveSub(d) && !liveGrant()) return expired(till, label);
     const changed = JSON.stringify(d.chapters) !== JSON.stringify(me.chapters)
       || (d.expiresAt && d.expiresAt.seconds) !== (me.expiresAt && me.expiresAt.seconds)
       || JSON.stringify(d.subs || {}) !== JSON.stringify(me.subs || {})
       || (d.referrals || 0) !== (me.referrals || 0);
+    // The admin stamps grantsAt when giving or changing free access (e.g. approving a teacher).
+    const freeChanged = (d.grantsAt && d.grantsAt.seconds) !== (me.grantsAt && me.grantsAt.seconds);
     me = Object.assign(d, { loginId: me.loginId });
-    if (changed && !$("#v-library").hidden) renderLibrary();
+    if (freeChanged) { teachReq = undefined; loadGrants(user.uid).then(() => { if (!$("#v-library").hidden) renderLibrary(); }); }
+    else if (changed && !$("#v-library").hidden) renderLibrary();
   });
 
   me.loginId = me.promo ? `promo ${me.promo}` : loginId;
@@ -678,12 +734,24 @@ const firstName = () => {
 // Monthly plan: me.subs maps each chapter on the plan to the date it is paid till.
 const subTill = (u, k) => u.subs && u.subs[k] && u.subs[k].toDate ? u.subs[k].toDate() : null;
 const liveSub = u => Object.keys(u.subs || {}).some(k => subTill(u, k) > new Date());
-// Can this chapter open now? Bought (and the ID not past its end date), or on a paid monthly plan.
+// Free access to a chapter till a date (users/{uid}/grants/{chapter}): from a promo code entered on this ID,
+// or given by Adeel Sir (for example to a verified teacher).
+const grants = new Map();
+async function loadGrants(uid) {
+  try { const snap = await getDocs(collection(db, "users", uid, "grants")); grants.clear(); snap.forEach(d => grants.set(d.id, d.data())); }
+  catch (e) { console.warn("grants", e); }
+}
+const grantTill = k => { const g = grants.get(k); return g && g.till && g.till.toDate ? g.till.toDate() : null; };
+const liveGrant = () => [...grants.keys()].some(k => grantTill(k) > new Date());
+// Can this chapter open now? Bought (and the ID not past its end date), on a paid monthly plan, or free access.
 function access(k) {
   const now = new Date(), exp = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
-  const bought = (me.chapters || []).includes(k), till = subTill(me, k);
+  const bought = (me.chapters || []).includes(k), till = subTill(me, k), g = grantTill(k);
   if (bought && !(exp && exp < now)) return { open: true };
-  if (till) return { open: till > now, monthly: true, till };
+  if (till && till > now) return { open: true, monthly: true, till };
+  if (g && g > now) return { open: true, grant: true, till: g };
+  if (till) return { open: false, monthly: true, till };
+  if (g) return { open: false, grant: true, till: g };
   return { open: false, till: exp };
 }
 const renewMsg = () => wa(`Hello Adeel Sir, I want to renew my Chemophile monthly plan (ID ${me.loginId}).`);
@@ -706,10 +774,11 @@ async function renderLibrary() {
   note.hidden = !me.admin;
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
   // Signed up but nothing bought yet: the free sample and the chapters they can unlock.
-  if (!me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length) return renderFree();
+  renderTeacher(); renderRedeem(); askAbout();
+  if (!me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length && !liveGrant()) return renderFree();
   $(".lib-tools h2").textContent = "My chapters";
   const subKeys = Object.keys(me.subs || {});
-  const keys = [...new Set([...(me.chapters || []), ...subKeys])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
+  const keys = [...new Set([...(me.chapters || []), ...subKeys, ...grants.keys()])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
   // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
   let loadErr = null;
   await Promise.all(keys.map(async k => {
@@ -733,7 +802,7 @@ async function renderLibrary() {
   const ready = keys.filter(k => progress(k).ready && access(k).open);
   const pages = ready.reduce((n, k) => n + progress(k).total, 0);
   // Days left: till the nearest date that will close something the student can read now.
-  const ends = [...((me.chapters || []).length && expires && expires > now ? [expires] : []), ...subKeys.map(k => subTill(me, k)).filter(d => d > now)];
+  const ends = [...((me.chapters || []).length && expires && expires > now ? [expires] : []), ...subKeys.map(k => subTill(me, k)).filter(d => d > now), ...[...grants.keys()].map(grantTill).filter(d => d > now)];
   const nearest = ends.length ? new Date(Math.min(...ends)) : null;
   const left = nearest ? Math.max(0, Math.ceil((nearest - now) / 864e5)) : null;
   $("#hero-stats").innerHTML = [
@@ -777,8 +846,9 @@ async function renderLibrary() {
     const title = c.title || (info && info.title) || `Chapter ${n}`;
     const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
     const open = pr.ready && ac.open;
-    const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`) : "";
-    const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
+    const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`)
+      : ac.grant ? (ac.open ? `<span class="plan-tag">Free access till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Free access ended ${fmtDate(ac.till)}</span>`) : "";
+    const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : ac.grant ? "Buy it to keep reading; your place stays saved." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${open ? "" : ac.open ? " soon" : " locked"}">
       <button class="cv" type="button" ${open ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
@@ -787,7 +857,7 @@ async function renderLibrary() {
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
         ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
-          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">Renew on WhatsApp</a>` : ""}</div>
+          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} Chapter ${n} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
@@ -801,7 +871,10 @@ async function renderLibrary() {
     me.promo ? ["Promo code", me.promo] : ["Login ID", me.loginId],
     ["WhatsApp", me.phone || "-"],
     ["This device", me.deviceInfo || "This phone"],
-    ...((me.chapters || []).length || !subKeys.length ? [["Access until", expires ? fmtDate(expires) : "No end date"]] : []),
+    ...(me.role ? [["I am a", me.role === "teacher" ? "Teacher" : "Student"]] : []),
+    ...(me.school ? [["School", me.school + (me.city ? ", " + me.city : "")]] : []),
+    ...((me.chapters || []).length ? [["Access until", expires ? fmtDate(expires) : "No end date"]] : []),
+    ...(grants.size ? [["Free access", (() => { const live = [...grants.keys()].filter(k => grantTill(k) > now); return live.length ? `${live.length} chapter${live.length > 1 ? "s" : ""} till ${fmtDate(new Date(Math.max(...live.map(k => grantTill(k)))))}` : "Ended"; })()]] : []),
     ...(subKeys.length ? [["Monthly plan", `${subKeys.length} chapter${subKeys.length > 1 ? "s" : ""}, ${subEnd < now ? "ended" : "paid till"} ${fmtDate(subEnd)}`]] : []),
   ];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
@@ -840,6 +913,7 @@ $("#pw-form").addEventListener("submit", async e => {
 // ---------- free account (signed up, nothing bought) ----------
 const rupee = v => "₹" + Number(v).toLocaleString("en-IN");
 function renderFree() {
+  renderTeacher(); renderRedeem(); askAbout();
   const classes = ((me.classes || []).length ? me.classes : classList()).map(Number);
   const samples = classes.filter(c => SAMPLE_BOOKS[c]);
   const chs = CHAPTERS.filter(c => classes.includes(c.cls));
@@ -871,7 +945,8 @@ function renderFree() {
         <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
   }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
   $("#myread").hidden = true; $("#refer").hidden = true;
-  const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
+  const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ...(me.role ? [["I am a", me.role === "teacher" ? "Teacher" : "Student"]] : []),
+    ...(me.school ? [["School", me.school + (me.city ? ", " + me.city : "")]] : []), ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
   $("#acct-tip").textContent = "Your ID works on this device only. Chapters you buy open here, on the same ID.";
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile account (ID ${me.loginId}).`);
@@ -888,6 +963,162 @@ function openSampleBook(k) {
   }).open();
 }
 $("#v-library").addEventListener("click", e => { const b = e.target.closest("[data-sample]"); if (b) openSampleBook(+b.dataset.sample); });
+
+// ---------- promo code on an existing ID ----------
+// A student with a login ID enters a code; its chapters open on the same ID till the code's last date.
+// One write: the code's count goes up by one, the redemption is recorded, and one free-access record per chapter.
+function renderRedeem() {
+  $("#redeem").hidden = !!(me.admin || me.promo);
+}
+$("#redeem-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("#redeem-msg"), say = (t, cls) => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
+  const code = $("#redeem-code").value.trim().toUpperCase();
+  if (!PROMO_PATTERN.test(code)) return say("Enter the code as it was given to you.", "bad");
+  $("#redeem-btn").disabled = true;
+  try {
+    const ps = await getDoc(doc(db, "promos", code)), p = ps.exists() ? ps.data() : null;
+    const till = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
+    if (!p) throw new Error("This code is not valid. Check the spelling.");
+    if (p.active === false) throw new Error("This code has been switched off.");
+    if (!till || till < new Date()) throw new Error("This code has expired.");
+    if ((p.used || 0) >= p.maxUses) throw new Error("This code has reached its limit.");
+    // Chapters already open for longer than the code would give are left as they are.
+    const add = (p.chapters || []).filter(k => !(grantTill(k) >= till));
+    if (!add.length) throw new Error("You already have every chapter on this code.");
+    const uid = auth.currentUser.uid, batch = writeBatch(db);
+    batch.update(doc(db, "promos", code), { used: increment(1) });
+    batch.set(doc(db, "promos", code, "redemptions", uid), { name: me.name || "", phone: me.phone || "", loginId: me.loginId, deviceInfo: deviceInfo(), at: serverTimestamp() });
+    add.forEach(k => batch.set(doc(db, "users", uid, "grants", k), { till: p.expiresAt, code, at: serverTimestamp() }));
+    await batch.commit();
+    await loadGrants(uid);
+    $("#redeem-code").value = "";
+    await renderLibrary();
+    say(`🎉 Code ${code} applied: ${add.length} chapter${add.length > 1 ? "s" : ""} open till ${fmtDate(till)}. Happy reading!`, "good");
+    $("#redeem").scrollIntoView({ block: "center", behavior: "smooth" });
+  } catch (ex) {
+    say(ex.code === "permission-denied" ? "This code can't be used on your ID: you may have used it already, or it is full or expired." : ex.message || "Could not apply the code. Try again.", "bad");
+  }
+  $("#redeem-btn").disabled = false;
+});
+
+// ---------- about you (asked once) ----------
+// Every reader with an ID tells us once: student or teacher, school or college, city, classes.
+function aboutPicks(selected) {
+  $("#ab-cls").innerHTML = classList().map(c => `<label><input type="checkbox" value="${c}"${selected.includes(c) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
+}
+function abRoleUI() { const r = document.querySelector('input[name="ab-role"]:checked'); $("#ab-cls-lbl").textContent = r && r.value === "teacher" ? "Classes you teach" : "Your class"; }
+document.querySelectorAll('input[name="ab-role"]').forEach(r => r.addEventListener("change", abRoleUI));
+function openAbout(canCancel) {
+  document.querySelectorAll('input[name="ab-role"]').forEach(r => { r.checked = r.value === me.role; });
+  $("#ab-school").value = me.school || ""; $("#ab-city").value = me.city || "";
+  aboutPicks((me.classes || []).map(Number).length ? (me.classes || []).map(Number) : [...new Set([...(me.chapters || []), ...Object.keys(me.subs || {})].map(k => +k.split("-")[0]))]);
+  abRoleUI();
+  $("#ab-later").hidden = !canCancel; $("#ab-err").hidden = true;
+  $("#about").hidden = false;
+}
+function askAbout() { if (!me.admin && !me.role && $("#about").hidden) openAbout(false); }
+$("#edit-about").addEventListener("click", () => openAbout(true));
+$("#ab-later").addEventListener("click", () => { $("#about").hidden = true; });
+$("#about-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("#ab-err"), fail = t => { err.textContent = t; err.hidden = false; };
+  const r = document.querySelector('input[name="ab-role"]:checked'), school = $("#ab-school").value.trim(), city = $("#ab-city").value.trim();
+  const classes = [...document.querySelectorAll("#ab-cls input:checked")].map(i => +i.value);
+  if (!r) return fail("Choose Student or Teacher.");
+  if (school.length < 2) return fail("Enter your school or college name.");
+  if (!classes.length) return fail(r.value === "teacher" ? "Tick the classes you teach." : "Tick your class.");
+  $("#ab-btn").disabled = true;
+  try {
+    const data = { role: r.value, school, city, classes };
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { ...data, profileAt: serverTimestamp() });
+    Object.assign(me, data);
+    $("#about").hidden = true;
+    renderLibrary();
+  } catch (ex) { fail("Could not save. Check your internet and try again."); }
+  $("#ab-btn").disabled = false;
+});
+
+// ---------- teachers: free access with a school ID card ----------
+// A teacher sends their details and a photo of their school ID card; Adeel Sir checks it and gives free access.
+let teachReq; // undefined = not loaded, null = none sent
+const shrinkPhoto = file => new Promise((res, rej) => {
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    let w = img.naturalWidth, h = img.naturalHeight, max = 1200;
+    if (Math.max(w, h) > max) { const f = max / Math.max(w, h); w = Math.round(w * f); h = Math.round(h * f); }
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    c.getContext("2d").drawImage(img, 0, 0, w, h);
+    let q = 0.75, out = c.toDataURL("image/jpeg", q);
+    while (out.length > 600000 && q > 0.35) { q -= 0.1; out = c.toDataURL("image/jpeg", q); }
+    URL.revokeObjectURL(url); res(out);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("That file is not a photo. Choose a photo of your ID card.")); };
+  img.src = url;
+});
+async function renderTeacher() {
+  const box = $("#teach");
+  box.hidden = !(!me.admin && !me.promo && me.role === "teacher");
+  if (box.hidden) return;
+  if (teachReq === undefined) {
+    try { const s = await getDoc(doc(db, "teacherRequests", auth.currentUser.uid)); teachReq = s.exists() ? s.data() : null; }
+    catch (e) { teachReq = null; }
+  }
+  const r = teachReq, days = BUSINESS.teacherFreeDays;
+  const live = [...grants.keys()].filter(k => grantTill(k) > new Date());
+  if (r && r.status === "pending") {
+    box.innerHTML = `<div><span class="state">⏳ Checking your ID card</span></div><h2 style="font-size: 1.15rem">Thank you, ${esc(firstName())}!</h2>
+      <p class="hint" style="margin: 0">Adeel Sir is checking your school ID card. Your free chapters open right here once it is approved, usually within a day.</p>
+      <div><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I am a teacher at ${me.school || "my school"}. I sent my ID card for Chemophile free access (ID ${me.loginId}).`)}" target="_blank" rel="noopener">Remind on WhatsApp</a></div>`;
+    return;
+  }
+  if (r && r.status === "approved") {
+    box.innerHTML = `<div><span class="state ok">✓ Verified teacher</span></div><h2 style="font-size: 1.15rem">Welcome, ${esc(firstName())}!</h2>
+      <p class="hint" style="margin: 0">${live.length ? `Your free access is open: ${live.length} chapter${live.length > 1 ? "s" : ""} till ${fmtDate(new Date(Math.max(...live.map(grantTill))))}.` : "Your free access has ended."} Want it for your students? Ask Adeel Sir for a promo code for your class.</p>
+      <div><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I am a teacher at ${me.school || "my school"} (ID ${me.loginId}). I want Chemophile for my students.`)}" target="_blank" rel="noopener">Ask for my students</a></div>`;
+    return;
+  }
+  const cls = (me.classes || []).map(Number);
+  box.innerHTML = `${r && r.status === "rejected" ? `<div><span class="state no">Not approved</span></div><p class="hint" style="margin: 0">${esc(r.reason || "The ID card could not be checked.")} You can send it again below.</p>` : ""}
+    <h2 style="font-size: 1.15rem">Teachers: ${days} days free 🎓</h2>
+    <p class="hint" style="margin: 0">Read every chapter of your classes free for ${days} days. Send a clear photo of your school or college ID card; Adeel Sir checks it and opens the chapters here.</p>
+    <form id="teach-form" class="stack" novalidate>
+      <div class="row2">
+        <div class="field"><label for="t-school">School or college</label><input id="t-school" maxlength="100" value="${esc(me.school || "")}"></div>
+        <div class="field"><label for="t-subject">Subject you teach</label><input id="t-subject" maxlength="60" value="Chemistry"></div>
+      </div>
+      <div class="field"><label>Classes you teach</label><div class="cls-picks" id="t-cls">${classList().map(c => `<label><input type="checkbox" value="${c}"${cls.includes(c) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("")}</div></div>
+      <div class="field"><label for="t-photo">Photo of your ID card</label><input id="t-photo" type="file" accept="image/*"><span class="hint">Name, photo and school should be readable. It is seen only by Adeel Sir.</span></div>
+      <img class="idprev" id="t-prev" alt="Your ID card" hidden>
+      <div class="field"><label for="t-note">Anything else (optional)</label><input id="t-note" maxlength="200" placeholder="e.g. I teach Class 11 and 12 at …"></div>
+      <div class="msg bad" id="t-err" role="alert" hidden></div>
+      <div><button class="btn btn-sun" type="submit" id="t-btn">Send for verification</button></div>
+    </form>`;
+}
+$("#teach").addEventListener("change", async e => {
+  if (e.target.id !== "t-photo" || !e.target.files[0]) return;
+  const err = $("#t-err");
+  try { const url = await shrinkPhoto(e.target.files[0]); e.target.dataset.photo = url; const pv = $("#t-prev"); pv.src = url; pv.hidden = false; err.hidden = true; }
+  catch (ex) { err.textContent = ex.message; err.hidden = false; }
+});
+$("#teach").addEventListener("submit", async e => {
+  if (e.target.id !== "teach-form") return;
+  e.preventDefault();
+  const err = $("#t-err"), fail = t => { err.textContent = t; err.hidden = false; };
+  const school = $("#t-school").value.trim(), subject = $("#t-subject").value.trim(), note = $("#t-note").value.trim();
+  const classes = [...document.querySelectorAll("#t-cls input:checked")].map(i => +i.value), photo = $("#t-photo").dataset.photo;
+  if (school.length < 2) return fail("Enter your school or college name.");
+  if (!classes.length) return fail("Tick the classes you teach.");
+  if (!photo) return fail("Add a photo of your ID card.");
+  $("#t-btn").disabled = true;
+  try {
+    const data = { name: me.name || "", phone: me.phone || "", school, city: me.city || "", subject, classes, photo, note, status: "pending", at: serverTimestamp() };
+    await setDoc(doc(db, "teacherRequests", auth.currentUser.uid), data);
+    teachReq = { ...data, at: Timestamp.now() };
+    renderTeacher();
+    $("#teach").scrollIntoView({ block: "center", behavior: "smooth" });
+  } catch (ex) { fail(ex.code === "permission-denied" ? "Your request is already with Adeel Sir." : "Could not send. Check your internet and try again."); $("#t-btn").disabled = false; }
+});
 
 // ---------- refer a friend ----------
 // The student's code is the first 6 letters of their account (refCodeOf in js/chapters.js); the admin finds the

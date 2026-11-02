@@ -11,6 +11,8 @@ service cloud.firestore {
     function student() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function promoPath(code) { return /databases/$(database)/documents/promos/$(code); }
     function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function redemptionPath(code, uid) { return /databases/$(database)/documents/promos/$(code)/redemptions/$(uid); }
+    function grantPath(uid, ch) { return /databases/$(database)/documents/users/$(uid)/grants/$(ch); }
 
     // Can the signed-in student open this chapter now? Their ID is active and locked to a device, and either
     // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
@@ -23,7 +25,30 @@ service cloud.firestore {
           (ch in student().chapters
             && (student().get('expiresAt', null) == null || request.time < student().expiresAt))
           || request.time < student().get('subs', {}).get(ch, timestamp.value(0))
+          || (exists(grantPath(request.auth.uid, ch)) && request.time < get(grantPath(request.auth.uid, ch)).data.till)
         );
+    }
+    // "Free access" for one chapter (users/{uid}/grants/{chapter}), from a promo code a student with an ID
+    // enters in their library: the chapter is on the code, it lasts till the code's last date, and in the same
+    // write the code's use count goes up by one and the student's first redemption of this code is recorded.
+    function validGrant(uid, ch) {
+      let d = request.resource.data;
+      let p = get(promoPath(d.code)).data;
+      return d.keys().hasOnly(['till', 'code', 'at'])
+        && d.code is string
+        && ch in p.chapters
+        && d.till == p.expiresAt
+        && promoOpen(p)
+        && getAfter(promoPath(d.code)).data.used == p.used + 1
+        && !exists(redemptionPath(d.code, uid))
+        && existsAfter(redemptionPath(d.code, uid));
+    }
+    // Details every reader gives once: student or teacher, school or college, city, classes.
+    function validProfile(d) {
+      return d.role in ['student', 'teacher']
+        && d.school is string && d.school.size() >= 2 && d.school.size() <= 100
+        && d.city is string && d.city.size() <= 60
+        && d.classes is list && d.classes.size() <= 12;
     }
 
     // A promo code may be used while it is switched on, before its last date, and under its limit.
@@ -54,8 +79,9 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid
         && request.auth.token.firebase.sign_in_provider == 'password'
         && request.auth.token.email.split('@')[0] == d.loginId
-        && d.keys().hasOnly(['name', 'phone', 'loginId', 'classes', 'chapters', 'active', 'signup', 'deviceId', 'deviceInfo', 'boundAt', 'createdAt'])
+        && d.keys().hasOnly(['name', 'phone', 'loginId', 'classes', 'chapters', 'active', 'signup', 'deviceId', 'deviceInfo', 'boundAt', 'createdAt', 'role', 'school', 'city', 'profileAt'])
         && d.signup == true && d.active == true && d.chapters == []
+        && (!('role' in d) || (validProfile(d) && d.profileAt == request.time))
         && d.classes is list && d.classes.size() >= 1 && d.classes.size() <= 12
         && d.name is string && d.name.size() <= 60
         && d.phone is string && d.phone.size() <= 15
@@ -68,7 +94,7 @@ service cloud.firestore {
       allow create: if isAdmin() || validPromoSignup(uid) || validSelfSignup(uid);
       allow delete: if isAdmin();
       // A student may only lock their ID to a device when it is not locked yet (only the admin can unlock it),
-      // and may stamp the time they last opened a book.
+      // may stamp the time they last opened a book, and may fill in their own details.
       allow update: if isAdmin() || (
         signedIn() && request.auth.uid == uid
         && resource.data.deviceId == null
@@ -78,7 +104,22 @@ service cloud.firestore {
         signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastReadAt'])
         && request.resource.data.lastReadAt == request.time
+      ) || (
+        signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'school', 'city', 'classes', 'profileAt'])
+        && validProfile(request.resource.data)
+        && request.resource.data.profileAt == request.time
       );
+
+      // Free access to one chapter till a date: from a promo code (see validGrant), or given by the admin
+      // (for example to a verified teacher). A later code may only lengthen it.
+      match /grants/{ch} {
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow write: if isAdmin();
+        allow create: if signedIn() && request.auth.uid == uid && student().get('promo', null) == null && validGrant(uid, ch);
+        allow update: if signedIn() && request.auth.uid == uid && student().get('promo', null) == null && validGrant(uid, ch)
+          && resource.data.till < request.resource.data.till;
+      }
 
       // Reading record, one document per chapter: last page, highest page, pages seen, minutes, times opened.
       // The student keeps their own; the admin can read it.
@@ -135,20 +176,51 @@ service cloud.firestore {
     match /promos/{code} {
       allow get: if signedIn();
       allow list, create, delete: if isAdmin();
+      // Either a new promo account is made in the same write, or a student who already has an ID uses the
+      // code for the first time (their redemption record is made in the same write).
       allow update: if isAdmin() || (
         signedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used'])
         && request.resource.data.used == resource.data.used + 1
         && promoOpen(resource.data)
-        && !exists(userPath(request.auth.uid))
-        && getAfter(userPath(request.auth.uid)).data.promo == code
+        && (
+          (!exists(userPath(request.auth.uid)) && getAfter(userPath(request.auth.uid)).data.promo == code)
+          || (exists(userPath(request.auth.uid)) && student().get('promo', null) == null
+            && !exists(redemptionPath(code, request.auth.uid)) && existsAfter(redemptionPath(code, request.auth.uid)))
+        )
       );
       match /redemptions/{uid} {
-        allow create: if signedIn() && request.auth.uid == uid
-          && !exists(userPath(uid))
-          && getAfter(userPath(uid)).data.promo == code;
+        allow create: if signedIn() && request.auth.uid == uid && (
+          (!exists(userPath(uid)) && getAfter(userPath(uid)).data.promo == code)
+          || (exists(userPath(uid)) && student().get('promo', null) == null
+            && getAfter(promoPath(code)).data.used == get(promoPath(code)).data.used + 1)
+        );
         allow read, delete: if isAdmin();
       }
+    }
+
+    // The admin lists every student's free access at once.
+    match /{path=**}/grants/{ch} {
+      allow read: if isAdmin();
+    }
+
+    // A teacher asks for free access: their details and a photo of their school ID card. One request per
+    // account; after a rejection they may send it again. Only the admin approves (by giving free access).
+    match /teacherRequests/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create: if signedIn() && request.auth.uid == uid && exists(userPath(uid)) && validTeacherRequest();
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == uid && resource.data.status == 'rejected' && validTeacherRequest());
+      allow delete: if isAdmin();
+    }
+    function validTeacherRequest() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'phone', 'school', 'city', 'subject', 'classes', 'photo', 'note', 'status', 'at'])
+        && d.status == 'pending'
+        && d.name is string && d.name.size() <= 60 && d.phone is string && d.phone.size() <= 15
+        && d.school is string && d.school.size() >= 2 && d.school.size() <= 100
+        && d.classes is list && d.classes.size() >= 1 && d.classes.size() <= 12
+        && d.photo is string && d.photo.size() > 1000 && d.photo.size() < 900000
+        && d.at == request.time;
     }
 
     // The catalog (books, chapters, prices, combos, offer) that the website shows. Anyone may read it.

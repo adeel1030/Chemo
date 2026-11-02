@@ -170,6 +170,14 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 - **Bookmark:** upar ☆ dabao (laptop par **B**). **Topics** mein "My bookmarks" se seedha us page par. Bookmarks phone aur Firebase dono mein save hote hain (iske liye naye rules chahiye).
 - **Laptop keys:** ← → / Space page, + − zoom, 0 fit, F full screen, Esc band.
 
+## 19. Promo code ID par, student details, teachers ka free access
+
+- **Promo code pehle se bane ID par:** student apni library mein **Have a promo code?** mein code daalta hai. Code ke chapters usi ID par code ki last date tak khul jaate hain. Ek ID ek code ek hi baar use kar sakti hai, aur ek jagah (place) ginti mein jaati hai.
+- **Promo code badalna:** **Promo codes → Edit / extend**: last date (+7 / +15 / +30), places, chapters, on/off. "Also apply…" tick rehne par jinhone code pehle use kar liya, unko bhi nayi date aur chapters mil jaate hain.
+- **Student details:** har login karne wale se ek baar poocha jaata hai: Student ya Teacher, school/college, city, class. Admin mein card par 🏫 line, **Edit details** button (naam, number, school, city, class), aur Excel list mein yeh columns.
+- **Free access haath se:** student ke card par **Free access**: chapters tick karo, din likho. **Remove free access** se hata sakte ho. Filter: **Free access**, **Teachers**.
+- **Teachers ke liye 30 din free:** teacher **Sign up** mein "Teacher" chunta hai (website par "Request free access" button seedha yahin laata hai). Library mein school ID card ki photo bhejta hai. Admin → **Promo codes** ke upar **Teacher requests**: photo dekho (tap karke badi), **Approve** (class ke chapters pehle se tick, din badal sakte ho) ya **Reject** (wajah ke saath; teacher dobara bhej sakta hai). Dono ke baad WhatsApp ka taiyaar message milta hai.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

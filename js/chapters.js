@@ -8,7 +8,8 @@ const BUSINESS = {
   supportedBy: "M A Products India and Olife Gold Olive Oil",
   email: "chemhabibs@gmail.com",
   address: "M A Products India, 1310B, Near Bada Chaman Wada, Tilak Bazar, Delhi 110006",
-  freeResetsPerYear: 2
+  freeResetsPerYear: 2,
+  teacherFreeDays: 30   // free access a verified teacher gets (admin can change it per request)
 };
 // Default price of each chapter in rupees. Key = "class-chapter", e.g. "11-1" is Class 11 Chapter 1.
 // Paperback delivery charges are extra. The admin panel (Prices page) can change all of this; its catalog wins.
