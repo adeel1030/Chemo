@@ -1075,7 +1075,7 @@ function renderFree() {
         <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
   }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
   $("#myread").hidden = true; $("#refer").hidden = true;
-  searchKeys = chs.map(chapterKey); renderStreak(); renderDoubts(); showTour();
+  searchKeys = chs.map(chapterKey); renderStreak(); renderDoubts(); showTour(); renderRate([]);
   const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ...(me.role ? [["I am a", me.role === "teacher" ? "Teacher" : "Student"]] : []),
     ...(me.school ? [["School", me.school + (me.city ? ", " + me.city : "")]] : []), ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
@@ -1501,9 +1501,13 @@ let rateStars = 0;
 function renderRate(keys) {
   const box = $("#rate"), key = `chemophile-review-${auth.currentUser.uid}`, st = store.get(key);
   const mins = keys.reduce((a, k) => a + ((reading.get(k) || {}).minutes || 0), 0);
-  const earned = keys.some(certReady) || streak() >= 3 || mins >= 60;
-  box.hidden = !!(me.admin || !earned || st === "sent" || (st && +st > Date.now()));
+  // A link from Adeel Sir (read.html#review) opens the card at once, whatever has been read so far.
+  const asked = location.hash === "#review";
+  const earned = asked || keys.some(certReady) || streak() >= 3 || mins >= 60;
+  box.hidden = !!(me.admin || !earned || (st === "sent" && !asked) || (!asked && st && +st > Date.now()));
   if (box.hidden) return;
+  if (asked) setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
+  if (asked && st === "sent") { box.innerHTML = `<h2 style="font-size: 1.2rem">Thank you! 💛</h2><p class="hint" style="margin: 0">You already sent your review. Adeel Sir will read it.</p>`; return; }
   box.innerHTML = `<h2 style="font-size: 1.2rem">Enjoying Chemophile? ⭐</h2>
     <p class="hint" style="margin: 0">Tell Adeel Sir in a line. Your words help other students decide.</p>
     <div class="starbtns" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" class="${n <= rateStars ? "on" : ""}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}</div>

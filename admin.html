@@ -1019,6 +1019,7 @@ function renderStudents() {
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
         <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
+        ${s.phone ? `<a class="btn btn-line btn-sm" data-askrev="${s.uid}" href="${waLink(s.phone, reviewAsk(s))}" target="_blank" rel="noopener">⭐ Ask for review${s.reviewAskedAt ? " ✓" : ""}</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="details">Edit details</button>
         <button class="btn btn-line btn-sm" type="button" data-act="give">Free access</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
@@ -1060,6 +1061,30 @@ document.addEventListener("click", e => {
   if (!s) return;
   s.remindedAt = Timestamp.now();
   updateDoc(doc(db, "users", s.uid), { remindedAt: serverTimestamp() }).catch(() => {});
+  setTimeout(renderStudents, 300);
+});
+
+// ---------- asking for a review ----------
+// One of three friendly messages, picked at random, with the student's first name and a link that opens the
+// review card in their app. Whatever they send waits in Books & prices → Reviews until you approve it.
+function reviewAsk(s) {
+  const w = (s.name || "").trim().split(/\s+/), first = /^(mr|mrs|ms|miss|dr)\.?$/i.test(w[0] || "") && w[1] ? `${w[0]} ${w[1]}` : (w[0] || "");
+  const finished = readingAll.some(r => r.uid === s.uid && r.total && r.max >= r.total);
+  const link = `${readerLink()}#review`;
+  const msgs = [
+    `Hello ${first}! 😊\nTum Chemophile itne dil se padh rahe ho, bahut achha lagta hai dekh kar 👏\nEk chhoti si request: Chemophile tumhe kaisi lagi, 1–2 line mein batao na? Tumhare words doosre students ki help karenge.\nBest review website par tumhare naam ke saath lagaunga ⭐\n\nYahan tap karke likho: ${link}\n- Adeel Sir`,
+    `Hello ${first}! 🎉\n${finished ? "Wah, tumne poora chapter finish kar liya. Proud of you! 💪" : "Wah, tumhari padhai badhiya chal rahi hai. Proud of you! 💪"}\nEk favour karo: Chemophile ke baare mein 1 line likh do, kya achha laga, kya help hui. Tumhara review website par tumhare naam ke saath dikhega 🌟\nKeep shining!\n\nYahan tap karke likho: ${link}\n- Adeel Sir`,
+    `Hello ${first}! 👋\nChemistry ab darr wali nahi lagti na? 😄\nEk line mein batao Chemophile ne kaise help ki. Best reviews website par star bankar chamkenge ⭐\nThanks a lot, champ!\n\nYahan tap karke likho: ${link}\n- Adeel Sir`
+  ];
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-askrev]");
+  if (!a) return;
+  const s = students.find(x => x.uid === a.dataset.askrev);
+  if (!s) return;
+  s.reviewAskedAt = Timestamp.now();
+  updateDoc(doc(db, "users", s.uid), { reviewAskedAt: serverTimestamp() }).catch(() => {});
   setTimeout(renderStudents, 300);
 });
 
