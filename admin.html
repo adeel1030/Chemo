@@ -808,8 +808,9 @@ async function studentRefs(uid) {
   const tries = await getDocs(collection(db, "users", uid, "attempts"));
   const reads = await getDocs(collection(db, "users", uid, "reading")).catch(() => ({ docs: [] }));
   const quiz = await getDocs(collection(db, "users", uid, "quiz")).catch(() => ({ docs: [] }));
+  const marks = await getDocs(collection(db, "users", uid, "marks")).catch(() => ({ docs: [] }));
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {

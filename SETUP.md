@@ -162,6 +162,14 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 4. **URL inspection** mein home page ka link daal kar **Request indexing** dabao. Google 3–10 din mein dikhana shuru karta hai.
 5. Google Business Profile (business.google.com) par "M A Products India / Chemophile" ka listing bana lo, wahi address aur number ke saath. Isse "chemistry books near me" jaisi searches mein bhi aaoge.
 
+## 18. Book padhne ka tarika (phone aur laptop)
+
+- **Zoom:** phone par do ungliyon se pinch, ya page ke beech mein double-tap. Laptop par page ke beech double-click, **Ctrl + mouse scroll**, ya neeche **− Fit +**. Laptop par dono page saath zoom hote hain. Zoom mein ungli/mouse se kheench kar page ghumao; **Fit** ya **Esc** se wapas.
+- **Focus:** 3 second baad upar-neeche ke buttons chhup jaate hain, sirf kitaab dikhti hai. Beech mein tap karo to wapas. Upar patli line mein topic aur page number hamesha dikhta hai. Padhte waqt screen band nahi hoti.
+- **View** button: **Book** (page palatna) ya **Scroll** (PDF jaisa upar-neeche), **Night mode**, zoom, aur **Full screen** (laptop/Android). Phone tircha karne par apne aap Scroll mode.
+- **Bookmark:** upar ☆ dabao (laptop par **B**). **Topics** mein "My bookmarks" se seedha us page par. Bookmarks phone aur Firebase dono mein save hote hain (iske liye naye rules chahiye).
+- **Laptop keys:** ← → / Space page, + − zoom, 0 fit, F full screen, Esc band.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

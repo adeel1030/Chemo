@@ -104,6 +104,16 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
 
+      // Bookmarked pages, one document per chapter. The student keeps their own; the admin can read them.
+      match /marks/{ch} {
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow write: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['pages', 'at'])
+          && request.resource.data.pages is list && request.resource.data.pages.size() <= 300
+          && request.resource.data.at == request.time;
+        allow delete: if isAdmin();
+      }
+
       // Log of logins tried from another device, shown to the admin.
       match /attempts/{attemptId} {
         allow create: if signedIn() && request.auth.uid == uid;

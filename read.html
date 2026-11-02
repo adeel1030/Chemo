@@ -1099,6 +1099,24 @@ const pageCache = (() => {
 window.__pageCache = pageCache;
 const chapterVer = k => { const i = chapterInfo.get(k) || {}; return `${i.updatedAt && i.updatedAt.seconds || 0}-${i.pageCount || 0}`; };
 
+// ---------- bookmarks ----------
+const marksKey = k => `chemophile-marks-${auth.currentUser ? auth.currentUser.uid : "x"}-${k}`;
+function localMarks(k) { try { return JSON.parse(localStorage.getItem(marksKey(k))) || []; } catch (e) { return []; } }
+function saveMarks(k, list) {
+  try { localStorage.setItem(marksKey(k), JSON.stringify(list)); } catch (e) {}
+  if (!me.admin) setDoc(doc(db, "users", auth.currentUser.uid, "marks", k), { pages: list.slice(0, 300), at: serverTimestamp() }).catch(e => console.warn("marks", e));
+}
+// Bookmarks saved from Firebase (e.g. after the browser was cleared) join the ones on this phone.
+async function syncMarks(k) {
+  if (me.admin) return;
+  try {
+    const s = await getDoc(doc(db, "users", auth.currentUser.uid, "marks", k));
+    const remote = s.exists() ? s.data().pages || [] : [], local = localMarks(k);
+    const all = [...new Set([...local, ...remote])].sort((a, b) => a - b);
+    if (all.length !== local.length) { try { localStorage.setItem(marksKey(k), JSON.stringify(all)); } catch (e) {} if (book && book.setMarks) book.setMarks(all); }
+  } catch (e) {}
+}
+
 // ---------- book ----------
 function openBook(k) {
   const info = chapterInfo.get(k);
@@ -1112,6 +1130,9 @@ function openBook(k) {
     start: store.get(`chemophile-last-${k}`) || (reading.get(k) || {}).last || 1,
     toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
     onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
+    // Bookmarks: kept on this phone at once, and in Firebase (users/{uid}/marks/{chapter}) so they survive.
+    marks: localMarks(k),
+    onMarks: list => saveMarks(k, list),
     onClose: () => { stopTracking(); book = null; renderLibrary(); },
     loadPage: async n => {
       const ver = chapterVer(k), kept = await pageCache.get(k, ver, n);
@@ -1123,6 +1144,7 @@ function openBook(k) {
       return drawPage(s.data().img);
     }
   }).open();
+  syncMarks(k);
 }
 
 // Every page is drawn on a canvas with the student's name and number across it,
