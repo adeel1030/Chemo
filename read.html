@@ -218,6 +218,37 @@
 .tour-dots i.on { width: 22px; background: var(--accent); }
 .tour-nav { display: flex; gap: 8px; width: 100%; justify-content: space-between; }
 @media (prefers-reduced-motion: reduce) { .tour-art { animation: none; } }
+/* Today's plan, the topic map on each chapter, badges, the review card, and gentle motion. */
+.tplan { margin-top: 8px; font-size: .86rem; background: var(--paper); border-radius: 10px; padding: 8px 10px; }
+.tplan b { color: var(--accent); }
+.tmap { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 8px; }
+.tmap button { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); color: var(--muted); font: 700 .62rem var(--font-body); cursor: pointer; padding: 0; display: grid; place-items: center; }
+.tmap button.done { background: var(--good); border-color: var(--good); color: #fff; }
+.tmap button.half { border-color: var(--sun); background: color-mix(in srgb, var(--sun) 35%, var(--surface)); color: var(--fg); }
+.tmap button.here { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tmap i { width: 6px; height: 2px; background: var(--line); }
+.badges .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.badge { text-align: center; padding: 10px 6px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper); }
+.badge .e { font-size: 1.9rem; display: block; filter: grayscale(1); opacity: .35; }
+.badge b { display: block; font-size: .78rem; margin-top: 4px; }
+.badge small { display: block; font-size: .68rem; color: var(--muted); }
+.badge.on { background: linear-gradient(160deg, color-mix(in srgb, var(--sun) 30%, var(--surface)), var(--surface)); border-color: color-mix(in srgb, var(--sun) 60%, var(--line)); }
+.badge.on .e { filter: none; opacity: 1; }
+.rate { display: grid; gap: 10px; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--surface)), var(--surface)); }
+.rate .starbtns { display: flex; gap: 6px; }
+.rate .starbtns button { font-size: 2rem; line-height: 1; border: 0; background: none; cursor: pointer; color: var(--line); padding: 2px; transition: transform .15s; }
+.rate .starbtns button.on { color: #f59f00; }
+.rate .starbtns button:active { transform: scale(1.25); }
+.rate textarea { width: 100%; font: 1rem var(--font-body); padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); min-height: 80px; }
+.confetti { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .portal > .card, .portal .lib > .card { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+  .portal .lib > .card:nth-child(2) { animation-delay: .05s; } .portal .lib > .card:nth-child(3) { animation-delay: .1s; } .portal .lib > .card:nth-child(4) { animation-delay: .15s; }
+  .btn:active { transform: scale(.96); }
+  .chip-s.ok, .badge.on .e { animation: pop .5s cubic-bezier(.2,.9,.3,1.4) both; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { transform: scale(.6); } to { transform: none; } }
 /* No printing of the book. */
 @media print { body * { visibility: hidden !important; } body::after { content: "Printing is not allowed. © Mohd Adeel Khan"; visibility: visible; } }
 /* Refer a friend: the student's code and a share button. */
@@ -378,6 +409,7 @@
       <div id="continue"></div>
       <div id="promo-note" class="msg warn" hidden></div>
       <div id="news" class="news"></div>
+      <div class="card rate" id="rate" hidden></div>
       <div class="card teach" id="teach" hidden></div>
       <div id="upsell"></div>
       <div class="card redeem" id="redeem" hidden>
@@ -391,6 +423,7 @@
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
       <div class="card doubts" id="doubts-card" hidden></div>
+      <div class="card badges" id="badges" hidden></div>
       <div class="card refer" id="refer" hidden></div>
       <div class="card acct" id="acct-card">
         <h2>My account</h2>
@@ -912,6 +945,7 @@ async function renderLibrary() {
         <h2>${esc(c.title || pick)}</h2>
         <div class="meta">${esc(clsName(c.cls))} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
         ${started ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
+        ${todayPlan(pick, c, pr)}
         <button class="btn btn-sun btn-sm" type="button" data-read="${pick}">${started ? `Continue from page ${pr.last}` : "Open the book"}</button></div>
     </div>`;
   } else $("#continue").innerHTML = "";
@@ -945,6 +979,7 @@ async function renderLibrary() {
       <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · Chapter ${n}</div><h3>${esc(title)}</h3>${plan}
         <div class="meta">${status}</div>
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
+        ${open ? topicMap(k, c, pr) : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
         ${open && certReady(k) ? `<button class="btn btn-sm cert-btn" type="button" data-cert="${k}">🏅 My certificate</button><br>` : ""}
         ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
@@ -972,7 +1007,7 @@ async function renderLibrary() {
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
   renderMyReading(keys);
-  searchKeys = keys; renderStreak(); renderDoubts(); showTour();
+  searchKeys = keys; renderStreak(); renderDoubts(); showTour(); renderRate(keys); renderBadges(keys);
   renderRefer();
   if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
@@ -1377,6 +1412,121 @@ $("#v-library").addEventListener("click", e => {
   if (s) { const d = myDoubts.find(x => x.id === s.dataset.doubtSeen); if (d) { d.seen = true; renderDoubts(); updateDoc(doc(db, "doubts", d.id), { seen: true }).catch(() => {}); } }
   if (r) { const [k, p] = r.dataset.readPage.split("|"); openBook(k, +p); }
   if (g) $("#doubts-card").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// ---------- today's plan and the topic map ----------
+// The topic the student is in: its pages, how far they are, and a time guess (about 2 minutes a page).
+function topicSpans(c, total) {
+  const t = (c.topics || []).map(([name, , start]) => ({ name: String(name).replace(/<[^>]+>/g, ""), start: +start }));
+  return t.map((x, i) => Object.assign(x, { end: i + 1 < t.length ? t[i + 1].start - 1 : total }));
+}
+function todayPlan(k, c, pr) {
+  const spans = topicSpans(c, pr.total), last = Math.max(1, pr.last || 1);
+  if (!spans.length) return "";
+  let i = spans.findIndex(t => last >= t.start && last <= t.end);
+  if (i < 0) i = 0;
+  if (pr.last >= spans[i].end && i + 1 < spans.length) i++;
+  const t = spans[i], from = Math.max(t.start, last), pages = Math.max(1, t.end - from + 1);
+  return pr.done ? `<div class="tplan">🎉 Chapter done! Take the quiz or start the next chapter.</div>`
+    : `<div class="tplan">📅 <b>Today's plan:</b> Topic ${i + 1} · ${esc(t.name)} (p. ${from}–${t.end}, about ${Math.max(5, pages * 2)} min)</div>`;
+}
+function topicMap(k, c, pr) {
+  const spans = topicSpans(c, pr.total || 0), seen = new Set(((reading.get(k) || {}).seen) || []);
+  if (!spans.length || !pr.total) return "";
+  const cur = Math.max(1, pr.last || 1);
+  return `<div class="tmap" aria-label="Topics">${spans.map((t, i) => {
+    let n = 0; for (let p = t.start; p <= t.end; p++) if (seen.has(p)) n++;
+    const share = n / Math.max(1, t.end - t.start + 1), state = share >= .8 ? "done" : share > 0 ? "half" : "", here = cur >= t.start && cur <= t.end;
+    return `${i ? "<i></i>" : ""}<button type="button" class="${state}${here ? " here" : ""}" data-read-page="${k}|${t.start}" title="Topic ${i + 1}: ${esc(t.name)}${share ? ` · ${Math.round(share * 100)}% read` : ""}">${state === "done" ? "✓" : i + 1}</button>`;
+  }).join("")}</div>`;
+}
+
+// ---------- badges ----------
+// Earned from the reading record, quizzes, doubts and the streak. A new one shows with a little confetti.
+function earnedBadges(keys) {
+  const recs = keys.map(k => [k, reading.get(k)]).filter(([, r]) => r), pages = recs.reduce((a, [, r]) => a + (r.seen || []).length, 0);
+  const mins = recs.reduce((a, [, r]) => a + (r.minutes || 0), 0), q = [...quizRes.values()], n = streak();
+  return [
+    ["📖", "First page", "Open your first chapter", recs.length > 0],
+    ["💯", "100 pages", "Read 100 pages", pages >= 100],
+    ["⏱️", "5 hours", "Read for 5 hours in all", mins >= 300],
+    ["🏁", "Chapter done", "Read a chapter to the end", recs.some(([k, r]) => r.total && r.max >= r.total)],
+    ["🔥", "3-day streak", "Read 3 days in a row", n >= 3],
+    ["⚡", "7-day streak", "Read 7 days in a row", n >= 7],
+    ["🏆", "30-day streak", "Read 30 days in a row", n >= 30],
+    ["🧠", "Quiz taker", "Finish a quiz", q.length > 0],
+    ["🎯", "Quiz master", "Score 100% in a quiz", q.some(x => x.total && x.best === x.total)],
+    ["❓", "Curious mind", "Ask your first doubt", myDoubts.length > 0],
+    ["🏅", "Certified", "Earn a certificate", keys.some(certReady)]
+  ];
+}
+function renderBadges(keys) {
+  const box = $("#badges");
+  box.hidden = !!me.admin;
+  if (me.admin) return;
+  const list = earnedBadges(keys), got = list.filter(b => b[3]);
+  box.innerHTML = `<h2>My badges <span class="hint" style="font: 600 .9rem var(--font-body)">${got.length} of ${list.length}</span></h2>
+    <div class="grid">${list.map(([e, t, d, on]) => `<div class="badge${on ? " on" : ""}" title="${esc(d)}"><span class="e" aria-hidden="true">${e}</span><b>${esc(t)}</b><small>${on ? "Earned ✓" : esc(d)}</small></div>`).join("")}</div>`;
+  // Celebrate badges earned since the last visit (once each).
+  const key = `chemophile-badges-${auth.currentUser.uid}`, before = new Set(store.get(key) || []), now = got.map(b => b[1]);
+  const fresh = now.filter(t => !before.has(t));
+  store.set(key, now);
+  if (fresh.length && before.size + (store.get(key + "-init") ? 1 : 0)) { confetti(); toastLib(`🎉 New badge${fresh.length > 1 ? "s" : ""}: ${fresh.join(", ")}`); }
+  store.set(key + "-init", 1);
+}
+function toastLib(t) {
+  const el = document.createElement("div");
+  el.className = "msg good"; el.setAttribute("role", "status");
+  el.style.cssText = "position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 96; box-shadow: 0 12px 30px rgba(0,0,0,.2); max-width: calc(100% - 32px)";
+  el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 4200);
+}
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.createElement("canvas"); cv.className = "confetti"; document.body.appendChild(cv);
+  const x = cv.getContext("2d"), W = cv.width = innerWidth, H = cv.height = innerHeight, colors = ["#ffd24a", "#3b2fb8", "#ff6b9d", "#12b886", "#ff9f43"];
+  const bits = Array.from({ length: 120 }, () => ({ x: W / 2 + (Math.random() - .5) * 80, y: H * .35, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4, r: Math.random() * 6 + 3, c: colors[Math.floor(Math.random() * colors.length)], a: Math.random() * 6 }));
+  const t0 = performance.now();
+  const step = t => {
+    x.clearRect(0, 0, W, H);
+    bits.forEach(b => { b.vy += .35; b.x += b.vx; b.y += b.vy; b.a += .2; x.save(); x.translate(b.x, b.y); x.rotate(b.a); x.fillStyle = b.c; x.fillRect(-b.r, -b.r / 2, b.r * 2, b.r); x.restore(); });
+    if (t - t0 < 2200) requestAnimationFrame(step); else cv.remove();
+  };
+  requestAnimationFrame(step);
+}
+
+// ---------- asking for a review ----------
+// After a finished chapter, a 3-day streak or an hour of reading, the student is asked once to rate Chemophile.
+// Adeel Sir chooses which reviews show on the website (only with the student's permission).
+let rateStars = 0;
+function renderRate(keys) {
+  const box = $("#rate"), key = `chemophile-review-${auth.currentUser.uid}`, st = store.get(key);
+  const mins = keys.reduce((a, k) => a + ((reading.get(k) || {}).minutes || 0), 0);
+  const earned = keys.some(certReady) || streak() >= 3 || mins >= 60;
+  box.hidden = !!(me.admin || !earned || st === "sent" || (st && +st > Date.now()));
+  if (box.hidden) return;
+  box.innerHTML = `<h2 style="font-size: 1.2rem">Enjoying Chemophile? ⭐</h2>
+    <p class="hint" style="margin: 0">Tell Adeel Sir in a line. Your words help other students decide.</p>
+    <div class="starbtns" role="radiogroup" aria-label="Your rating">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" class="${n <= rateStars ? "on" : ""}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}</div>
+    <textarea id="rate-text" maxlength="400" placeholder="What do you like most? e.g. Hinglish examples se mole concept pehli baar samajh aaya."></textarea>
+    <label style="display: flex; gap: 8px; align-items: start; font-size: .88rem"><input type="checkbox" id="rate-ok" checked> Adeel Sir may show my first name, class and school with it on the website</label>
+    <div class="msg" id="rate-msg" role="status" hidden></div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn btn-sun btn-sm" type="button" id="rate-send">Send</button><button class="btn btn-line btn-sm" type="button" id="rate-later">Later</button></div>`;
+}
+$("#rate").addEventListener("click", async e => {
+  const st = e.target.closest("[data-star]"), key = `chemophile-review-${auth.currentUser.uid}`;
+  if (st) { rateStars = +st.dataset.star; $("#rate").querySelectorAll("[data-star]").forEach(b => b.classList.toggle("on", +b.dataset.star <= rateStars)); return; }
+  if (e.target.closest("#rate-later")) { store.set(key, String(Date.now() + 7 * 864e5)); $("#rate").hidden = true; return; }
+  if (!e.target.closest("#rate-send")) return;
+  const m = $("#rate-msg"), text = $("#rate-text").value.trim();
+  if (!rateStars) { m.className = "msg bad"; m.textContent = "Tap the stars first."; m.hidden = false; return; }
+  if (text.length < 3) { m.className = "msg bad"; m.textContent = "Write a line about it."; m.hidden = false; return; }
+  const w = (me.name || "").trim().split(/\s+/), name = w[0] ? w[0] + (w[1] ? " " + w[1][0] + "." : "") : "Student";
+  try {
+    await addDoc(collection(db, "reviews"), { uid: auth.currentUser.uid, name, school: me.school || "", city: me.city || "", cls: +((me.classes || [])[0] || 0), stars: rateStars, text, consent: $("#rate-ok").checked, status: "new", at: serverTimestamp() });
+    store.set(key, "sent");
+    $("#rate").innerHTML = `<h2 style="font-size: 1.2rem">Thank you! 💛</h2><p class="hint" style="margin: 0">Adeel Sir will read it.</p>`;
+    if (rateStars >= 4) confetti();
+  } catch (ex) { m.className = "msg bad"; m.textContent = "Could not send. Try again."; m.hidden = false; }
 });
 
 // ---------- topic search ----------

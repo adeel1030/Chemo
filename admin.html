@@ -78,6 +78,17 @@ body { background: var(--paper); }
 .todo-item.warn .ic { background: #e0a800; }
 .todo-item span { flex: 1; min-width: 0; }
 .todo-item small { display: block; margin-top: 2px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; }
+.chart h3 { font: 700 .95rem var(--font-body); margin-bottom: 2px; }
+.chart .hint { font-size: .8rem; }
+.chart svg { width: 100%; height: auto; display: block; margin-top: 8px; overflow: visible; }
+.chart .bar { fill: var(--accent); } .chart .bar.today { fill: #f59f00; }
+.chart .lbl { fill: var(--muted); font: 600 10px var(--font-body); }
+.chart .val { fill: var(--fg); font: 700 10px var(--font-body); }
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) 2fr auto; gap: 8px; align-items: center; font-size: .84rem; margin-top: 7px; }
+.hbar span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar i { display: block; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--accent), #ff6b9d); }
+.dot-inline { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bad); color: #fff; font: 700 .68rem var(--font-body); margin-left: 4px; }
 .idthumb { width: 64px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; cursor: zoom-in; background: var(--paper); flex: none; }
 .idthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .quick { display: grid; gap: 10px; }
@@ -288,6 +299,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
     <section id="t-home" class="stack">
       <div class="page-head"><div><h1 id="hello">Overview</h1><p id="today"></p></div></div>
       <div class="stats" id="stats"></div>
+      <div class="card insights"><div class="section-title" style="margin-bottom: 6px"><h2>Insights</h2><span class="hint">from your students' accounts and reading</span></div><div class="charts" id="charts"></div></div>
       <div class="dash-grid">
         <div class="card"><div class="section-title"><h2>Needs your attention</h2></div><div class="todo" id="todo"></div></div>
         <div class="stack">
@@ -428,6 +440,8 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <button type="button" role="tab" data-ctab="fmt" aria-selected="false">Ways to buy</button>
         <button type="button" role="tab" data-ctab="offer" aria-selected="false">Offers &amp; referral</button>
         <button type="button" role="tab" data-ctab="pay" aria-selected="false">Payment</button>
+        <button type="button" role="tab" data-ctab="vid" aria-selected="false">Videos</button>
+        <button type="button" role="tab" data-ctab="rev" aria-selected="false">Reviews <span class="dot-inline" id="rev-new" hidden></span></button>
       </div>
       <div class="msg" id="cat-msg" role="status" hidden></div>
 
@@ -481,6 +495,19 @@ textarea:focus { border-color: var(--accent); outline: none; }
         </div>
         <div class="field"><label for="pay-link">Card / net banking payment link (optional)</label><input id="pay-link" type="url" inputmode="url" placeholder="https://razorpay.me/@yourname"><span class="hint">From Razorpay, PhonePe Business, Instamojo or Paytm. Leave empty if you only take UPI.</span></div>
         <div><button class="btn btn-sun" type="button" data-cat="save-pay">Save</button></div>
+      </div>
+
+      <div class="card stack" id="cat-vid" hidden>
+        <p class="cat-sub">Short videos on the website ("Chemistry in 60 seconds"). Upload the video to YouTube (a Short works best), copy its link and add it here. The section stays hidden until there is a video.</p>
+        <div class="ch-list" id="vid-list"></div>
+        <div><button class="btn btn-sun btn-sm" type="button" data-cat="new-vid">+ Add a video</button></div>
+      </div>
+
+      <div class="card stack" id="cat-rev" hidden>
+        <p class="cat-sub">Real reviews only. Students send them from the app; you choose which ones show on the website. You can also add one you got on WhatsApp or in class, with that student's permission. The section stays hidden until one is shown.</p>
+        <div><b>Sent by students</b><div class="students" id="rev-in"></div></div>
+        <div class="section-title" style="margin: 0"><b>Shown on the website</b><button class="btn btn-sun btn-sm" type="button" data-cat="new-rev">+ Add a review</button></div>
+        <div class="ch-list" id="rev-list"></div>
       </div>
     </section>
 
@@ -613,6 +640,7 @@ else onAuthStateChanged(auth, async user => {
   run("Promo codes", loadPromos);
   run("Chapters", loadChapters, ex => { $("#chap-rows").innerHTML = `<p class="msg bad">Couldn't check which chapters are uploaded. ${esc(why(ex))}</p>`; });
   run("Announcements", loadNews, ex => { $("#news").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
+  run("Reviews", loadReviewsIn);
   run("Doubts", loadDoubts, ex => { $("#doubts").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
 });
 // Firestore error codes, in words the admin can act on. Nothing is deleted in any of these cases.
@@ -661,6 +689,7 @@ function renderDash() {
   ].join("");
   const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
   const todo = [
+    ...(reviewsIn.filter(x => x.status === "new").length ? [item("", `${reviewsIn.filter(x => x.status === "new").length} new student review${reviewsIn.filter(x => x.status === "new").length > 1 ? "s" : ""}. Choose which ones show on the website.`, "See", "t-catalog")] : []),
     ...copyAlerts().map(({ r, s }) => item("bad", `⚠️ <b>${esc(s.name)}</b> opened ${(r.seen || []).length} pages of ${esc(chName(r.ch))} in ${fmtMins(r.minutes || 0)}. That is too fast to read: they may be copying it. Check with them, or block the ID.`, "Check", "t-students", ` data-filter="all" data-q="${esc(s.loginId || s.name)}"`)),
     ...(doubts.filter(d => d.status === "open").length ? [item("warn", `${doubts.filter(d => d.status === "open").length} doubt${doubts.filter(d => d.status === "open").length === 1 ? " is" : "s are"} waiting for your answer.`, "Answer", "t-doubts")] : []),
     ...(teacherReqs.filter(r => r.status === "pending").length ? [item("warn", `${teacherReqs.filter(r => r.status === "pending").length} teacher${teacherReqs.filter(r => r.status === "pending").length === 1 ? " is" : "s are"} waiting for free access. Check their ID card.`, "Check", "t-promos")] : []),
@@ -678,10 +707,41 @@ function renderDash() {
   ];
   $("#todo").innerHTML = todo.length ? todo.join("") : `<p class="empty">All good. Nothing needs you right now.</p>`;
   $("#recent").innerHTML = students.slice(0, 5).map(s => `<div><span>${esc(s.name)}${s.promo ? ` <span class="hint">(promo)</span>` : isSignup(s) ? ` <span class="hint">(signed up)</span>` : ""}</span><span>${fmtDate(s.createdAt)}</span></div>`).join("") || `<p class="hint">No students yet.</p>`;
+  renderCharts();
   const alertDot = $("#dot-home"); alertDot.hidden = !alerts.length; alertDot.textContent = alerts.length;
   const chDot = $("#dot-ch"); chDot.hidden = !missing.length; chDot.textContent = missing.length;
   $("#chap-progress").textContent = `${CHAPTERS.length - missing.length} of ${CHAPTERS.length} chapters uploaded.${missing.length ? " Students can read a chapter only after it is uploaded." : " Everything is uploaded."}`;
   $("#chap-meter").style.width = Math.round(((CHAPTERS.length - missing.length) / CHAPTERS.length) * 100) + "%";
+}
+
+// ---------- insights (graphs) ----------
+// Bars drawn as plain SVG: new students a week, readers a day, the most-read chapters, and doubts a week.
+function bars(values, labels, highlightLast) {
+  const W = 320, H = 120, n = values.length, max = Math.max(1, ...values), bw = W / n;
+  return `<svg viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="${values.join(", ")}">${values.map((v, i) => {
+    const h = Math.round((v / max) * (H - 14)), x = i * bw + bw * .15, w = bw * .7;
+    return `<rect class="bar${highlightLast && i === n - 1 ? " today" : ""}" x="${x.toFixed(1)}" y="${H - h}" width="${w.toFixed(1)}" height="${Math.max(h, v ? 2 : 0)}" rx="3"><title>${labels[i]}: ${v}</title></rect>${v ? `<text class="val" x="${(x + w / 2).toFixed(1)}" y="${H - h - 3}" text-anchor="middle">${v}</text>` : ""}<text class="lbl" x="${(x + w / 2).toFixed(1)}" y="${H + 13}" text-anchor="middle">${labels[i]}</text>`;
+  }).join("")}</svg>`;
+}
+function renderCharts() {
+  const box = $("#charts"); if (!box) return;
+  const now = new Date(), wk = 7 * 864e5;
+  // New students, last 8 weeks (week ending today).
+  const weeks = [...Array(8)].map((_, i) => 7 - i);
+  const newIds = weeks.map(w => students.filter(s => s.createdAt && now - s.createdAt.toDate() < (w + 1) * wk && now - s.createdAt.toDate() >= w * wk).length);
+  const wl = weeks.map(w => w === 0 ? "this" : `-${w}w`);
+  // Students who read each of the last 14 days (from their reading days).
+  const days = [...Array(14)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 13 + i); return d; });
+  const readers = days.map(d => students.filter(s => (s.readDays || []).includes(dKey(d))).length);
+  // Most-read chapters by minutes.
+  const per = new Map(); readingAll.forEach(r => per.set(r.ch, (per.get(r.ch) || 0) + (r.minutes || 0)));
+  const top = [...per].sort((a, b) => b[1] - a[1]).slice(0, 6), topMax = Math.max(1, ...top.map(t => t[1]));
+  const dw = weeks.map(w => doubts.filter(d => d.at && now - d.at.toDate() < (w + 1) * wk && now - d.at.toDate() >= w * wk).length);
+  box.innerHTML = `
+    <div class="chart"><h3>New students a week</h3><div class="hint">${newIds.reduce((a, b) => a + b, 0)} in 8 weeks</div>${bars(newIds, wl, true)}</div>
+    <div class="chart"><h3>Students reading each day</h3><div class="hint">read 5+ minutes that day · last 14 days</div>${bars(readers, days.map(d => String(d.getDate())), true)}</div>
+    <div class="chart"><h3>Most-read chapters</h3><div class="hint">total reading time</div>${top.length ? top.map(([k, m]) => `<div class="hbar"><span>${esc(chName(k))}</span><i style="width: ${Math.max(4, Math.round(m / topMax * 100))}%"></i><span>${fmtMins(m)}</span></div>`).join("") : `<p class="hint" style="margin-top: 10px">No reading yet.</p>`}</div>
+    <div class="chart"><h3>Doubts a week</h3><div class="hint">${doubts.filter(d => d.status === "open").length} waiting now</div>${bars(dw, wl, true)}</div>`;
 }
 
 // ---------- navigation ----------
@@ -1685,6 +1745,7 @@ function startCatalog(saved) {
   cat.offer = Object.assign({ on: false, text: "", until: "" }, cat.offer || {});
   cat.referral = Object.assign({ on: false, days: 30 }, cat.referral || {});
   cat.pay = Object.assign({ upi: "", payee: "", link: "" }, cat.pay || DEFAULT_PAY);
+  cat.site = Object.assign({ videos: [], reviews: [] }, cat.site || {});
   $("#cat-first").hidden = !!saved;
   picks($("#new-ch")); picks($("#p-ch"));
   $("#n-cls").innerHTML = `<option value="0">All readers</option>` + classList().map(c => `<option value="${c}">Only ${esc(clsName(c))} readers</option>`).join("");
@@ -1747,6 +1808,7 @@ function renderCatalog() {
   $("#fill-cls").innerHTML = `<option value="all">Every class</option>` + classes.map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("");
   $("#of-on").checked = !!cat.offer.on; $("#of-text").value = cat.offer.text || ""; $("#of-until").value = cat.offer.until || "";
   $("#rf-on").checked = !!cat.referral.on; $("#rf-days").value = cat.referral.days || 30;
+  renderSiteLists();
   $("#pay-upi").value = cat.pay.upi || ""; $("#pay-name").value = cat.pay.payee || ""; $("#pay-link").value = cat.pay.link || "";
   $("#ref-field").hidden = !cat.referral.on;
   $("#ref-hint").textContent = `If a friend referred them. That friend gets ${cat.referral.days || 30} free days.`;
@@ -1755,10 +1817,88 @@ $("#cat-tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-ctab]");
   if (!b) return;
   document.querySelectorAll("#cat-tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["ch", "combo", "fmt", "offer", "pay"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
+  ["ch", "combo", "fmt", "offer", "pay", "vid", "rev"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
   $("#cat-msg").hidden = true;
 });
 $("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; renderCatalog(); });
+
+// ---------- website videos and reviews (catalog.site) ----------
+let reviewsIn = [];
+const starTxt = n => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+function renderSiteLists() {
+  const v = cat.site.videos, r = cat.site.reviews;
+  $("#vid-list").innerHTML = v.length ? v.map((x, i) => `<button class="ch-item" type="button" data-edit-vid="${i}">
+      <span class="no">▶</span><span class="nm">${esc(x.title || "(no title)")}<small>${esc(x.url)}${youtubeId(x.url) ? "" : " · ⚠ not a YouTube link"}</small></span><span class="go">Edit ›</span></button>`).join("") : `<div class="ch-empty">No videos yet.</div>`;
+  $("#rev-list").innerHTML = r.length ? r.map((x, i) => `<button class="ch-item" type="button" data-edit-rev="${i}">
+      <span class="no">${x.stars}★</span><span class="nm">${esc(x.name)}<small>${esc(x.text.slice(0, 90))}${x.text.length > 90 ? "…" : ""}</small></span><span class="go">Edit ›</span></button>`).join("") : `<div class="ch-empty">No reviews on the website yet.</div>`;
+  const fresh = reviewsIn.filter(x => x.status === "new");
+  const dot = $("#rev-new"); dot.hidden = !fresh.length; dot.textContent = fresh.length;
+  $("#rev-in").innerHTML = reviewsIn.length ? reviewsIn.slice(0, 30).map(x => `<div class="stu" data-rid="${x.id}">
+      <div class="stu-top"><div class="avatar" aria-hidden="true">${x.stars}★</div>
+        <div style="min-width:0"><h3>${esc(x.name || "Student")}</h3><div class="sub">${esc([x.cls ? clsName(x.cls) : "", x.school, x.city].filter(Boolean).join(" · "))}${x.at ? " · " + fmtDate(x.at) : ""}</div></div>
+        <div class="pills"><span class="stars" style="color: #f59f00">${starTxt(x.stars)}</span>${x.status === "shown" ? `<span class="pill good">On the website</span>` : x.status === "hidden" ? `<span class="pill">Not shown</span>` : `<span class="pill warn">New</span>`}${x.consent ? "" : `<span class="pill bad">No permission to show</span>`}</div></div>
+      <p class="news-text">${esc(x.text)}</p>
+      <div class="actions">${x.status !== "shown" && x.consent ? `<button class="btn btn-sun btn-sm" type="button" data-rev-act="show">Show on website</button>` : ""}${x.status === "new" ? `<button class="btn btn-line btn-sm" type="button" data-rev-act="hide">Don't show</button>` : ""}<span class="spacer"></span><button class="btn btn-danger btn-sm" type="button" data-rev-act="del">Delete</button></div>
+    </div>`).join("") : `<p class="hint">None yet. Students are asked for a review after they finish a chapter or keep a 3-day streak.</p>`;
+}
+async function loadReviewsIn() {
+  reviewsIn = (await getDocs(collection(db, "reviews"))).docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0));
+  if (cat) renderSiteLists();
+  renderDash();
+}
+async function reviewAction(b) {
+  const row = b.closest("[data-rid]"), x = reviewsIn.find(r => r.id === row.dataset.rid), a = b.dataset.revAct;
+  try {
+    if (a === "show") {
+      await commit(next => { next.site.reviews.unshift({ name: x.name, school: x.school || "", city: x.city || "", cls: x.cls || 0, stars: x.stars, text: x.text, at: toInput(x.at) || inDays(0), from: x.id }); }, "Review shown on the website.");
+      await updateDoc(doc(db, "reviews", x.id), { status: "shown" }); x.status = "shown";
+    }
+    if (a === "hide") { await updateDoc(doc(db, "reviews", x.id), { status: "hidden" }); x.status = "hidden"; }
+    if (a === "del") {
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
+      await deleteAll([doc(db, "reviews", x.id)]); reviewsIn = reviewsIn.filter(r => r !== x);
+    }
+    renderSiteLists();
+  } catch (ex) { catSay(saveError(ex), "bad"); }
+}
+function videoDialog(i) {
+  const isNew = i == null, x = isNew ? { title: "", url: "" } : cat.site.videos[i];
+  openDialog(isNew ? "Add a video" : "Video", `
+    <div class="field"><label for="d-vurl">YouTube link</label><input id="d-vurl" type="url" inputmode="url" value="${esc(x.url)}" placeholder="https://youtube.com/shorts/…"><span class="hint">On YouTube: Share → Copy link.</span></div>
+    <div class="field"><label for="d-vtitle">Title on the website</label><input id="d-vtitle" maxlength="70" value="${esc(x.title)}" placeholder="Mole concept in 60 seconds"></div>`,
+    async () => {
+      const url = val("d-vurl"), title = val("d-vtitle");
+      if (!youtubeId(url)) throw new Error("That is not a YouTube link. Copy it from YouTube: Share → Copy link.");
+      await commit(next => { const item = { url, title }; if (isNew) next.site.videos.push(item); else next.site.videos[i] = item; }, "Video saved. It shows on the website now.");
+    },
+    isNew ? null : async () => { await commit(next => { next.site.videos.splice(i, 1); }, "Video removed."); });
+}
+function reviewDialog(i) {
+  const isNew = i == null, x = isNew ? { name: "", school: "", city: "", cls: 0, stars: 5, text: "", at: inDays(0) } : cat.site.reviews[i];
+  openDialog(isNew ? "Add a review" : "Review", `
+    <div class="cat-row">
+      <div class="field"><label for="d-rname">Student's name</label><input id="d-rname" maxlength="40" value="${esc(x.name)}" placeholder="First name and initial, e.g. Sana K."></div>
+      <div class="field sm"><label for="d-rstars">Stars</label><select id="d-rstars">${[5, 4, 3, 2, 1].map(n => `<option value="${n}"${+x.stars === n ? " selected" : ""}>${n} ★</option>`).join("")}</select></div>
+    </div>
+    <div class="cat-row">
+      <div class="field"><label for="d-rschool">School (optional)</label><input id="d-rschool" maxlength="60" value="${esc(x.school || "")}"></div>
+      <div class="field"><label for="d-rcity">City (optional)</label><input id="d-rcity" maxlength="40" value="${esc(x.city || "")}"></div>
+      <div class="field sm"><label for="d-rcls">Class</label><select id="d-rcls"><option value="0">-</option>${classList().map(c => `<option value="${c}"${+x.cls === c ? " selected" : ""}>${esc(clsName(c))}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="d-rtext">What they said</label><textarea id="d-rtext" maxlength="400" rows="4">${esc(x.text)}</textarea></div>
+    ${isNew ? `<label class="cat-check"><input type="checkbox" id="d-rok"> This is a real review, and the student agreed to show it</label>` : ""}`,
+    async () => {
+      const item = { name: val("d-rname"), school: val("d-rschool"), city: val("d-rcity"), cls: +val("d-rcls"), stars: +val("d-rstars"), text: val("d-rtext"), at: x.at || inDays(0), ...(x.from ? { from: x.from } : {}) };
+      if (item.name.length < 2) throw new Error("Write the student's name.");
+      if (item.text.length < 3) throw new Error("Write what they said.");
+      if (isNew && !dlg.querySelector("#d-rok").checked) throw new Error("Tick the box: only real reviews, shown with the student's permission.");
+      await commit(next => { if (isNew) next.site.reviews.unshift(item); else next.site.reviews[i] = item; }, "Review saved. It shows on the website now.");
+    },
+    isNew ? null : async () => {
+      await commit(next => { next.site.reviews.splice(i, 1); }, "Review removed from the website.");
+      if (x.from) { await updateDoc(doc(db, "reviews", x.from), { status: "hidden" }).catch(() => {}); const r = reviewsIn.find(y => y.id === x.from); if (r) r.status = "hidden"; renderSiteLists(); }
+    });
+}
 
 // ---------- the edit dialog ----------
 const dlg = $("#cat-dlg");
@@ -1908,6 +2048,10 @@ function comboDialog(i) {
 }
 $("#t-catalog").addEventListener("click", async e => {
   const ch = e.target.closest("[data-edit-ch]"), cb = e.target.closest("[data-edit-combo]"), b = e.target.closest("[data-cat]");
+  const ev = e.target.closest("[data-edit-vid]"), er = e.target.closest("[data-edit-rev]"), ra = e.target.closest("[data-rev-act]");
+  if (ev) return videoDialog(+ev.dataset.editVid);
+  if (er) return reviewDialog(+er.dataset.editRev);
+  if (ra) return reviewAction(ra);
   if (ch) return chapterDialog(+ch.dataset.editCh);
   if (cb) return comboDialog(+cb.dataset.editCombo);
   if (!b) return;
@@ -1916,6 +2060,8 @@ $("#t-catalog").addEventListener("click", async e => {
   if (act === "edit-class") return classDialog(false);
   if (act === "new-class") return classDialog(true);
   if (act === "new-combo") return comboDialog(null);
+  if (act === "new-vid") return videoDialog(null);
+  if (act === "new-rev") return reviewDialog(null);
   b.disabled = true;
   try {
     if (act === "save-fmt") {

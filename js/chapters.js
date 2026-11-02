@@ -53,6 +53,7 @@ const onlineDays = () => +(FORMATS.online && FORMATS.online.days) || 365;
 const COMBOS = [];       // { id, name, text, chapters: [keys], price: { online, colour, bw }, mrp: {...}, on }
 let OFFER = null;        // { on, text, until: "YYYY-MM-DD" }: a banner on top of the website
 const SOON_CHAPTERS = []; // chapters set to "Coming soon" in the catalog, in the same shape as CHAPTERS
+let SITE = { videos: [], reviews: [] }; // from the admin panel: YouTube videos and approved student reviews
 let REFERRAL = { on: false, days: 30 }; // "refer a friend": a student whose code a new buyer gives gets this many days free
 // How to pay, shown on the order form: UPI ID, the name shown while paying, and an optional card/net banking link.
 // The admin panel (Books & prices → Payment) can change it.
@@ -328,7 +329,7 @@ function defaultCatalog() {
       price: Object.assign({}, PRICES[keyOf(c)]), mrp: {}
     })),
     combos: [], offer: { on: false, text: "", until: "" },
-    referral: { on: false, days: 30 }, pay: Object.assign({}, DEFAULT_PAY)
+    referral: { on: false, days: 30 }, pay: Object.assign({}, DEFAULT_PAY), site: { videos: [], reviews: [] }
   };
 }
 function applyCatalog(cat) {
@@ -360,9 +361,12 @@ function applyCatalog(cat) {
   COMBOS.length = 0; (cat.combos || []).filter(x => x.on !== false && x.chapters && x.chapters.length).forEach(x => COMBOS.push(x));
   OFFER = cat.offer || null;
   REFERRAL = Object.assign({ on: false, days: 30 }, cat.referral || {});
+  SITE = Object.assign({ videos: [], reviews: [] }, cat.site || {});
   PAY = !cat.pay ? DEFAULT_PAY : cat.pay.upi || cat.pay.link ? cat.pay : null;
   return true;
 }
+// A YouTube link (watch, youtu.be, shorts or embed) → its 11-letter video id, or "" if it isn't one.
+const youtubeId = u => { const m = String(u || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/); return m ? m[1] : ""; };
 // A student's "refer a friend" code: the first 6 letters of their account number, in capitals.
 const refCodeOf = uid => String(uid || "").slice(0, 6).toUpperCase();
 // Classes that have a book, in order (school classes first, then university books).

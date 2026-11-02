@@ -187,6 +187,21 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
 - **Topic search:** library mein "🔎 Search a topic": topic ya sub-topic likho, us page par seedha kitaab khulti hai.
 - **Dark mode:** phone ki setting ke hisaab se apne aap; upar ◐ / ☾ / ☀ button se badal bhi sakte hain (website, app, admin, sab mein).
 
+## 21. Naya look, videos, reviews, badges, graphs, security
+
+- **Website:** 3D covers jo mouse ke saath ghoomte hain, tairte atoms, "Why students love it" tiles, numbers jo ginte hue badhte hain.
+- **Videos:** YouTube par Short upload karo → **Books & prices → Videos → + Add a video** mein link aur title. Website par "Chemistry in 60 seconds" section apne aap aa jata hai.
+- **Reviews (sirf asli):** student ek chapter khatam karne, 3-day streak ya 1 ghante padhne ke baad app mein ⭐ aur ek line bhejta hai. **Books & prices → Reviews** mein **Show on website** dabao (sirf jinhone permission di). Khud ka asli review **+ Add a review** se. Jab tak koi review dikhaya nahi, section chhupa rehta hai.
+- **App:** continue card par "Today's plan", har chapter par topic ka map (✓ padha, peela adha), **My badges** (naya badge milne par confetti), halki animations.
+- **Insights (Overview):** naye students har hafte, roz padhne wale, sabse zyada padhe chapters, doubts har hafte.
+- **Security:**
+  - Har page par ek chhupa, bahut halka ID text. Leak hua screenshot **Students → 🔍 Check a leaked page** mein daalo: ID dikh jati hai (saaf screenshot sabse achha).
+  - Overview par ⚠️ alert jab koi bahut tez pages palte (copy karne jaisa).
+  - Minute mein 30 se zyada pages download hon to dheema; print par kuch nahi chhapta.
+  - Kitaab khuli ho aur window/app se focus hate (screenshot tool, app switch) to pages dhundhle ho jaate hain.
+  - Password badalne par usi ID ke doosre login bahar.
+- **Quiz bulk:** **Chapters → 📥 Paste quizzes for many chapters**: har chapter `### 11-1` se shuru.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

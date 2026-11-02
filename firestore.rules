@@ -228,6 +228,20 @@ service cloud.firestore {
         && d.at == request.time;
     }
 
+    // Reviews students send from the app. Only the admin reads them and chooses which ones show on the website
+    // (the website shows only the approved ones, copied into the catalog).
+    match /reviews/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn() && exists(userPath(request.auth.uid))
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'school', 'city', 'cls', 'stars', 'text', 'consent', 'status', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && request.resource.data.text is string && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 400
+        && request.resource.data.consent is bool && request.resource.data.status == 'new'
+        && request.resource.data.at == request.time;
+      allow update, delete: if isAdmin();
+    }
+
     // The admin lists every student's free access, and every reading record (for graphs and copy alerts), at once.
     match /{path=**}/grants/{ch} {
       allow read: if isAdmin();

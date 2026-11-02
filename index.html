@@ -370,6 +370,7 @@ p { margin: 0; }
 .site-nav .btn { color: var(--sun-ink); padding: 8px 16px; font-size: .92rem; box-shadow: none; }
 .site-nav a.login { border: 1px solid rgba(255,255,255,.35); }
 @media (max-width: 700px) { .site-nav a:not(.btn):not(.login) { display: none; } }
+@media (max-width: 440px) { .site-nav { gap: 3px; } .site-nav .btn { padding: 7px 11px; font-size: .84rem; } .site-nav a.login { padding: 5px 8px; font-size: .84rem; } .site-nav .theme-btn { width: 30px; height: 30px; font-size: .9rem; } .brand img { width: 34px; height: 34px; } .brand { font-size: 1.2rem; gap: 7px; } }
 
 /* ---------- hero ---------- */
 .hero { overflow: hidden; }
@@ -401,6 +402,58 @@ p { margin: 0; }
   .cover-fan .sticker { width: 84px; height: 84px; font-size: .85rem; }
 }
 
+/* 3D cover stack that follows the pointer, and atoms floating in the background. */
+.hero { position: relative; }
+.cover-fan { perspective: 1100px; }
+.fan3d { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .25s ease-out; }
+.atoms { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.hero .wrap { position: relative; z-index: 1; }
+.atoms span { position: absolute; color: rgba(255, 255, 255, .13); font: 700 1.6rem var(--font-display); animation: floaty 14s ease-in-out infinite; }
+.atoms span:nth-child(2n) { animation-duration: 18s; animation-direction: reverse; color: rgba(255, 210, 74, .16); }
+.atoms span:nth-child(3n) { font-size: 2.6rem; animation-duration: 22s; }
+@keyframes floaty { 0%, 100% { transform: translate(0, 0) rotate(0); } 33% { transform: translate(14px, -22px) rotate(12deg); } 66% { transform: translate(-12px, 10px) rotate(-8deg); } }
+@media (prefers-reduced-motion: reduce) { .atoms span { animation: none; } .fan3d { transform: none; } }
+/* Bento grid: the reasons, in tiles of different sizes. */
+.bento { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(150px, auto); gap: 14px; margin-top: 26px; }
+.tile { border-radius: 22px; padding: 20px; display: grid; align-content: space-between; gap: 10px; position: relative; overflow: hidden; color: var(--fg); background: var(--surface); border: 1px solid var(--line); transition: transform .25s ease, box-shadow .25s ease; }
+.tile:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(20,18,70,.14); }
+.tile .ic { font-size: 2rem; line-height: 1; }
+.tile h3 { font-size: 1.2rem; }
+.tile p { font-size: .9rem; color: var(--muted); }
+.tile .big { font: 800 2.4rem/1 var(--font-display); }
+.tile.w2 { grid-column: span 2; } .tile.h2 { grid-row: span 2; }
+.tile.t1 { background: linear-gradient(135deg, #3b2fb8, #6c4fe0); color: #fff; border: 0; } .tile.t1 p { color: rgba(255,255,255,.8); }
+.tile.t2 { background: linear-gradient(135deg, #ffd24a, #ff9f43); color: #2a1300; border: 0; } .tile.t2 p { color: rgba(42,19,0,.75); }
+.tile.t3 { background: linear-gradient(135deg, #12b886, #0ca678); color: #fff; border: 0; } .tile.t3 p { color: rgba(255,255,255,.85); }
+.tile.t4 { background: linear-gradient(135deg, #ff6b9d, #f06595); color: #fff; border: 0; } .tile.t4 p { color: rgba(255,255,255,.85); }
+.tile .glow { position: absolute; width: 160px; height: 160px; border-radius: 50%; right: -40px; bottom: -40px; background: rgba(255,255,255,.18); }
+@media (max-width: 860px) { .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile.w2 { grid-column: span 2; } .tile.h2 { grid-row: auto; } }
+/* Videos: YouTube thumbnails; a tap plays it in a window. */
+.vids { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 240px); gap: 14px; overflow-x: auto; padding: 6px 2px 14px; margin-top: 22px; scroll-snap-type: x mandatory; }
+.vid { scroll-snap-align: start; border: 0; padding: 0; background: var(--night); border-radius: 18px; overflow: hidden; cursor: pointer; position: relative; aspect-ratio: 9 / 14; box-shadow: 0 12px 28px rgba(20,18,70,.25); }
+.vid img { width: 100%; height: 100%; object-fit: cover; opacity: .9; transition: transform .4s ease; }
+.vid:hover img { transform: scale(1.05); }
+.vid .play { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; background: rgba(255,210,74,.95); color: #2a2100; display: grid; place-items: center; font-size: 1.4rem; }
+.vid .vt { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 12px 12px; background: linear-gradient(transparent, rgba(10,9,35,.9)); color: #fff; font: 700 .92rem var(--font-body); text-align: left; }
+.vplayer { position: fixed; inset: 0; z-index: 80; background: rgba(10,9,35,.9); display: grid; place-items: center; padding: 16px; }
+.vplayer[hidden] { display: none; }
+.vplayer iframe { width: min(420px, 100%); aspect-ratio: 9 / 16; max-height: 86vh; border: 0; border-radius: 16px; background: #000; }
+.vplayer.wide iframe { width: min(960px, 100%); aspect-ratio: 16 / 9; }
+.vplayer button { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; }
+/* Reviews: a moving strip of real student reviews. */
+.rv-head { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 10px; }
+.rv-avg { font: 800 2.6rem/1 var(--font-display); }
+.stars { color: #f59f00; letter-spacing: 2px; }
+.rv-strip { overflow: hidden; margin-top: 22px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.rv-track { display: flex; gap: 14px; width: max-content; animation: marquee var(--dur, 40s) linear infinite; }
+.rv-strip:hover .rv-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.rv { width: 300px; flex: none; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.rv p { font-size: .95rem; }
+.rv .who { display: flex; gap: 10px; align-items: center; font-size: .85rem; color: var(--muted); }
+.rv .av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 800 .9rem var(--font-display); color: #fff; background: linear-gradient(135deg, var(--accent), #ff6b9d); flex: none; }
+.rv .who b { color: var(--fg); display: block; }
+@media (prefers-reduced-motion: reduce) { .rv-track { animation: none; flex-wrap: wrap; width: auto; } }
 .numbers { border-top: 1px solid rgba(255,255,255,.1); background: var(--night-3); }
 .numbers .wrap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding-block: 20px; }
 .numbers div { text-align: center; }
@@ -742,6 +795,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 
 <main id="top">
   <section class="hero night">
+    <div class="atoms" aria-hidden="true"><span style="left: 6%; top: 18%">⚛</span><span style="left: 44%; top: 8%">H₂O</span><span style="left: 88%; top: 14%">⬡</span><span style="left: 12%; top: 72%">CO₂</span><span style="left: 52%; top: 80%">⚗</span><span style="left: 80%; top: 64%">NaCl</span><span style="left: 30%; top: 40%">e⁻</span><span style="left: 68%; top: 34%">⬡</span></div>
     <div class="wrap">
       <div>
         <div class="pills"><span class="pill new">Class 11 + 12: all 19 chapters ready</span><span class="pill">CBSE 2026-27</span></div>
@@ -760,12 +814,12 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
           <li>Free sample PDF</li>
         </ul>
       </div>
-      <div class="cover-fan">
+      <div class="cover-fan" id="cover-fan"><div class="fan3d">
         <img src="assets/thumbs/ch6-1.webp" alt="" width="360" height="509">
         <img src="assets/thumbs/c12-ch5-1.webp" alt="" width="360" height="509">
         <img src="assets/thumbs/ch2-1.webp" alt="Cover of Chemophile Chapter 2: Structure of Atom" width="360" height="509">
         <div class="sticker" aria-hidden="true">In<br>Hinglish!</div>
-      </div>
+      </div></div>
     </div>
     <div class="numbers">
       <div class="wrap" id="numbers"></div>
@@ -779,6 +833,22 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
       <p class="sec-intro">One complete topic from every chapter, with the real book pages. Flip through it right here like a book, or download the PDF and share it with friends.</p>
       <div class="samples-grid" id="samples-grid"></div>
       <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
+    </div>
+  </section>
+
+  <section class="block" id="why">
+    <div class="wrap">
+      <div class="eyebrow">Why students love it</div>
+      <h2 class="sec-title">Everything you need, <span class="hl">nothing you don't</span></h2>
+      <div class="bento" id="bento"></div>
+    </div>
+  </section>
+
+  <section class="block night" id="videos" hidden>
+    <div class="wrap">
+      <div class="eyebrow">Watch Adeel Sir</div>
+      <h2 class="sec-title">Chemistry in <span class="hl">60 seconds</span></h2>
+      <div class="vids" id="vids"></div>
     </div>
   </section>
 
@@ -933,6 +1003,15 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
     </div>
   </section>
 
+  <section class="block" id="reviews" hidden>
+    <div class="wrap">
+      <div class="eyebrow">From our students</div>
+      <h2 class="sec-title">What students <span class="hl">say</span></h2>
+      <div class="rv-head" id="rv-head"></div>
+      <div class="rv-strip"><div class="rv-track" id="rv-track"></div></div>
+    </div>
+  </section>
+
   <section class="block" id="faq">
     <div class="wrap">
       <div class="eyebrow">Common questions</div>
@@ -1006,6 +1085,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
   </div>
 </footer>
 
+<div class="vplayer" id="vplayer" hidden role="dialog" aria-modal="true" aria-label="Video"><button class="btn btn-sun" type="button" id="vclose">Close ✕</button></div>
 <div class="order-bar" id="order-bar" hidden>
   <div class="in">
     <div class="txt" id="order-bar-txt"></div>
@@ -1080,7 +1160,81 @@ const store = {
     [CHAPTERS.length, "chapters ready"], [sum("pages"), "pages"], [sum("fig"), "figures and diagrams"],
     [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [2, "free sample books"]
   ];
-  $("#numbers").innerHTML = items.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
+  $("#numbers").innerHTML = items.map(([v, l]) => `<div><b data-to="${parseInt(v, 10)}" data-suffix="${String(v).replace(/^\d+/, "")}">${v}</b><span>${l}</span></div>`).join("");
+  // Numbers count up from zero the first time they come into view.
+  const run = el => {
+    const to = +el.dataset.to, suf = el.dataset.suffix || "", t0 = performance.now(), dur = 1300;
+    const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(to * e).toLocaleString("en-IN") + suf; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { io.unobserve(en.target); run(en.target); } }), { threshold: .6 });
+    document.querySelectorAll("#numbers b[data-to]").forEach(b => { b.textContent = "0" + b.dataset.suffix; io.observe(b); });
+  }
+})();
+
+// ---------- 3D covers ----------
+(function tilt() {
+  const fan = $("#cover-fan"), hero = document.querySelector(".hero");
+  if (!fan || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  hero.addEventListener("pointermove", e => {
+    const r = fan.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    fan.style.setProperty("--ry", `${(x * 18).toFixed(1)}deg`); fan.style.setProperty("--rx", `${(-y * 12).toFixed(1)}deg`);
+  });
+  hero.addEventListener("pointerleave", () => { fan.style.setProperty("--ry", "0deg"); fan.style.setProperty("--rx", "0deg"); });
+  addEventListener("scroll", () => { const k = Math.min(1, scrollY / 600); fan.style.setProperty("--rx", `${(k * 14).toFixed(1)}deg`); }, { passive: true });
+})();
+
+// ---------- bento ----------
+(function bento() {
+  const sum = f => CHAPTERS.reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0);
+  const T = [
+    ["t1 w2 h2", "🗣️", "Hinglish mein samjho, English mein likho", "Every idea is explained the way you talk, and every topic gives the board answer in English.", ""],
+    ["t2", "🖼️", "Diagrams", "On every page, in colour.", sum("fig") + "+"],
+    ["", "✍️", "Solved examples", "Step by step, then you try.", sum("solved") + "+"],
+    ["t3", "❓", "Ask Adeel Sir", "Stuck on a page? Send your doubt from the book; the answer comes back in the app.", ""],
+    ["", "🏅", "Quiz + certificate", "Test yourself after each chapter and earn a certificate to share.", ""],
+    ["t4 w2", "🔥", "Daily streaks", "15 minutes a day, a ring to fill, a streak to protect. Studying becomes a habit.", ""],
+    ["", "📱", "Phone or laptop", "Turns like a real book. Zoom, bookmarks, night and dark mode.", ""],
+    ["", "🎯", "JEE/NEET extra", "Advanced boxes in every chapter, plus PhET simulations by QR.", ""]
+  ];
+  $("#bento").innerHTML = T.map(([cls, ic, h, p, big]) => `<div class="tile ${cls}">${cls.includes("t") ? '<span class="glow"></span>' : ""}<div class="ic" aria-hidden="true">${ic}</div>
+    <div>${big ? `<div class="big">${big}</div>` : ""}<h3>${h}</h3><p>${p}</p></div></div>`).join("");
+})();
+
+// ---------- videos (YouTube links set in the admin panel) ----------
+(function videos() {
+  const list = (SITE.videos || []).map(v => Object.assign({ yid: youtubeId(v.url) }, v)).filter(v => v.yid);
+  $("#videos").hidden = !list.length;
+  $("#vids").innerHTML = list.map(v => `<button class="vid" type="button" data-yid="${v.yid}" data-short="${/shorts\//.test(v.url) ? 1 : ""}" aria-label="Play: ${esc(v.title || "video")}">
+    <img src="https://i.ytimg.com/vi/${v.yid}/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span><span class="vt">${esc(v.title || "")}</span></button>`).join("");
+  const pl = $("#vplayer");
+  $("#vids").addEventListener("click", e => {
+    const b = e.target.closest("[data-yid]"); if (!b) return;
+    pl.classList.toggle("wide", !b.dataset.short);
+    pl.querySelectorAll("iframe").forEach(f => f.remove());
+    pl.insertAdjacentHTML("beforeend", `<iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yid}?autoplay=1&rel=0" title="Video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`);
+    pl.hidden = false;
+  });
+  const close = () => { pl.hidden = true; pl.querySelectorAll("iframe").forEach(f => f.remove()); };
+  $("#vclose").addEventListener("click", close);
+  pl.addEventListener("click", e => { if (e.target === pl) close(); });
+})();
+
+// ---------- reviews (real reviews, approved in the admin panel) ----------
+(function reviews() {
+  const list = (SITE.reviews || []).filter(r => r.text && r.stars);
+  $("#reviews").hidden = !list.length;
+  if (!list.length) return;
+  const avg = list.reduce((a, r) => a + +r.stars, 0) / list.length, star = n => "★★★★★".slice(0, Math.round(n)) + "☆☆☆☆☆".slice(0, 5 - Math.round(n));
+  $("#rv-head").innerHTML = `<span class="rv-avg">${avg.toFixed(1)}</span><div><div class="stars" aria-label="${avg.toFixed(1)} out of 5">${star(avg)}</div><div class="hint">from ${list.length} student review${list.length > 1 ? "s" : ""}</div></div>`;
+  const card = r => `<div class="rv"><div class="stars" aria-label="${r.stars} out of 5">${star(r.stars)}</div><p>“${esc(r.text)}”</p>
+    <div class="who"><span class="av" aria-hidden="true">${esc((r.name || "?").trim()[0] || "?")}</span><span><b>${esc(r.name || "Student")}</b>${esc([r.cls ? clsName(r.cls) : "", r.school, r.city].filter(Boolean).join(" · "))}</span></div></div>`;
+  // The strip runs twice so the loop is seamless; with only a few reviews it just sits still.
+  const many = list.length >= 4;
+  $("#rv-track").innerHTML = list.map(card).join("") + (many ? list.map(card).join("") : "");
+  $("#rv-track").style.setProperty("--dur", `${Math.max(25, list.length * 7)}s`);
+  if (!many) { $("#rv-track").style.animation = "none"; $("#rv-track").style.flexWrap = "wrap"; const st = document.querySelector(".rv-strip"); st.style.webkitMaskImage = st.style.maskImage = "none"; }
 })();
 
 // ---------- pack state ----------
