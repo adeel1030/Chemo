@@ -218,6 +218,8 @@
 .tour-dots i.on { width: 22px; background: var(--accent); }
 .tour-nav { display: flex; gap: 8px; width: 100%; justify-content: space-between; }
 @media (prefers-reduced-motion: reduce) { .tour-art { animation: none; } }
+/* No printing of the book. */
+@media print { body * { visibility: hidden !important; } body::after { content: "Printing is not allowed. © Mohd Adeel Khan"; visibility: visible; } }
 /* Refer a friend: the student's code and a share button. */
 .refer { display: grid; gap: 10px; background: linear-gradient(135deg, var(--surface), var(--warn-bg)); }
 .refer h2 { font-size: 1.2rem; }
@@ -474,7 +476,8 @@ function show(id) {
 let me = null;          // the student's user document
 let unwatch = null;     // stops listening to the user document
 let book = null;        // the open flipbook
-let busy = false;       // a login or promo redemption is in progress
+let busy = false;
+let pwChangedHere = false, pwBase = 0; // this browser changed the password (so it is not logged out by its own change)       // a login or promo redemption is in progress
 
 function blocked(title, text, waText) {
   if (book) { book.close(); book = null; }
@@ -718,6 +721,7 @@ async function start(user) {
     return kick("Account not ready", "No chapters are linked to this login ID. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile login ID "${loginId}" is not working.`);
   }
   me = snap.data();
+  pwBase = me.pwAt ? me.pwAt.seconds : 0; pwChangedHere = false;
   if (!me.promo) await loadGrants(user.uid);
   const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
   const mine = deviceId();
@@ -755,6 +759,8 @@ async function start(user) {
       return;
     }
     if (d.active === false) return kick("This ID has been blocked", "Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile ${label} has been blocked.`);
+    if (d.pwAt && d.pwAt.seconds !== pwBase && !pwChangedHere && !s.metadata.hasPendingWrites)
+      return kick("Password changed", "The password of this ID was changed. Log in again with the new password.", `Hello Adeel Sir, my Chemophile ID "${loginId}" asks for a new password.`);
     if (d.deviceId !== mine) return kick("Device reset", "Your ID's device was reset. Log in again on the phone you want to read on.", `Hello Adeel Sir, my Chemophile ID "${loginId}" got logged out.`);
     const till = d.expiresAt && d.expiresAt.toDate ? d.expiresAt.toDate() : null;
     if (till && till < new Date() && !liveSub(d) && !liveGrant()) return expired(till, label);
@@ -986,6 +992,9 @@ $("#pw-form").addEventListener("submit", async e => {
   if (pw.length < 6) { msg.className = "msg bad"; msg.textContent = "Use at least 6 characters for the password."; return; }
   try {
     await updatePassword(auth.currentUser, pw);
+    // Other logins of this ID (e.g. an old browser) are sent back to the login page.
+    pwChangedHere = true;
+    updateDoc(doc(db, "users", auth.currentUser.uid), { pwAt: serverTimestamp() }).catch(() => {});
     // Keep Adeel Sir's copy in step, so a message he sends again has the right password.
     setDoc(doc(db, "secrets", auth.currentUser.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
     msg.className = "msg good"; msg.textContent = "Password changed. Use the new password next time.";
@@ -1657,6 +1666,15 @@ async function syncMarks(k) {
 }
 
 // ---------- book ----------
+// Reading never needs more than a page every few seconds. Far faster than that (a script or someone copying
+// every page) gets slowed down, so a whole chapter can't be pulled out in a minute.
+const pulls = [];
+async function slowDown() {
+  const now = Date.now();
+  while (pulls.length && now - pulls[0] > 60e3) pulls.shift();
+  pulls.push(now);
+  if (pulls.length > 30) await new Promise(r => setTimeout(r, Math.min(4000, (pulls.length - 30) * 400)));
+}
 function openBook(k, page) {
   const info = chapterInfo.get(k);
   if (!info || !info.pageCount || !access(k).open) return;
@@ -1668,6 +1686,7 @@ function openBook(k, page) {
     pageCount: info.pageCount,
     start: page || store.get(`chemophile-last-${k}`) || (reading.get(k) || {}).last || 1,
     onDoubt: me.admin ? null : n => openDoubt(k, n),
+    guard: !me.admin,
     toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
     onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
     // Bookmarks: kept on this phone at once, and in Firebase (users/{uid}/marks/{chapter}) so they survive.
@@ -1677,6 +1696,7 @@ function openBook(k, page) {
     loadPage: async n => {
       const ver = chapterVer(k), kept = await pageCache.get(k, ver, n);
       if (kept) return drawPage(kept);
+      await slowDown();
       const s = await getDoc(doc(db, "pages", pageId(k, n)));
       if (!s.exists()) throw new Error("missing");
       window.__pageDownloads = (window.__pageDownloads || 0) + 1;
@@ -1715,6 +1735,16 @@ function drawPage(src) {
       ctx.font = `600 ${Math.round(w * 0.016)}px "Fira Sans", Arial, sans-serif`;
       ctx.textAlign = "center";
       ctx.fillText(`Licensed to ${who}${me.phone ? " (" + me.phone + ")" : ""} only. Do not share.`, w / 2, h - w * 0.012);
+      ctx.restore();
+      // Hidden mark: tiny, very faint ID text all over the page. It can't be seen while reading, and cropping out
+      // the name doesn't remove it; a leaked screenshot shows it again in the admin panel's "Check a leaked page".
+      ctx.save();
+      ctx.globalAlpha = 0.035;
+      ctx.fillStyle = "#000";
+      ctx.font = `600 ${Math.max(10, Math.round(w * 0.0135))}px Arial, sans-serif`;
+      const tag = `${me.promo ? "PROMO-" + me.promo : "ID-" + me.loginId}·${auth.currentUser ? refCodeOf(auth.currentUser.uid) : ""}`;
+      const gapX = ctx.measureText(tag).width + w * 0.05, gapY = w * 0.05;
+      for (let y = gapY / 2, row = 0; y < h; y += gapY, row++) for (let x = (row % 2) * gapX / 2 - gapX / 2; x < w; x += gapX) ctx.fillText(tag, x, y);
       ctx.restore();
       resolve(cv);
     };

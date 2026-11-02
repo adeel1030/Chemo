@@ -114,6 +114,11 @@ service cloud.firestore {
         signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readDays'])
         && request.resource.data.readDays is list && request.resource.data.readDays.size() <= 800
+      ) || (
+        // The time they changed their password (other logins of the ID then log out).
+        signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pwAt'])
+        && request.resource.data.pwAt == request.time
       );
 
       // Free access to one chapter till a date: from a promo code (see validGrant), or given by the admin
@@ -223,8 +228,11 @@ service cloud.firestore {
         && d.at == request.time;
     }
 
-    // The admin lists every student's free access at once.
+    // The admin lists every student's free access, and every reading record (for graphs and copy alerts), at once.
     match /{path=**}/grants/{ch} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/reading/{ch} {
       allow read: if isAdmin();
     }
 

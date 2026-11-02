@@ -8,6 +8,7 @@
 //     download: { href, label },       // optional button
 //     marks: [pages], onMarks: list => {}   // optional bookmarks (both needed to show the ★ button)
 //     onDoubt: page => {}                   // optional "Ask a doubt" button (the page being read is passed)
+//     guard: true                           // blur the pages whenever the window loses focus (screenshot tools, app switch)
 //   }).open();
 //
 // Two ways to read: Book (pages turn; two facing pages on a wide screen) and Scroll (pages one under another).
@@ -81,6 +82,11 @@
     text-align: center; background: rgba(0,0,0,.66); padding: 8px 16px; border-radius: 14px; font-size: .86rem; line-height: 1.4; pointer-events: none; transition: opacity .6s; }
   .fb-toast { position: absolute; left: 50%; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 3; transform: translateX(-50%); background: rgba(0,0,0,.7); padding: 6px 14px; border-radius: 999px; font-size: .85rem; pointer-events: none; opacity: 0; transition: opacity .3s; }
   .fb-toast.on { opacity: 1; }
+  /* Guard: when the window loses focus (a screenshot tool opens, the student switches apps) the pages blur. */
+  .fb.guarded .fb-stage { filter: blur(24px) saturate(.4); }
+  .fb-guard { position: absolute; inset: 0; z-index: 6; display: none; place-items: center; text-align: center; padding: 24px; font: 700 1.05rem "Fira Sans", system-ui, sans-serif; color: #f3f2ff; }
+  .fb.guarded .fb-guard { display: grid; }
+  .fb-guard span { background: rgba(10,9,35,.75); border-radius: 16px; padding: 14px 20px; line-height: 1.45; }
 
   /* Side panels: topics and bookmarks, and view settings. */
   .fb-panel { position: absolute; inset: 0; z-index: 5; background: rgba(10,9,35,.6); display: flex; justify-content: flex-end; }
@@ -246,7 +252,15 @@
       document.addEventListener("fullscreenchange", this.onFs);
       document.addEventListener("webkitfullscreenchange", this.onFs);
       // Keep the screen on while the book is open (where the browser allows it).
-      this.onVis = () => { if (document.visibilityState === "visible" && this.el) this.keepAwake(); };
+      this.onVis = () => { if (document.visibilityState === "visible" && this.el) this.keepAwake(); if (this.o.guard && this.el) this.el.classList.toggle("guarded", document.visibilityState !== "visible"); };
+      if (o.guard) {
+        el.insertAdjacentHTML("beforeend", `<div class="fb-guard" aria-hidden="true"><span>🔒 Paused<br><small style="font-weight: 500">Tap or click here to keep reading</small></span></div>`);
+        this.onBlurW = () => { if (this.el) this.el.classList.add("guarded"); };
+        this.onFocusW = () => { if (this.el) this.el.classList.remove("guarded"); };
+        window.addEventListener("blur", this.onBlurW);
+        window.addEventListener("focus", this.onFocusW);
+        el.querySelector(".fb-guard").addEventListener("pointerdown", () => this.onFocusW());
+      }
       document.addEventListener("visibilitychange", this.onVis);
       this.keepAwake();
 
@@ -719,6 +733,7 @@
       document.removeEventListener("fullscreenchange", this.onFs);
       document.removeEventListener("webkitfullscreenchange", this.onFs);
       document.removeEventListener("visibilitychange", this.onVis);
+      if (this.onBlurW) { window.removeEventListener("blur", this.onBlurW); window.removeEventListener("focus", this.onFocusW); }
       clearTimeout(this.calmT); clearTimeout(this.tapT); clearTimeout(this.toastT);
       if (document.fullscreenElement === this.el || document.webkitFullscreenElement === this.el) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
       if (this.wake) { this.wake.release().catch(() => {}); this.wake = null; }

@@ -341,7 +341,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </details>
 
       <div class="card">
-        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button><button class="btn btn-line btn-sm" type="button" id="leak-check" title="Find whose copy a leaked screenshot or photo came from">🔍 Check a leaked page</button></div>
         <div class="list-tools">
           <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div>
           <div class="chips" id="stu-filters" role="group" aria-label="Show"></div>
@@ -499,7 +499,8 @@ textarea:focus { border-color: var(--accent); outline: none; }
     </dialog>
 
     <section id="t-chapters" class="stack" hidden>
-      <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div></div>
+      <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div>
+        <button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📥 Paste quizzes for many chapters</button></div>
       <div class="card">
         <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
@@ -660,6 +661,7 @@ function renderDash() {
   ].join("");
   const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
   const todo = [
+    ...copyAlerts().map(({ r, s }) => item("bad", `⚠️ <b>${esc(s.name)}</b> opened ${(r.seen || []).length} pages of ${esc(chName(r.ch))} in ${fmtMins(r.minutes || 0)}. That is too fast to read: they may be copying it. Check with them, or block the ID.`, "Check", "t-students", ` data-filter="all" data-q="${esc(s.loginId || s.name)}"`)),
     ...(doubts.filter(d => d.status === "open").length ? [item("warn", `${doubts.filter(d => d.status === "open").length} doubt${doubts.filter(d => d.status === "open").length === 1 ? " is" : "s are"} waiting for your answer.`, "Answer", "t-doubts")] : []),
     ...(teacherReqs.filter(r => r.status === "pending").length ? [item("warn", `${teacherReqs.filter(r => r.status === "pending").length} teacher${teacherReqs.filter(r => r.status === "pending").length === 1 ? " is" : "s are"} waiting for free access. Check their ID card.`, "Check", "t-promos")] : []),
     ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
@@ -882,6 +884,10 @@ async function loadStudents() {
       if (s) (s.grants = s.grants || []).push({ ch: d.id, ...d.data() });
     });
   } catch (e) { console.warn("grants", e); }
+  // Every reading record at once: for the graphs and for copy alerts.
+  try {
+    readingAll = (await getDocs(collectionGroup(db, "reading"))).docs.map(d => ({ uid: d.ref.parent.parent.id, ch: d.id, ...d.data() }));
+  } catch (e) { readingAll = []; console.warn("reading", e); }
   try { teacherReqs = (await getDocs(collection(db, "teacherRequests"))).docs.map(d => ({ uid: d.id, ...d.data() })).sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0)); }
   catch (e) { teacherReqs = []; console.warn("teacher requests", e); }
   renderTeacherReqs();
@@ -892,7 +898,11 @@ async function loadStudents() {
   if (!students.length) $("#new-box").open = true;
   renderStudents();
 }
-let teacherReqs = [];
+let teacherReqs = [], readingAll = [];
+// Copy alert: many pages "read" far too fast (a few seconds a page) looks like someone copying the chapter.
+const COPY_PAGES = 25, COPY_SEC_PER_PAGE = 8;
+const copyAlerts = () => readingAll.filter(r => (r.seen || []).length >= COPY_PAGES && (r.minutes || 0) * 60 < (r.seen || []).length * COPY_SEC_PER_PAGE)
+  .map(r => ({ r, s: students.find(x => x.uid === r.uid) })).filter(x => x.s);
 const FILTERS = [
   ["all", "All", () => true],
   ["active", "Active", s => s.active !== false],
@@ -1473,6 +1483,70 @@ $("#treqs").addEventListener("click", async e => {
     }
   } catch (ex) { note("Not saved: " + why(ex), "bad"); }
 });
+
+// ---------- check a leaked page ----------
+// Every page carries a hidden, very faint "ID-loginid·CODE" text. Pushing the contrast of a screenshot or photo
+// brings it back, even when the visible name was cut off.
+$("#leak-check").addEventListener("click", () => {
+  openDialog("Check a leaked page", `
+    <p class="cat-sub">Choose the screenshot or photo that was shared. The hidden ID text shows up in the picture below; zoom in to read it (it looks like <b>ID-rahul11·AB12CD</b>). A clear screenshot works best; a blurry photo may not show it.</p>
+    <input type="file" id="leak-file" accept="image/*">
+    <canvas id="leak-out" style="width: 100%; border-radius: 10px; margin-top: 10px" hidden></canvas>
+    <p class="cat-sub" id="leak-who"></p>`, null, null);
+  dlg.querySelector("#leak-file").addEventListener("change", e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const cv = dlg.querySelector("#leak-out"), x = cv.getContext("2d", { willReadFrequently: true });
+      cv.width = img.naturalWidth; cv.height = img.naturalHeight; x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, cv.width, cv.height), p = d.data;
+      // Keep only the near-white parts and stretch them hard (244–254 becomes black–white), so the faint grey
+      // ID text turns dark; everything darker (the page's own print) is wiped to white.
+      for (let i = 0; i < p.length; i += 4) { const l = 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2], v = l < 240 ? 255 : Math.max(0, Math.min(255, (l - 244) * 25)); p[i] = p[i + 1] = p[i + 2] = v; }
+      x.putImageData(d, 0, 0); cv.hidden = false;
+      dlg.querySelector("#leak-who").textContent = "Read the ID in the picture (after ID-), then type it in the Students search. PROMO-… means a promo code user.";
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(f);
+  });
+});
+
+// ---------- quizzes for many chapters at once ----------
+// "### 11-1" (class-chapter) starts each chapter; below it, questions in the usual quiz format.
+$("#quiz-bulk").addEventListener("click", () => {
+  openDialog("Paste quizzes for many chapters", `
+    <p class="cat-sub">Start each chapter with a line like <b>### 11-1</b> (Class 11, Chapter 1) or <b>### 12-3</b>, then its questions in the usual format (Q:, A) B) C) D), * after the right one, Why:). A chapter you paste here gets this quiz in place of its old one.</p>
+    <div class="field"><label for="d-bulk">Quizzes</label><textarea id="d-bulk" rows="14" spellcheck="false" placeholder="### 11-1\nQ: ...\nA) ...\nB) ... *\n\n### 11-2\nQ: ..."></textarea></div>
+    <div class="cat-sub" id="d-bulk-check" role="status"></div>`,
+    async () => {
+      const { ok, errs } = bulkParse(val("d-bulk"));
+      if (!ok.length) throw new Error(errs[0] || "Nothing to save. Start each chapter with ### 11-1.");
+      if (errs.length) throw new Error("Fix these first: " + errs.slice(0, 3).join(" "));
+      for (const { k, qs } of ok) {
+        await setDoc(doc(db, "quizzes", k), { qs, updatedAt: serverTimestamp() });
+        await setDoc(doc(db, "chapters", k), { quiz: qs.length }, { merge: true });
+        chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
+      }
+      await loadChapters();
+      $("#chap-progress").textContent = `Quizzes saved for ${ok.length} chapter${ok.length > 1 ? "s" : ""}: ${ok.map(x => `${x.k} (${x.qs.length})`).join(", ")}.`;
+    }, null, { saveLabel: "Save all quizzes" });
+  const box = dlg.querySelector("#d-bulk"), check = () => {
+    const { ok, errs } = bulkParse(box.value);
+    dlg.querySelector("#d-bulk-check").innerHTML = (ok.length ? `✓ Ready: ${ok.map(x => `<b>${esc(x.k)}</b> ${x.qs.length} Qs`).join(" · ")}` : "") + (errs.length ? `<br><span style="color: var(--bad)">${errs.slice(0, 5).map(esc).join("<br>")}</span>` : "");
+  };
+  box.addEventListener("input", check);
+});
+function bulkParse(text) {
+  const ok = [], errs = [];
+  text.replace(/\r/g, "").split(/^###\s*/m).map(x => x.trim()).filter(Boolean).forEach(part => {
+    const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
+    const m = head.match(/(\d+)\s*[-–.:]\s*(\d+)/), k = m ? `${+m[1]}-${+m[2]}` : head.split(/\s+/)[0];
+    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
+    const { qs, errs: e } = parseQuiz(body);
+    if (e.length) e.forEach(x => errs.push(`${k}: ${x}`)); else if (!qs.length) errs.push(`${k}: no questions.`); else ok.push({ k, qs });
+  });
+  return { ok, errs };
+}
 
 // ---------- doubts ----------
 let doubts = [], doubtFilter = "open";
