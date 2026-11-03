@@ -348,6 +348,9 @@ function applyCatalog(cat) {
       pages: +x.pages || (old && old.pages) || 0
     });
     if (x.tag) c.tag = x.tag;
+    // Counts and highlights read from the booklet ("Chapter info" in the admin panel) replace the built-in ones.
+    ["fig", "solved", "practice", "qr"].forEach(f => { if (x[f] != null && x[f] !== "") c[f] = x[f]; });
+    if (Array.isArray(x.highlights)) c.highlights = x.highlights.filter(Boolean);
     if (Array.isArray(x.topics) && x.topics.length) c.topics = x.topics.map(t => [t[0], t[1] || "", +t[2] || 1, t[3] || ""]);
     PRICES[keyOf(c)] = Object.assign({}, x.price);
     MRP[keyOf(c)] = Object.assign({}, x.mrp);

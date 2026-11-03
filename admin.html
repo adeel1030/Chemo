@@ -151,6 +151,12 @@ body { background: var(--paper); }
 .chap-row .sub { font-size: .85rem; color: var(--muted); }
 .chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
 .chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+.info-pv { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; display: grid; gap: 6px; }
+.info-pv .pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.hl-pv, .t-pv { margin: 0; padding-left: 20px; font-size: .86rem; display: grid; gap: 2px; }
+.hl-pv { list-style: none; padding-left: 0; }
+.t-pv small, .chap-info small { color: var(--muted); }
+.chap-info { font-size: .8rem; color: var(--muted); margin-top: 2px; }
 .quiz-eg { background: var(--paper); border-radius: 10px; padding: 10px 12px; font-size: .84rem; white-space: pre-wrap; margin: 8px 0 0; }
 #d-quiz { min-height: 280px; font: .92rem/1.45 ui-monospace, Menlo, Consolas, monospace; }
 .chap-row .confirm { grid-column: 1 / -1; }
@@ -526,7 +532,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div>
-        <button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📥 Paste quizzes for many chapters</button></div>
+        <button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📄 Chapter info &amp; quizzes</button></div>
       <div class="card">
         <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
@@ -1595,42 +1601,173 @@ $("#leak-check").addEventListener("click", () => {
   });
 });
 
-// ---------- quizzes for many chapters at once ----------
-// "### 11-1" (class-chapter) starts each chapter; below it, questions in the usual quiz format.
-$("#quiz-bulk").addEventListener("click", () => {
-  openDialog("Paste quizzes for many chapters", `
-    <p class="cat-sub">Start each chapter with a line like <b>### 11-1</b> (Class 11, Chapter 1) or <b>### 12-3</b>, then its questions in the usual format (Q:, A) B) C) D), * after the right one, Why:). A chapter you paste here gets this quiz in place of its old one.</p>
-    <div class="field"><label for="d-bulk">Quizzes</label><textarea id="d-bulk" rows="14" spellcheck="false" placeholder="### 11-1\nQ: ...\nA) ...\nB) ... *\n\n### 11-2\nQ: ..."></textarea></div>
-    <div class="cat-sub" id="d-bulk-check" role="status"></div>`,
-    async () => {
-      const { ok, errs } = bulkParse(val("d-bulk"));
-      if (!ok.length) throw new Error(errs[0] || "Nothing to save. Start each chapter with ### 11-1.");
-      if (errs.length) throw new Error("Fix these first: " + errs.slice(0, 3).join(" "));
-      for (const { k, qs } of ok) {
-        await setDoc(doc(db, "quizzes", k), { qs, updatedAt: serverTimestamp() });
-        await setDoc(doc(db, "chapters", k), { quiz: qs.length }, { merge: true });
-        chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
-      }
-      await loadChapters();
-      $("#chap-progress").textContent = `Quizzes saved for ${ok.length} chapter${ok.length > 1 ? "s" : ""}: ${ok.map(x => `${x.k} (${x.qs.length})`).join(", ")}.`;
-    }, null, { saveLabel: "Save all quizzes" });
-  const box = dlg.querySelector("#d-bulk"), check = () => {
-    const { ok, errs } = bulkParse(box.value);
-    dlg.querySelector("#d-bulk-check").innerHTML = (ok.length ? `✓ Ready: ${ok.map(x => `<b>${esc(x.k)}</b> ${x.qs.length} Qs`).join(" · ")}` : "") + (errs.length ? `<br><span style="color: var(--bad)">${errs.slice(0, 5).map(esc).join("<br>")}</span>` : "");
-  };
-  box.addEventListener("input", check);
-});
-function bulkParse(text) {
-  const ok = [], errs = [];
-  text.replace(/\r/g, "").split(/^###\s*/m).map(x => x.trim()).filter(Boolean).forEach(part => {
+// ---------- chapter info and quizzes, pasted from the booklet ----------
+// Made with chapter-info-prompt.txt: the admin gives that prompt and the chapter PDF to an AI chat, then pastes
+// (or uploads) its answer here. "### 11-1" starts each chapter; below it Title:, Pages:, Figures:, Topic: … lines,
+// then "Quiz:" and the questions. Text with only questions (no info lines) still works as a quiz on its own.
+const INFO_KEYS = { title: "title", "chapter name": "title", short: "short", "short name": "short", tagline: "tag", tag: "tag",
+  pages: "pages", "total pages": "pages", figures: "fig", diagrams: "fig", "figures and diagrams": "fig",
+  "solved examples": "solved", solved: "solved", "practice questions": "practice", practice: "practice",
+  qr: "qr", "qr codes": "qr", "qr simulations": "qr", highlight: "hl", highlights: "hl", topic: "topic", note: "note", notes: "note", quiz: "quiz" };
+// H_2O → H<sub>2</sub>O and Cu^{2+} → Cu<sup>2+</sup>; everything else stays plain text.
+const chemHtml = s => esc(String(s).trim()).replace(/_\{([^}]*)\}/g, "<sub>$1</sub>").replace(/_(\d+)/g, "<sub>$1</sub>")
+  .replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>").replace(/\^(\d*[+\-−]|\d+)/g, "<sup>$1</sup>");
+const pageNo = s => { const m = String(s || "").match(/(\d+)\s*$/); return m ? +m[1] : null; };
+function parseInfo(text) {
+  const lines = text.replace(/\r/g, "").split("\n"), info = {}, topics = [], hl = [], warns = [], errs = [];
+  let quiz = null, seen = false;
+  for (const raw of lines) {
+    if (quiz) { quiz.push(raw); continue; }
+    const l = raw.trim().replace(/\*\*/g, "").replace(/^#+\s*$/, "");
+    if (!l || /^```/.test(l)) continue;
+    let m = l.match(/^[-•–]\s*(.+)$/);
+    if (m && topics.length) {
+      const parts = m[1].split("|").map(x => x.trim()), last = parts.length > 1 ? parts.pop() : "";
+      let name = parts.join(" | "), pg = pageNo(last);
+      if (pg == null && !last) { pg = pageNo(name); if (pg != null) name = name.replace(/\s*\d+\s*$/, ""); }
+      topics[topics.length - 1][3].push(`${chemHtml(name.replace(/ · /g, ", "))}${pg != null ? " " + pg : ""}`);
+      continue;
+    }
+    m = l.match(/^([A-Za-z][A-Za-z ]{0,24}?)\s*[:：]\s*(.*)$/);
+    const k = m && INFO_KEYS[m[1].toLowerCase().trim()];
+    if (!k) {
+      if (!seen) return { info: null, quiz: text };
+      if (m && /^q(uestion)?\s*\d*$/i.test(m[1].trim())) { quiz = [raw]; continue; }
+      errs.push(`Line not understood: "${l.slice(0, 60)}"`);
+      continue;
+    }
+    seen = true;
+    const v = m[2].trim();
+    if (k === "quiz") { quiz = v ? [v] : []; continue; }
+    if (k === "note") { if (v) warns.push("Note: " + v); continue; }
+    if (k === "hl") { if (v && hl.length < 8) hl.push(chemHtml(v).slice(0, 200)); continue; }
+    if (k === "topic") {
+      const p = v.split("|").map(x => x.trim());
+      const name = p[0], pg = pageNo(p[p.length - 1]), sec = p.length > 2 ? p.slice(1, -1).join(", ") : p.length === 2 && pg == null ? p[1] : "";
+      if (!name) { errs.push("A Topic line has no name."); continue; }
+      if (pg == null) errs.push(`Topic "${name.slice(0, 40)}": start page missing (write Topic: name | section | page).`);
+      topics.push([chemHtml(name), esc(sec), pg || 1, []]);
+      continue;
+    }
+    if (k === "pages" || k === "fig" || k === "solved") {
+      const n = parseInt(v.replace(/[^\d]/g, ""), 10);
+      if (v && !(n >= 0)) errs.push(`${m[1]}: write a number.`); else if (v) info[k] = n;
+      continue;
+    }
+    if (k === "practice") { const n = v.match(/\d+\s*\+?/); if (n) info.practice = n[0].replace(/\s/g, ""); continue; }
+    if (k === "qr") { const n = parseInt(v, 10); info.qr = !v || n === 0 || /^(none|no|nahi)/i.test(v) ? "" : String(n) === v ? `${n} QR simulation${n === 1 ? "" : "s"}` : v.slice(0, 60); continue; }
+    info[k] = v.slice(0, k === "tag" ? 200 : k === "short" ? 40 : 140);
+  }
+  if (!seen) return { info: null, quiz: text };
+  if (hl.length) info.highlights = hl;
+  if (topics.length) {
+    info.topics = topics.map(([n, s, p, subs]) => [n, s, p, subs.join(" · ")]);
+    const pages = info.pages;
+    topics.forEach(([n, , p], i) => {
+      if (pages && p > pages) errs.push(`Topic ${i + 1} starts on page ${p}, but the chapter has ${pages} pages.`);
+      if (i && p < topics[i - 1][2]) warns.push(`Topic ${i + 1} starts before Topic ${i}: check its page.`);
+    });
+  }
+  if (info.title === "") delete info.title;
+  return { info, quiz: quiz ? quiz.join("\n") : null, errs, warns };
+}
+// One chapter's text (with or without its ### line) or many chapters → [{ k, info, qs, warns }] and errors.
+function bulkParse(text, only) {
+  const ok = [], errs = [], src = text.replace(/\r/g, "");
+  const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
+  parts.forEach(part => {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
     const m = head.match(/(\d+)\s*[-–.:]\s*(\d+)/), k = m ? `${+m[1]}-${+m[2]}` : head.split(/\s+/)[0];
+    if (only && k !== only) { errs.push(`This text is for chapter ${k}, not ${only}. Change the ### line, or paste it in chapter ${k}.`); return; }
     if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
-    const { qs, errs: e } = parseQuiz(body);
-    if (e.length) e.forEach(x => errs.push(`${k}: ${x}`)); else if (!qs.length) errs.push(`${k}: no questions.`); else ok.push({ k, qs });
+    const p = parseInfo(body), e = (p.errs || []).map(x => `${k}: ${x}`);
+    let qs = null;
+    if (p.quiz != null) {
+      const r = parseQuiz(p.quiz);
+      r.errs.forEach(x => e.push(`${k} quiz: ${x}`));
+      qs = r.qs;
+      if (!p.info && !qs.length && !r.errs.length) e.push(`${k}: no questions.`);
+    }
+    if (p.info && !Object.keys(p.info).length && !(qs && qs.length)) e.push(`${k}: nothing found to save.`);
+    const u = uploaded.get(k);
+    const warns = (p.warns || []).slice();
+    if (p.info && p.info.pages && u && u.pageCount && u.pageCount !== p.info.pages) warns.push(`Pages: ${p.info.pages} here, but the uploaded PDF has ${u.pageCount}. Check that it is the same booklet.`);
+    if (e.length) e.forEach(x => errs.push(x)); else ok.push({ k, info: p.info, qs, warns });
   });
   return { ok, errs };
 }
+// What will be saved, so the admin can check it before saving.
+function infoPreview({ k, info, qs, warns }) {
+  const c = findChapter(k), t = (info && info.topics) || [];
+  const chips = info ? [[info.pages, "pages"], [t.length || null, "topics"], [info.fig, "figures"], [info.solved, "solved"], [info.practice, "practice Qs"]]
+    .filter(([v]) => v != null && v !== "").map(([v, l]) => `<span class="pill">${esc(v)} ${l}</span>`).join("") : "";
+  return `<div class="info-pv">
+    <b>${esc(clsName(c.cls))} · Chapter ${c.n}: ${info && info.title ? esc(info.title) : esc(c.title)}</b>${info && info.title && info.title !== c.title ? ` <span class="cat-sub">(was: ${esc(c.title)})</span>` : ""}
+    ${info && info.tag ? `<p class="cat-sub">“${esc(info.tag)}”</p>` : ""}
+    <div class="pills">${chips}${info && info.qr ? `<span class="pill">${esc(info.qr)}</span>` : ""}${qs ? `<span class="pill good">Quiz: ${qs.length} Qs</span>` : ""}</div>
+    ${info && info.highlights ? `<ul class="hl-pv">${info.highlights.map(h => `<li>★ ${h}</li>`).join("")}</ul>` : ""}
+    ${t.length ? `<ol class="t-pv">${t.map(([n, s, p, subs]) => `<li>${n}${s ? ` <small>${s}</small>` : ""} <small>· p. ${p}${subs ? ` · ${subs.split(" · ").length} sub-topic${subs.split(" · ").length === 1 ? "" : "s"}` : ""}</small></li>`).join("")}</ol>` : ""}
+    ${warns.length ? `<p class="cat-sub" style="color: var(--warn, #b26a00)">${warns.map(esc).join("<br>")}</p>` : ""}
+  </div>`;
+}
+async function saveInfo(list) {
+  const withInfo = list.filter(x => x.info && Object.keys(x.info).length);
+  if (withInfo.length) await commit(next => {
+    for (const { k, info } of withInfo) {
+      const c = next.chapters.find(x => ckey(x) === k);
+      if (!c) return `No chapter ${k} in Books & prices.`;
+      Object.assign(c, info);
+    }
+  }, `Chapter info saved: ${withInfo.map(x => x.k).join(", ")}. The website shows it now.`);
+  for (const { k, qs } of list) {
+    if (!qs || !qs.length) continue;
+    await setDoc(doc(db, "quizzes", k), { qs, updatedAt: serverTimestamp() });
+    await setDoc(doc(db, "chapters", k), { quiz: qs.length }, { merge: true });
+    chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
+  }
+  await loadChapters();
+  $("#chap-progress").textContent = `Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`;
+}
+// The prompt to give the AI chat with the PDF, with the chapter key filled in.
+async function copyPrompt(btn, k) {
+  try {
+    let t = await (await fetch("chapter-info-prompt.txt", { cache: "no-cache" })).text();
+    if (k) t = t.replace(/\[write the key here[^\]]*\]/, k);
+    await navigator.clipboard.writeText(t);
+    btn.textContent = "✓ Prompt copied";
+  } catch (ex) { btn.textContent = "Copy failed: use Download"; }
+}
+const infoHelp = k => `<p class="cat-sub"><b>How:</b> 1) Copy the prompt. 2) In the AI chat where you made the book, attach the chapter PDF and paste the prompt${k ? "" : " (write the chapter key at its end)"}. 3) Paste its answer below, or save it as a .txt file and choose it. Check the preview, then Save.</p>
+  <div class="actions"><button class="btn btn-line btn-sm" type="button" data-copy-prompt="${k || ""}">📋 Copy the prompt</button><a class="btn btn-line btn-sm" href="chapter-info-prompt.txt" download>⬇ Download prompt</a></div>`;
+function infoDialog(k) {
+  const c = k && findChapter(k);
+  openDialog(k ? `Chapter info · ${clsName(c.cls)} Chapter ${c.n}` : "Chapter info & quizzes (many chapters)", `
+    ${infoHelp(k)}
+    <div class="field"><label for="d-info">${k ? "The AI's answer for this chapter" : "Answers for one or more chapters (each starts with ### 11-1)"}</label>
+      <textarea id="d-info" rows="12" spellcheck="false" placeholder="### ${k || "11-1"}\nTitle: …\nPages: …\nFigures: …\nTopic: … | Section … | 4\n- … | 5\nQuiz:\nQ: …"></textarea></div>
+    <div class="field"><label for="d-info-file">Or choose the .txt file${k ? "" : "s"}</label><input id="d-info-file" type="file" accept=".txt,.md,text/plain"${k ? "" : " multiple"}></div>
+    <p class="cat-sub">Saving replaces this chapter's topics, counts and highlights on the website${k ? "" : "s"}, and its quiz if the text has one. Prices stay as they are.</p>
+    <div id="d-info-check" role="status"></div>`,
+    async () => {
+      const { ok, errs } = bulkParse(val("d-info"), k);
+      if (errs.length) throw new Error("Fix these first: " + errs.slice(0, 3).join(" "));
+      if (!ok.length) throw new Error(k ? "Paste the AI's answer first." : "Nothing to save. Start each chapter with ### 11-1.");
+      await saveInfo(ok);
+    }, null, { saveLabel: "Save" });
+  const box = dlg.querySelector("#d-info"), out = dlg.querySelector("#d-info-check"), check = () => {
+    const { ok, errs } = bulkParse(box.value, k);
+    out.innerHTML = (errs.length ? `<p class="cat-sub" style="color: var(--bad)">${errs.slice(0, 6).map(esc).join("<br>")}</p>` : "") +
+      (ok.length ? `<p class="cat-sub">✓ Ready to save:</p>${ok.map(infoPreview).join("")}` : "");
+  };
+  box.addEventListener("input", check);
+  dlg.querySelector("#d-info-file").addEventListener("change", async e => {
+    const texts = await Promise.all([...e.target.files].map(f => f.text()));
+    box.value = texts.join("\n\n"); check();
+  });
+  dlg.querySelector("[data-copy-prompt]").addEventListener("click", e => copyPrompt(e.currentTarget, k));
+}
+$("#quiz-bulk").addEventListener("click", () => infoDialog(null));
+$("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-info]"); if (b) infoDialog(b.closest(".chap-row").dataset.k); });
 
 // ---------- doubts ----------
 let doubts = [], doubtFilter = "open";
@@ -1975,6 +2112,7 @@ const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n ===
 function chapterDialog(i) {
   const isNew = i == null, c = isNew ? { cls: catCls, n: (Math.max(0, ...cat.chapters.filter(x => +x.cls === catCls).map(x => +x.n)) + 1), title: "", short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] } : cat.chapters[i];
   const custom = isNew || !isBaseChapter(c);
+  const topicsText = (c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n");
   openDialog(isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · Chapter ${c.n}`, `
     <div class="cat-row">
       ${isNew ? `<div class="field sm"><label for="d-n">Chapter no.</label><input id="d-n" type="number" min="1" inputmode="numeric" value="${c.n}"></div>` : ""}
@@ -1986,7 +2124,7 @@ function chapterDialog(i) {
       <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live (can be ordered)</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
     ${priceFields(c.price, c.mrp)}
-    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc((c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n"))}</textarea></div>` : ""}`,
+    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}`,
     async () => {
       const n = isNew ? parseInt(val("d-n"), 10) : c.n, title = val("d-title");
       if (!(n >= 1)) throw new Error("Chapter number: 1 or more.");
@@ -1995,7 +2133,8 @@ function chapterDialog(i) {
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
       if (!soon && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or set it to Coming soon.");
       const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp });
-      if (custom) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
+      // Topics left as they were keep their sections and sub-topics.
+      if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
       await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} Chapter ${n} saved.`);
     },
     custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `${clsName(c.cls)} Chapter ${c.n} removed.`); } : null);
@@ -2147,12 +2286,16 @@ async function loadChapters() {
 
 // An uploaded chapter is locked: its file picker stays hidden until the admin unlocks it, after a warning.
 const LOCK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+// Topics, counts and highlights the website shows for a chapter (from the booklet, or built in).
+const chapSummary = c => [[(c.topics || []).length, "topics"], [c.fig, "figures"], [c.solved, "solved"], [c.practice, "practice Qs"], [c.qr && String(c.qr).replace(/ simulations?/, ""), ""], [(c.highlights || []).length, "highlights"]]
+  .filter(([v]) => v && v !== "0").map(([v, l]) => `${esc(v)}${l ? " " + l : ""}`).join(" · ");
 function chapRow(c, k, u) {
   return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
     <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
+      <div class="chap-info">${chapSummary(c) || "No chapter info yet: tap 📄 Info"}</div>
       <progress max="100" value="0" hidden></progress></div>
-    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
+    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
       ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
       : `<input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
     ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace chapter ${c.n}" hidden>

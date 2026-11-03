@@ -202,6 +202,19 @@ Pehli baar koi bhi Save karte hi website is page ke hisaab se chalne lagti hai. 
   - Password badalne par usi ID ke doosre login bahar.
 - **Quiz bulk:** **Chapters → 📥 Paste quizzes for many chapters**: har chapter `### 11-1` se shuru.
 
+## 22. Chapter info: topics, diagrams, solved examples aur quiz, PDF se
+
+Nayi PDF upload karne se website par uske topics, figures, solved examples wagera apne aap nahi aate. Yeh aise bharo:
+
+1. Admin → **Chapters** → us chapter ke saamne **📄 Info** dabao.
+2. **📋 Copy the prompt** dabao (chapter number apne aap bhar jata hai). Ya **⬇ Download prompt** se file le lo (`chapter-info-prompt.txt`).
+3. Jis AI chat mein book banai thi, wahan chapter ki PDF attach karo aur prompt paste karo.
+4. Uska poora jawab copy karke 📄 Info ke box mein paste karo (ya .txt file bana kar choose karo).
+5. Neeche preview dekho: title, pages, topics, figures, solved, practice, QR, highlights aur quiz. Koi galti ho to laal mein dikhegi. "Note:" wali lines sirf aapke liye hain, website par nahi jaati.
+6. **Save**. Website ke chapter card, "What's in this chapter", topic search, student ka topic map aur quiz turant update ho jaate hain. Prices nahi badalte.
+
+Kai chapters ek saath: upar **📄 Chapter info & quizzes** button, har chapter `### 12-1` se shuru.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

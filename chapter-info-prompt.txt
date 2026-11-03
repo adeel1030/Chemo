@@ -1,0 +1,87 @@
+I am Mohd Adeel Khan (Adeel Sir), author of the Chemophile Chemistry booklets. I have attached the PDF of one chapter booklet. Read the whole PDF, page by page, and give me its "chapter info" for my website, in the exact text format below. My website reads your answer line by line, so follow the format exactly.
+
+STEP 1: FIND THESE FROM THE PDF
+1. Chapter key: <class>-<chapter number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3. (For a university book, I will tell you the key.)
+2. Title: the chapter name as printed on the cover.
+3. Short: a short name of 1 to 3 words (for small buttons). Example: "Basic Concepts".
+4. Tagline: one catchy Hinglish line (8 to 14 words) that makes a student want to read it. Use the cover line if the book has one.
+5. Pages: the total number of pages in the PDF file, cover included.
+6. Figures: count every figure, diagram, labelled drawing, graph, flowchart, structure drawing and table-with-picture. Do not count small decorative icons, emoji or page borders. Count carefully, page by page.
+7. Solved examples: count every fully solved example, solved NCERT problem, solved exercise and worked numerical (a question WITH its solution shown).
+8. Practice questions: count every question given for the student to solve (practice boxes, quick checks, exercises, final test). Write the exact number, or round it down to the nearest 10 and add "+" (for example 90+).
+9. QR: how many QR codes / QR simulations the book has, written like "5 QR simulations". Write "QR: 0" if there are none.
+10. Highlights: 3 to 6 special things in this booklet that a student or parent would love (for example "Mole map: poora chapter ek page par", "Top 12 mistakes", "Formula sheet", "16 MCQ final test with answer key", "Certificate at the end"). Short, in Hinglish, each under 12 words.
+11. Topics: every main topic from the contents page, in order, with:
+    - its NCERT section (like "Section 1.3" or "Section 2.6.1, 2.6.2"; for the revision part write "Complete chapter"),
+    - the page where it starts.
+    Under each topic, its sub-topics with their start pages, exactly as on the contents page.
+12. Quiz: every MCQ that has options, from the "Final test: Part A" and from the "Ek nazar mein + quick check" boxes (Assertion–Reason questions with options too). At most 30. Take the right answer from the book's answer key. Never guess.
+
+PAGE NUMBERS (very important)
+Every page number you write is the position of that page in the PDF file, counting the cover as page 1. If the number printed on the page is different, still use the PDF position.
+
+STEP 2: WRITE IT IN THIS EXACT FORMAT
+- First line: ### <chapter key>
+- Then one line each: Title:, Short:, Tagline:, Pages:, Figures:, Solved examples:, Practice questions:, QR:
+- One "Highlight:" line for each highlight.
+- One "Topic:" line for each topic: Topic: <name> | <section> | <start page>
+- Under a topic, one line per sub-topic, starting with "- ": - <sub-topic name> | <page>
+- If you are not sure about something (a count, a page, or a quiz answer you had to work out yourself), write one "Note:" line about it, before the Quiz line. My website shows notes to me and does not publish them.
+- Then a line with only: Quiz:
+- Then the questions:
+  - each starts with "Q: "
+  - options on separate lines: "A) ", "B) ", "C) ", "D) " ("E) " only if the book has five)
+  - put " *" (a space and a star) at the end of the correct option; exactly one star per question
+  - then one line "Why: " with a short reason in Hinglish (one or two sentences)
+  - one empty line between questions
+- Chemistry text:
+  - subscript with _ : H_2O, CO_2, C_6H_12O_6, K_{sp}
+  - superscript with ^ : 10^{23}, Cu^{2+}, SO_4^{2-}, mol^{-1}
+  - arrows as → and ⇌; Greek letters as they are (Δ, λ, ν).
+- Keep the book's own wording (Hinglish stays Hinglish).
+- No markdown, no bold (**), no tables, no code box, nothing before the ### line and nothing after the last question.
+
+EXAMPLE (shortened)
+### 11-1
+Title: Some Basic Concepts of Chemistry
+Short: Basic Concepts
+Tagline: Ek chammach cheeni mein kitne molecules? Hinglish mein seekho
+Pages: 82
+Figures: 41
+Solved examples: 94
+Practice questions: 90+
+QR: 5 QR simulations
+Highlight: Mole map: poora chapter ek page par
+Highlight: Formula sheet aur Top 12 mistakes
+Highlight: 16 MCQ final test, answer key ke saath
+Topic: Chemistry aur matter | Section 1.1, 1.2 | 4
+- Chemistry kyun zaroori hai | 5
+- Matter ki teen states | 6
+- Mixture, element aur compound | 7
+Topic: Properties aur measurement | Section 1.3 | 10
+- Physical/chemical properties aur SI units | 11
+- SI prefixes + Exercises 1.14, 1.15 | 12
+Topic: Revision | Complete chapter | 74
+- Mole map: ek nazar mein | 75
+- Final test, Part A: 16 MCQs | 79
+Note: Figures count may be off by 1 or 2 on page 33.
+Quiz:
+Q: Amount of substance ki SI unit?
+A) kilogram
+B) mole *
+C) gram
+D) litre
+Why: Amount of substance ki SI unit mole (mol) hai; kilogram mass ki unit hai.
+
+Q: Avogadro constant ki value?
+A) 6.022 × 10^{23} mol^{-1} *
+B) 6.022 × 10^{-23} mol^{-1}
+C) 1.66 × 10^{24} mol^{-1}
+D) 22.7 mol^{-1}
+Why: N_A = 6.022 × 10^{23} particles per mole.
+
+CHAPTER KEYS
+Class 11 (Part 1): 11-1 Some Basic Concepts · 11-2 Structure of Atom · 11-3 Classification of Elements · 11-4 Chemical Bonding · 11-5 Thermodynamics · 11-6 Equilibrium · 11-7 Redox Reactions · 11-8 Organic Chemistry: Basic Principles · 11-9 Hydrocarbons
+Class 12 (Part 2): 12-1 Solutions · 12-2 Electrochemistry · 12-3 Chemical Kinetics · 12-4 d- and f-Block · 12-5 Coordination Compounds · 12-6 Haloalkanes and Haloarenes · 12-7 Alcohols, Phenols and Ethers · 12-8 Aldehydes, Ketones and Carboxylic Acids · 12-9 Amines · 12-10 Biomolecules
+
+This PDF is chapter: [write the key here, e.g. 12-1]
