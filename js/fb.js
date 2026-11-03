@@ -53,7 +53,9 @@ export async function loadCatalog() {
     const s = await getDoc(doc(db, "catalog", "main"));
     if (!s.exists()) return null;
     const cat = JSON.parse(s.data().data);
-    return applyCatalog(cat) ? cat : null;
+    if (!applyCatalog(cat)) return null;
+    await loadCovers(async () => { const c = await getDoc(doc(db, "catalog", "covers")); return c.exists() ? JSON.parse(c.data().data) : null; });
+    return cat;
   } catch (e) { console.warn("catalog", e); return null; }
 }
 export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

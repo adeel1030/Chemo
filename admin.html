@@ -144,7 +144,8 @@ body { background: var(--paper); }
 .stu .actions .spacer { flex: 1; }
 .empty { text-align: center; padding: 28px 12px; color: var(--muted); }
 .chap-rows { display: grid; gap: 10px; }
-.chap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
+.ch-cv { width: 44px; height: 62px; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,.18); background: var(--paper); align-self: start; }
+.chap-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
 .chap-row.done { border-left: 4px solid var(--good); }
 .chap-row.todo-up { border-left: 4px solid var(--bad); }
 .chap-row h3 { font-size: 1.02rem; }
@@ -162,7 +163,7 @@ body { background: var(--paper); }
 .chap-row .confirm { grid-column: 1 / -1; }
 .pill.locked { display: inline-flex; flex: none; white-space: nowrap; align-items: center; gap: 4px; padding: 4px 10px; background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; color: var(--good); font-weight: 600; }
 .cls-head { font: 700 1.05rem var(--font-display); margin: 10px 0 0; }
-@media (max-width: 640px) { .chap-row { grid-template-columns: minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; } }
+@media (max-width: 640px) { .chap-row { grid-template-columns: 44px minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; grid-column: 1 / -1; } }
 .confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
 .confirm p { margin: 0; font-size: .92rem; }
 .confirm label { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; cursor: pointer; }
@@ -2282,6 +2283,47 @@ async function loadChapters() {
     return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">${esc(clsName(c.cls))}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
   }).join("");
   renderDash();
+  if (cat && !coversTried) { coversTried = true; backfillCovers().catch(ex => console.warn("covers", ex)); }
+}
+
+// ---------- book covers ----------
+// Each chapter's cover on the website and in the reader is the first page of its PDF: a small picture
+// (300 pixels wide) kept in catalog/covers. catalog.coversAt tells phones when to fetch them again.
+const COVER_PX = 300;
+let coversTried = false;
+function coverFrom(src) {
+  const w = COVER_PX, h = Math.round(COVER_PX * (src.height || 1) / (src.width || 1));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const x = cv.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, w, h);
+  let url = cv.toDataURL("image/webp", 0.75);
+  if (!url.startsWith("data:image/webp")) url = cv.toDataURL("image/jpeg", 0.75);
+  return url;
+}
+async function saveCovers(add) {
+  const map = Object.assign({}, COVERS, add);
+  Object.keys(map).forEach(k => { if (!findChapter(k)) delete map[k]; });
+  const data = JSON.stringify(map);
+  if (data.length > 950000) throw new Error("Too many covers for one record. Ask for help to split them.");
+  const at = Date.now();
+  await setDoc(doc(db, "catalog", "covers"), { data, at });
+  Object.assign(COVERS, add);
+  await commit(next => { next.coversAt = at; }, "Book covers updated: the first page of each PDF.");
+}
+// Chapters uploaded before covers were made from the PDF get theirs from page 1 already in Firebase.
+async function backfillCovers() {
+  const missing = [...uploaded.keys()].filter(k => !COVERS[k] && findChapter(k));
+  if (!missing.length) return;
+  const add = {};
+  for (const k of missing) {
+    const s = await getDoc(doc(db, "pages", pageId(k, 1)));
+    if (!s.exists() || !s.data().img) continue;
+    const img = new Image();
+    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = s.data().img; });
+    add[k] = coverFrom(img);
+  }
+  if (!Object.keys(add).length) return;
+  await saveCovers(add);
+  $("#chap-progress").textContent = `Covers made from page 1 for ${Object.keys(add).length} chapter${Object.keys(add).length > 1 ? "s" : ""}. The website and the reader show them now.`;
 }
 
 // An uploaded chapter is locked: its file picker stays hidden until the admin unlocks it, after a warning.
@@ -2291,6 +2333,7 @@ const chapSummary = c => [[(c.topics || []).length, "topics"], [c.fig, "figures"
   .filter(([v]) => v && v !== "0").map(([v, l]) => `${esc(v)}${l ? " " + l : ""}`).join(" · ");
 function chapRow(c, k, u) {
   return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
+    ${coverOf(c) ? `<img class="ch-cv" src="${coverOf(c)}" alt="" width="44" height="62" loading="lazy">` : `<span class="ch-cv"></span>`}
     <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
       <div class="chap-info">${chapSummary(c) || "No chapter info yet: tap 📄 Info"}</div>
@@ -2348,6 +2391,7 @@ $("#chap-rows").addEventListener("click", async e => {
   try {
     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
     const total = pdf.numPages;
+    let cover = null;
     for (let n = 1; n <= total; n++) {
       status.textContent = `Uploading page ${n} / ${total}…`;
       const page = await pdf.getPage(n);
@@ -2357,6 +2401,7 @@ $("#chap-rows").addEventListener("click", async e => {
       canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
       await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
       await setDoc(doc(db, "pages", pageId(k, n)), { ch: k, n, img: pageImage(canvas) });
+      if (n === 1) cover = coverFrom(canvas);
       page.cleanup();
       bar.value = Math.round((n / total) * 100);
     }
@@ -2371,8 +2416,9 @@ $("#chap-rows").addEventListener("click", async e => {
     uploaded.set(k, { ...(chInfo.get(k) || {}), ...info, updatedAt: Timestamp.now() });
     chInfo.set(k, uploaded.get(k));
     renderLighter();
-    row.outerHTML = chapRow(c, k, uploaded.get(k));
-    $(`.chap-row[data-k="${k}"] .status`).textContent = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now.`;
+    if (cover) { status.textContent = "Saving the cover (page 1)…"; await saveCovers({ [k]: cover }).catch(ex => console.warn("cover", ex)); }
+    $(`.chap-row[data-k="${k}"]`).outerHTML = chapRow(c, k, uploaded.get(k));
+    $(`.chap-row[data-k="${k}"] .status`).textContent = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now. Its cover is page 1.`;
     renderDash();
     return;
   } catch (ex) {

@@ -817,9 +817,9 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
         </ul>
       </div>
       <div class="cover-fan" id="cover-fan"><div class="fan3d">
-        <img src="assets/thumbs/ch6-1.webp" alt="" width="360" height="509">
-        <img src="assets/thumbs/c12-ch5-1.webp" alt="" width="360" height="509">
-        <img src="assets/thumbs/ch2-1.webp" alt="Cover of Chemophile Chapter 2: Structure of Atom" width="360" height="509">
+        <img src="assets/thumbs/ch6-1.webp" data-cover="11-6" alt="" width="360" height="509">
+        <img src="assets/thumbs/c12-ch5-1.webp" data-cover="12-5" alt="" width="360" height="509">
+        <img src="assets/thumbs/ch2-1.webp" data-cover="11-2" alt="Cover of Chemophile Chapter 2: Structure of Atom" width="360" height="509">
         <div class="sticker" aria-hidden="true">In<br>Hinglish!</div>
       </div></div>
     </div>
@@ -1130,11 +1130,28 @@ async function loadSiteCatalog() {
     if (r.status === 404) { try { localStorage.removeItem("chemophile-catalog"); } catch (e) {} return; }
     const j = await r.json();
     const data = j.fields && j.fields.data && j.fields.data.stringValue;
-    if (data && applyCatalog(JSON.parse(data))) { try { localStorage.setItem("chemophile-catalog", data); } catch (e) {} return; }
+    if (data && applyCatalog(JSON.parse(data))) {
+      try { localStorage.setItem("chemophile-catalog", data); } catch (e) {}
+      await loadCovers(async () => {
+        const ctl2 = new AbortController(), t2 = setTimeout(() => ctl2.abort(), 5000);
+        const c = await fetch(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/catalog/covers?key=${firebaseConfig.apiKey}`, { signal: ctl2.signal });
+        clearTimeout(t2);
+        const cj = await c.json();
+        return cj.fields && cj.fields.data ? JSON.parse(cj.fields.data.stringValue) : null;
+      });
+      return;
+    }
   } catch (e) {}
-  if (cached) applyCatalog(cached);
+  if (cached) { applyCatalog(cached); await loadCovers(async () => null); }
 }
-loadSiteCatalog().finally(boot);
+// The hero's three covers also come from each booklet's first page.
+function heroCovers() {
+  document.querySelectorAll("[data-cover]").forEach(img => {
+    const c = [...CHAPTERS, ...SOON_CHAPTERS].find(x => `${x.cls}-${x.n}` === img.dataset.cover), u = c && coverOf(c);
+    if (u && img.getAttribute("src") !== u) img.src = u;
+  });
+}
+loadSiteCatalog().finally(() => { heroCovers(); boot(); });
 
 function boot() {
 const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
@@ -1278,6 +1295,8 @@ function madeCover(c) {
 }
 const coverHtml = c => coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : madeCover(c);
 function soonCover(u) {
+  const img = COVERS[`${u.cls}-${u.n}`];
+  if (img) return `<div class="soon-cover" style="padding: 0"><img src="${img}" alt="" width="360" height="509" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; box-shadow: none"><span class="rib">Coming soon</span></div>`;
   return `<div class="soon-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(PART[u.cls] || clsName(u.cls))}</span>
       <span class="f"><span>${u.f}</span></span>

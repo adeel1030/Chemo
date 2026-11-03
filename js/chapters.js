@@ -365,6 +365,8 @@ function applyCatalog(cat) {
   OFFER = cat.offer || null;
   REFERRAL = Object.assign({ on: false, days: 30 }, cat.referral || {});
   SITE = Object.assign({ videos: [], reviews: [] }, cat.site || {});
+  COVERS_AT = +cat.coversAt || 0;
+  if (!COVERS_AT) Object.keys(COVERS).forEach(k => delete COVERS[k]);
   PAY = !cat.pay ? DEFAULT_PAY : cat.pay.upi || cat.pay.link ? cat.pay : null;
   return true;
 }
@@ -384,8 +386,25 @@ const SAMPLE_BOOKS = {
 const pad2 = n => String(n).padStart(2, "0");
 const sampleImg = (cls, p, thumb) => `assets/samples/${cls}/${thumb ? "t" : ""}${pad2(p)}.webp`;
 const assetName = c => c.cls === 11 ? `ch${c.n}` : `c12-ch${c.n}`;
-// Chapters added in the admin panel have no pictures in assets/, so they get no cover image (null).
-const coverOf = c => c.custom ? null : `assets/thumbs/${assetName(c)}-1.webp`;
+// A chapter's cover is the first page of its uploaded PDF (made by the admin panel on upload, kept in
+// catalog/covers). Until a PDF is uploaded, the picture in assets/ is used; a chapter with neither has none (null).
+const COVERS = {};
+let COVERS_AT = 0;
+const coverOf = c => COVERS[`${c.cls}-${c.n}`] || (c.custom ? null : `assets/thumbs/${assetName(c)}-1.webp`);
+// Brings the covers in: from this device's copy if it is the latest (catalog.coversAt says), else via get().
+async function loadCovers(get) {
+  if (!COVERS_AT) return;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("chemophile-covers")); } catch (e) {}
+  if (saved && saved.at === COVERS_AT && saved.map) { Object.assign(COVERS, saved.map); return; }
+  try {
+    const map = await get();
+    if (!map) return;
+    Object.keys(COVERS).forEach(k => delete COVERS[k]);
+    Object.assign(COVERS, map);
+    try { localStorage.setItem("chemophile-covers", JSON.stringify({ at: COVERS_AT, map })); } catch (e) {}
+  } catch (e) { if (saved && saved.map) Object.assign(COVERS, saved.map); }
+}
 // Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
 const samplePagesOf = c => c.custom ? [] : [[1, "Cover"], [3, "Contents"], [4, "Topic 1, first page"], [5, "Page 5"], [6, "Page 6"]]
   .map(([p, label]) => [`assets/thumbs/${assetName(c)}-${p}.webp`, `assets/pages/${assetName(c)}-${p}.webp`, label]);
