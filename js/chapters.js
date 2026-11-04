@@ -63,6 +63,12 @@ let PAY = DEFAULT_PAY;
 // a number above 100 and its own label from the catalog, e.g. "B.Sc 1st Year".
 const CLASS_LABEL = {};
 const isUni = cls => +cls > 100;
+// Bonus chapters (competition exams: JEE / NEET) are numbered from 101 in each class, so their keys never
+// clash with the book's chapters: Class 11 Bonus 1 is "11-101". They show as "Bonus 1", after the chapters.
+const BONUS_FROM = 100;
+const isBonus = c => +(c && c.n) > BONUS_FROM;
+const chNo = c => isBonus(c) ? `Bonus ${c.n - BONUS_FROM}` : `Chapter ${c.n}`;
+const chShort = c => isBonus(c) ? `Bonus ${c.n - BONUS_FROM}` : `Ch ${c.n}`;
 const clsName = cls => CLASS_LABEL[cls] || (isUni(cls) ? "University book" : `Class ${cls}`);
 
 // Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).
@@ -344,7 +350,7 @@ function applyCatalog(cat) {
   cat.chapters.forEach(x => {
     const old = base.get(keyOf(x));
     const c = Object.assign({ tag: "", topics: [], pages: 0, fig: 0, solved: 0, practice: 0 }, old || { custom: true }, {
-      cls: +x.cls, n: +x.n, title: x.title || (old && old.title) || `Chapter ${x.n}`, short: x.short || "",
+      cls: +x.cls, n: +x.n, title: x.title || (old && old.title) || chNo(x), short: x.short || "",
       pages: +x.pages || (old && old.pages) || 0
     });
     if (x.tag) c.tag = x.tag;

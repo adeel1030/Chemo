@@ -535,6 +535,11 @@ section.block { padding-block: 64px; }
 .cover-btn { padding: 0; border: 0; background: none; cursor: pointer; position: relative; border-radius: 8px; display: block; width: 100%; }
 .cover-btn img { border-radius: 6px; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; width: 100%; }
 .cover-btn:hover img, .cover-btn:hover .soon-cover { transform: translateY(-4px) rotate(-1deg); }
+.shelf-head { grid-column: 1 / -1; border-top: 2px dashed var(--line); padding-top: 18px; margin-top: 6px; }
+.shelf-head h3 { margin: 0; font: 800 1.3rem/1.2 var(--font-display); }
+.shelf-head p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.card.bonus .ch { color: var(--accent); }
+.card.bonus .ch::after { content: " · JEE / NEET"; }
 .card .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .card .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.06rem; line-height: 1.2; }
 .card .meta { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -1289,8 +1294,8 @@ let cls = CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
 function madeCover(c) {
   return `<div class="soon-cover made-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(PART[c.cls] || clsName(c.cls))}</span>
-      <span class="f"><span>${c.n}</span></span>
-      <span class="c">Chapter ${c.n}</span><span class="t">${esc(c.title)}</span><span class="bar"></span>
+      <span class="f"><span>${isBonus(c) ? "🏆" : c.n}</span></span>
+      <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isBonus(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
     </div>`;
 }
 const coverHtml = c => coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : madeCover(c);
@@ -1299,23 +1304,28 @@ function soonCover(u) {
   if (img) return `<div class="soon-cover" style="padding: 0"><img src="${img}" alt="" width="360" height="509" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; box-shadow: none"><span class="rib">Coming soon</span></div>`;
   return `<div class="soon-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(PART[u.cls] || clsName(u.cls))}</span>
-      <span class="f"><span>${u.f}</span></span>
-      <span class="c">Chapter ${u.n}</span><span class="t">${esc(u.title)}</span>
+      <span class="f"><span>${u.f || (isBonus(u) ? "🏆" : "")}</span></span>
+      <span class="c">${chNo(u)}</span><span class="t">${esc(u.title)}</span>
       <span class="rib">Coming soon</span><span class="bar"></span>
     </div>`;
 }
 function renderShelf() {
   const ready = CHAPTERS.filter(c => c.cls === cls);
   const soon = UPCOMING.filter(u => u.cls === cls);
+  const bonus = ready.filter(isBonus).length + soon.filter(isBonus).length;
   const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => (a.c || a.u).n - (b.c || b.u).n);
-  $("#shelf").innerHTML = items.map(({ c, u }) => {
+  const firstBonus = items.findIndex(x => isBonus(x.c || x.u));
+  $("#shelf").innerHTML = items.map(({ c, u }, i) => (i === firstBonus ? `<div class="shelf-head">
+      <h3>🏆 Bonus chapters: competition exams</h3>
+      <p>JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho.</p>
+    </div>` : "") + (() => {
     if (c) {
       const k = key(c), on = pack.has(k);
-      return `<div class="card">
-        <button class="cover-btn" type="button" data-sheet="${k}" aria-label="See topics of Chapter ${c.n}: ${esc(c.title)}">
+      return `<div class="card${isBonus(c) ? " bonus" : ""}">
+        <button class="cover-btn" type="button" data-sheet="${k}" aria-label="See topics of ${chNo(c)}: ${esc(c.title)}">
           ${coverHtml(c)}
         </button>
-        <div><div class="ch">Chapter ${c.n}</div><div class="nm">${esc(nameOf(c))}</div>
+        <div><div class="ch">${chNo(c)}</div><div class="nm">${esc(nameOf(c))}</div>
         <div class="meta">${[c.topics.length && `${c.topics.length} topics`, c.pages && `${c.pages} pages`, c.solved && `${c.solved} solved`].filter(Boolean).join(" · ")}</div></div>
         ${priceChips(c)}
         <div class="card-actions">
@@ -1324,18 +1334,20 @@ function renderShelf() {
         </div>
       </div>`;
     }
-    const msg = `Hello Adeel Sir, please tell me when Chemophile ${clsName(u.cls)} Chapter ${u.n} (${plain(u.title)}) is ready.`;
+    const msg = `Hello Adeel Sir, please tell me when Chemophile ${clsName(u.cls)} ${chNo(u)} (${plain(u.title)}) is ready.`;
     return `<div class="card">
       ${soonCover(u)}
-      <div><div class="ch">Chapter ${u.n}</div><div class="nm">${esc(u.title)}</div>
+      <div><div class="ch">${chNo(u)}</div><div class="nm">${esc(u.title)}</div>
       <div class="soon-tag">${u.tag}</div></div>
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Notify me →</a>
     </div>`;
-  }).join("");
+  })()).join("");
   const book = PART[cls] ? `Chemophile ${PART[cls]}` : clsName(cls);
-  $("#shelf-note").textContent = ready.length
-    ? `${book}: ${soon.length ? `${ready.length} chapters ready, ${soon.length} coming soon.` : ready.length === 1 ? "1 chapter is ready." : `all ${ready.length} chapters are ready.`}`
-    : `${book}: all ${soon.length} chapters are coming soon. Tap "Notify me" under the ones you want.`;
+  const mainReady = ready.filter(c => !isBonus(c)).length, mainSoon = soon.filter(u => !isBonus(u)).length;
+  $("#shelf-note").textContent = (mainReady
+    ? `${book}: ${mainSoon ? `${mainReady} chapters ready, ${mainSoon} coming soon.` : mainReady === 1 ? "1 chapter is ready." : `all ${mainReady} chapters are ready.`}`
+    : mainSoon ? `${book}: all ${mainSoon} chapters are coming soon. Tap "Notify me" under the ones you want.` : `${book}.`)
+    + (bonus ? ` Plus ${bonus} bonus chapter${bonus > 1 ? "s" : ""} for JEE / NEET.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
@@ -1359,7 +1371,7 @@ function renderPick() {
       list.map(c => {
         const ck = key(c), v = priceFor(c, fmt), mrp = mrpFor(c, fmt);
         return `<li><label><input type="checkbox" id="pick-${ck}" data-pick="${ck}"${pack.has(ck) ? " checked" : ""}>
-      <span>Ch ${c.n} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}${per(fmt)}` : "Ask"}</span></label></li>`;
+      <span>${chShort(c)} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}${per(fmt)}` : "Ask"}</span></label></li>`;
       }).join("");
   }).join("");
   $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Remove all" : "All chapters";
@@ -1381,7 +1393,7 @@ function renderSummary() {
       + (paper ? "Paperback delivery is charged extra. Adeel Sir will confirm it on WhatsApp."
         : fmt === "monthly" ? `Pay every ${monthDays()} days to keep reading; stop any time. After payment, Adeel Sir will send your login ID and password on WhatsApp.`
         : `The online book is ${validity()}. After payment, Adeel Sir will send your login ID and password on WhatsApp.`);
-  const lines = chosen.map(c => `- ${clsName(c.cls)}, Chapter ${c.n}: ${plain(c.title)} (${priceFor(c, fmt) ? rupee(priceFor(c, fmt)) : "price on request"})`);
+  const lines = chosen.map(c => `- ${clsName(c.cls)}, ${chNo(c)}: ${plain(c.title)} (${priceFor(c, fmt) ? rupee(priceFor(c, fmt)) : "price on request"})`);
   const payNow = !!(PAY && PAY.upi && chosen.length && !ask && !paper && total > 0);
   const msg = `Hello Adeel Sir, I want to order Chemophile.\nFormat: ${label}${optOf(fmt).parts.includes("online") ? `, ${validityShort()}` : ""}\n${lines.join("\n")}\nTotal: ${rupee(total)}${ask ? " + price on request" : ""}${per(fmt)}${paper ? " + delivery" : ""}${refLine()}${payNow ? "\nPayment: paid by UPI (screenshot attached)" : ""}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
   renderPay(payNow ? total : 0);
@@ -1503,11 +1515,11 @@ function renderCombos() {
     const classes = [...new Set(chs.map(c => c.cls))].map(k => clsName(k)).join(" + ");
     const buys = FORMAT_IDS.filter(f => FORMATS[f].on && (x.price || {})[f] > 0).map(f => {
       const p = +x.price[f], m = +(x.mrp || {})[f] > p ? +x.mrp[f] : null, paper = f === "colour" || f === "bw";
-      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}${f === "online" ? `, ${validityShort()}` : ""}\nPrice: ${rupee(p)}${per(f)}${paper ? " + delivery" : ""}${refLine()}\nChapters:\n${chs.map(c => `- ${clsName(c.cls)}, Chapter ${c.n}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
+      const msg = `Hello Adeel Sir, I want to order the Chemophile combo "${x.name}".\nFormat: ${FORMATS[f].label}${f === "online" ? `, ${validityShort()}` : ""}\nPrice: ${rupee(p)}${per(f)}${paper ? " + delivery" : ""}${refLine()}\nChapters:\n${chs.map(c => `- ${clsName(c.cls)}, ${chNo(c)}: ${plain(c.title)}`).join("\n")}\n\nName:\nClass:\nCity:${paper ? "\nDelivery address:" : ""}`;
       return `<a href="${wa(msg)}" target="_blank" rel="noopener"><span>${esc(FORMATS[f].label)}</span><span>${money(p, m, f)}</span></a>`;
     }).join("");
     return `<div class="combo"><div class="count">${chs.length} chapters · ${classes}</div><h3>${esc(x.name)}</h3>${x.text ? `<p>${esc(x.text)}</p>` : ""}
-      <p>${chs.map(c => `Ch ${c.n} ${esc(nameOf(c))}`).join(", ")}</p><div class="buy">${buys}</div></div>`;
+      <p>${chs.map(c => `${chShort(c)} ${esc(nameOf(c))}`).join(", ")}</p><div class="buy">${buys}</div></div>`;
   }).join("");
 }
 function renderOffer() {
@@ -1559,7 +1571,7 @@ function openSheet(k, topicId) {
     <div class="ch-head night">
       ${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : madeCover(c)}
       <div style="min-width:0">
-        <div class="kicker">Chemophile ${esc(PART[c.cls] || clsName(c.cls))} · Chapter ${c.n}</div>
+        <div class="kicker">Chemophile ${esc(PART[c.cls] || clsName(c.cls))} · ${chNo(c)}</div>
         <h3 id="sheet-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
         ${c.tag ? `<p class="tag">${esc(c.tag)}</p>` : ""}
         <div class="stats">
@@ -1602,12 +1614,12 @@ document.addEventListener("click", e => {
 // ---------- topic search ----------
 const INDEX = [];
 CHAPTERS.forEach(c => c.topics.forEach(([name, sec, start, subs], i) => {
-  const where = `${clsName(c.cls)} · Ch ${c.n} ${nameOf(c)} · Topic ${i + 1}`;
+  const where = `${clsName(c.cls)} · ${chShort(c)} ${nameOf(c)} · Topic ${i + 1}`;
   const ref = { k: key(c), t: `t-${key(c)}-${i + 1}` };
   INDEX.push({ ...ref, text: plain(name), where: `${where} · ${sec}`, page: start });
   (subs ? parseSubs(subs) : []).forEach(s => INDEX.push({ ...ref, text: plain(s.name), where: `${where}: ${plain(name)}`, page: s.page }));
 }));
-UPCOMING.forEach(u => INDEX.push({ soon: u.cls, text: u.title, where: `${clsName(u.cls)} · Chapter ${u.n} · Coming soon`, page: null }));
+UPCOMING.forEach(u => INDEX.push({ soon: u.cls, text: u.title, where: `${clsName(u.cls)} · ${chNo(u)} · Coming soon`, page: null }));
 const results = $("#results");
 $("#topic-search").addEventListener("input", e => {
   const q = e.target.value.trim().toLowerCase();
@@ -1631,7 +1643,7 @@ results.addEventListener("click", e => {
 
 // ---------- sample page viewer ----------
 const PAGES = [["assets/pages/ch2-2.webp", "How to read this booklet"]];
-CHAPTERS.forEach(c => samplePagesOf(c).forEach(([, full, label]) => PAGES.push([full, `${clsName(c.cls)} · Chapter ${c.n}: ${nameOf(c)} · ${label}`])));
+CHAPTERS.forEach(c => samplePagesOf(c).forEach(([, full, label]) => PAGES.push([full, `${clsName(c.cls)} · ${chNo(c)}: ${nameOf(c)} · ${label}`])));
 const viewer = $("#viewer"), vImg = $("#viewer-img"), vCap = $("#viewer-cap");
 let current = 0, lastFocus = null;
 function show(i) {
@@ -1696,7 +1708,7 @@ $("#samples-grid").innerHTML = [11, 12].map(k => {
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
 function openSample(k) {
   const b = SAMPLE_BOOKS[k];
-  const toc = CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`Ch ${c.n} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
+  const toc = CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
   new Flipbook({
     title: `Class ${k} free sample`, pageCount: b.pages, toc,
     download: { href: b.pdf, label: "PDF download" },

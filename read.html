@@ -939,10 +939,10 @@ async function renderLibrary() {
   if (pick) {
     const c = findChapter(pick) || {}, pr = progress(pick), started = pr.last > 1;
     $("#continue").innerHTML = `<div class="card continue">
-      <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `Chapter ${c.n}`}</button>
+      <button class="cv" type="button" data-read="${pick}" aria-label="Open ${esc(c.title || pick)}">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : `${chNo(c)}`}</button>
       <div style="min-width:0"><div class="tag">${started ? "Continue reading" : "Start reading"}</div>
         <h2>${esc(c.title || pick)}</h2>
-        <div class="meta">${esc(clsName(c.cls))} · Chapter ${c.n}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
+        <div class="meta">${esc(clsName(c.cls))} · ${chNo(c)}${started ? ` · Page ${pr.last} of ${pr.total}` : ` · ${pr.total} pages`}</div>
         ${started ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         ${todayPlan(pick, c, pr)}
         <button class="btn btn-sun btn-sm" type="button" data-read="${pick}">${started ? `Continue from page ${pr.last}` : "Open the book"}</button></div>
@@ -966,8 +966,8 @@ async function renderLibrary() {
   const card = k => {
     const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k), ac = access(k);
     const [cls, n] = k.split("-");
-    const title = c.title || (info && info.title) || `Chapter ${n}`;
-    const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${n}`;
+    const title = c.title || (info && info.title) || chNo({ n: +n });
+    const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : chNo({ n: +n });
     const open = pr.ready && ac.open;
     const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`)
       : ac.grant ? (ac.open ? `<span class="plan-tag">Free access till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Free access ended ${fmtDate(ac.till)}</span>`) : "";
@@ -975,14 +975,14 @@ async function renderLibrary() {
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${open ? "" : ac.open ? " soon" : " locked"}">
       <button class="cv" type="button" ${open ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
-      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · Chapter ${n}</div><h3>${esc(title)}</h3>${plan}
+      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · ${chNo({ n: +n })}</div><h3>${esc(title)}</h3>${plan}
         <div class="meta">${status}</div>
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         ${open ? topicMap(k, c, pr) : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
         ${open && certReady(k) ? `<button class="btn btn-sm cert-btn" type="button" data-cert="${k}">🏅 My certificate</button><br>` : ""}
         ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
-          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} Chapter ${n} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
+          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} ${chNo({ n: +n })} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
@@ -1068,8 +1068,8 @@ function renderFree() {
   $("#lib").innerHTML = classes.map(cls => {
     const list = CHAPTERS.filter(c => c.cls === cls);
     return list.length ? `${classes.length > 1 ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(c => `<div class="card book locked">
-      <div class="cv">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `Chapter ${c.n}`}</div>
-      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · Chapter ${c.n}</div><h3>${esc(c.title)}</h3>
+      <div class="cv">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : `${chNo(c)}`}</div>
+      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · ${chNo(c)}</div><h3>${esc(c.title)}</h3>
         ${priceOf(c, "online") ? `<span class="price-tag">${rupee(priceOf(c, "online"))} · ${esc(FORMATS.online.label)}</span>` : ""}
         <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
   }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
@@ -1088,7 +1088,7 @@ function openSampleBook(k) {
   if (!b) return;
   new Flipbook({
     title: `${clsName(k)} free sample`, pageCount: b.pages,
-    toc: CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`Ch ${c.n} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
+    toc: CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
     loadPage: n => loadImg(sampleImg(k, n))
   }).open();
 }
@@ -1318,7 +1318,7 @@ async function makeCert(k) {
   x.fillStyle = "#1b1a45"; x.font = '800 86px "Baloo 2", Arial'; x.fillText(me.name || me.loginId, W / 2, 540, W - 260);
   x.fillStyle = "#ffd24a"; x.fillRect(W / 2 - 200, 562, 400, 6);
   x.fillStyle = "#5d5b80"; x.font = '500 30px "Fira Sans", Arial'; x.fillText("for completing", W / 2, 630);
-  x.fillStyle = "#3b2fb8"; x.font = '800 46px "Baloo 2", Arial'; x.fillText(`${clsName(c.cls)} · Chapter ${c.n}: ${String(c.title || "").replace(/<[^>]+>/g, "")}`, W / 2, 700, W - 220);
+  x.fillStyle = "#3b2fb8"; x.font = '800 46px "Baloo 2", Arial'; x.fillText(`${clsName(c.cls)} · ${chNo(c)}: ${String(c.title || "").replace(/<[^>]+>/g, "")}`, W / 2, 700, W - 220);
   x.fillStyle = "#5d5b80"; x.font = '500 28px "Fira Sans", Arial';
   x.fillText(q && q.total ? `with a quiz score of ${q.best}/${q.total} (${Math.round(q.best / q.total * 100)}%)` : "reading the chapter page by page", W / 2, 760);
   const id = "CHEMO-" + [...(auth.currentUser.uid + k)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 7);
@@ -1342,7 +1342,7 @@ $("#v-library").addEventListener("click", async e => {
   $("#cert-share").hidden = !(navigator.canShare && navigator.share);
   $("#cert-share").onclick = async () => {
     try { const blob = await (await fetch(url)).blob(), file = new File([blob], $("#cert-dl").download, { type: "image/png" });
-      await navigator.share({ files: [file], text: `I completed ${clsName(c.cls)} Chapter ${c.n} on Chemophile! 🏅` }); } catch (err) {}
+      await navigator.share({ files: [file], text: `I completed ${clsName(c.cls)} ${chNo(c)} on Chemophile! 🏅` }); } catch (err) {}
   };
   $("#cert").hidden = false; b.disabled = false;
 });
@@ -1378,8 +1378,8 @@ function openDoubt(k, page) {
   doubtAt = k;
   const c = k ? findChapter(k) || {} : null;
   $("#doubt-ch-row").hidden = !!k;
-  if (!k) $("#doubt-ch").innerHTML = (searchKeys || []).filter(x => access(x).open).map(x => { const cc = findChapter(x) || {}; return `<option value="${x}">${esc(clsName(cc.cls))} · Ch ${cc.n} ${esc(cc.short || cc.title || x)}</option>`; }).join("");
-  $("#doubt-where").textContent = c ? `${clsName(c.cls)} · Chapter ${c.n}: ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}` : "Choose the chapter and page your doubt is about.";
+  if (!k) $("#doubt-ch").innerHTML = (searchKeys || []).filter(x => access(x).open).map(x => { const cc = findChapter(x) || {}; return `<option value="${x}">${esc(clsName(cc.cls))} · ${chShort(cc)} ${esc(cc.short || cc.title || x)}</option>`; }).join("");
+  $("#doubt-where").textContent = c ? `${clsName(c.cls)} · ${chNo(c)}: ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}` : "Choose the chapter and page your doubt is about.";
   $("#doubt-page").value = page || "";
   $("#doubt-text").value = ""; $("#doubt-photo").value = ""; delete $("#doubt-photo").dataset.photo; $("#doubt-prev").hidden = true;
   $("#doubt-msg").hidden = true; $("#doubt-btn").disabled = false;
@@ -1400,8 +1400,8 @@ $("#doubt-form").addEventListener("submit", async e => {
   if (text.length < 3) return say("Write your doubt.", "bad");
   $("#doubt-btn").disabled = true;
   try {
-    await addDoc(collection(db, "doubts"), { uid: auth.currentUser.uid, name: me.name || "", loginId: me.loginId || "", phone: me.phone || "", ch: k, title: `${clsName(c.cls)} · Ch ${c.n} ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}`, page, text, ...(photo ? { photo } : {}), status: "open", at: serverTimestamp() });
-    say(`✓ Sent! Adeel Sir's answer will appear in <b>My doubts</b> in your library. <a href="${wa(`Hello Adeel Sir, I sent a doubt on Chemophile (${clsName(c.cls)} Ch ${c.n}, page ${page}).`)}" target="_blank" rel="noopener">Also tell him on WhatsApp</a>`, "good");
+    await addDoc(collection(db, "doubts"), { uid: auth.currentUser.uid, name: me.name || "", loginId: me.loginId || "", phone: me.phone || "", ch: k, title: `${clsName(c.cls)} · ${chShort(c)} ${String(c.short || c.title || "").replace(/<[^>]+>/g, "")}`, page, text, ...(photo ? { photo } : {}), status: "open", at: serverTimestamp() });
+    say(`✓ Sent! Adeel Sir's answer will appear in <b>My doubts</b> in your library. <a href="${wa(`Hello Adeel Sir, I sent a doubt on Chemophile (${clsName(c.cls)} ${chShort(c)}, page ${page}).`)}" target="_blank" rel="noopener">Also tell him on WhatsApp</a>`, "good");
     $("#doubt-text").value = "";
   } catch (ex) { say("Could not send. Check your internet and try again.", "bad"); $("#doubt-btn").disabled = false; }
 });
@@ -1552,7 +1552,7 @@ $("#tsearch").addEventListener("input", () => {
   if (q.length < 2) { box.hidden = true; return; }
   const hits = topicHits(q), re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
   box.innerHTML = hits.length ? hits.map(h => { const open = access(chapterKey(h.c)).open && (chapterInfo.get(h.k) || {}).pageCount;
-    return `<button type="button" data-hit="${h.k}|${h.page}"${open ? "" : ' data-locked="1"'}><span>${esc(h.name).replace(re, s => `<mark>${s}</mark>`)}<span class="w">${esc(clsName(h.c.cls))} · Ch ${h.c.n} ${esc(plainT(h.c.short || h.c.title))} · ${esc(h.where)}</span></span><span class="pg">${open ? "p. " + h.page + " ›" : "🔒"}</span></button>`; }).join("")
+    return `<button type="button" data-hit="${h.k}|${h.page}"${open ? "" : ' data-locked="1"'}><span>${esc(h.name).replace(re, s => `<mark>${s}</mark>`)}<span class="w">${esc(clsName(h.c.cls))} · ${chShort(h.c)} ${esc(plainT(h.c.short || h.c.title))} · ${esc(h.where)}</span></span><span class="pg">${open ? "p. " + h.page + " ›" : "🔒"}</span></button>`; }).join("")
     : `<div class="none">No topic found for "${esc(q)}". Try another word, like "mole" or "bond".</div>`;
   box.hidden = false;
 });
@@ -1702,7 +1702,7 @@ function renderMyReading(keys) {
     <div>${rows.map(([k, r]) => {
       const c = findChapter(k) || {}, total = r.total || (chapterInfo.get(k) || {}).pageCount || 0, seen = (r.seen || []).length;
       const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
-      return `<div class="rrow"><div class="t"><span>Ch ${c.n || k.split("-")[1]} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
+      return `<div class="rrow"><div class="t"><span>${chShort({ n: +(c.n || k.split("-")[1]) })} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
         <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
         <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div>
         ${certReady(k) ? `<div class="cert-hint">🏅 Certificate ready: open it from the chapter card.</div>` : `<div class="cert-hint">🏅 Certificate: read ${CERT_READ * 100}% of the pages${(chapterInfo.get(k) || {}).quiz ? ` and score ${CERT_QUIZ * 100}% in the quiz` : ""}.</div>`}</div>`;

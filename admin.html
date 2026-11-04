@@ -458,7 +458,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
           <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class or university book</button></div>
         </div>
         <div class="ch-list" id="cat-list"></div>
-        <div><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button></div>
+        <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button><button class="btn btn-line btn-sm" type="button" data-cat="new-bonus">🏆 + Add bonus chapter (JEE / NEET)</button></div>
       </div>
 
       <div class="card stack" id="cat-combo" hidden>
@@ -561,7 +561,7 @@ import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findCh
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
 const fmtDate = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
-const chName = k => { const c = findChapter(k); return c ? `Ch ${c.n} ${c.short || c.title}` : k; };
+const chName = k => { const c = findChapter(k); return c ? `${chShort(c)} ${c.short || c.title}` : k; };
 const allKeys = () => CHAPTERS.map(chapterKey);
 // Access dates: a "YYYY-MM-DD" date input means "until 11:59 pm that day".
 const endOfDay = v => v ? Timestamp.fromDate(new Date(v + "T23:59:59")) : null;
@@ -1678,8 +1678,9 @@ function bulkParse(text, only) {
   const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
   parts.forEach(part => {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
-    const m = head.match(/(\d+)\s*[-–.:]\s*(\d+)/), k = m ? `${+m[1]}-${+m[2]}` : head.split(/\s+/)[0];
-    if (only && k !== only) { errs.push(`This text is for chapter ${k}, not ${only}. Change the ### line, or paste it in chapter ${k}.`); return; }
+    // "11-1" is Class 11 Chapter 1; "11-B1" (or 11-101) is Class 11 Bonus 1.
+    const m = head.match(/(\d+)\s*[-–.:]\s*(b(?:onus)?\s*)?(\d+)/i), k = m ? `${+m[1]}-${(m[2] && +m[3] <= BONUS_FROM ? BONUS_FROM : 0) + +m[3]}` : head.split(/\s+/)[0];
+    if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}. Change the ### line, or paste it in ${keyText(k)}.`); return; }
     if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
     const p = parseInfo(body), e = (p.errs || []).map(x => `${k}: ${x}`);
     let qs = null;
@@ -1703,7 +1704,7 @@ function infoPreview({ k, info, qs, warns }) {
   const chips = info ? [[info.pages, "pages"], [t.length || null, "topics"], [info.fig, "figures"], [info.solved, "solved"], [info.practice, "practice Qs"]]
     .filter(([v]) => v != null && v !== "").map(([v, l]) => `<span class="pill">${esc(v)} ${l}</span>`).join("") : "";
   return `<div class="info-pv">
-    <b>${esc(clsName(c.cls))} · Chapter ${c.n}: ${info && info.title ? esc(info.title) : esc(c.title)}</b>${info && info.title && info.title !== c.title ? ` <span class="cat-sub">(was: ${esc(c.title)})</span>` : ""}
+    <b>${esc(clsName(c.cls))} · ${chNo(c)}: ${info && info.title ? esc(info.title) : esc(c.title)}</b>${info && info.title && info.title !== c.title ? ` <span class="cat-sub">(was: ${esc(c.title)})</span>` : ""}
     ${info && info.tag ? `<p class="cat-sub">“${esc(info.tag)}”</p>` : ""}
     <div class="pills">${chips}${info && info.qr ? `<span class="pill">${esc(info.qr)}</span>` : ""}${qs ? `<span class="pill good">Quiz: ${qs.length} Qs</span>` : ""}</div>
     ${info && info.highlights ? `<ul class="hl-pv">${info.highlights.map(h => `<li>★ ${h}</li>`).join("")}</ul>` : ""}
@@ -1730,10 +1731,11 @@ async function saveInfo(list) {
   $("#chap-progress").textContent = `Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`;
 }
 // The prompt to give the AI chat with the PDF, with the chapter key filled in.
+const keyText = k => { const [cl, n] = k.split("-"); return +n > BONUS_FROM ? `${cl}-B${n - BONUS_FROM}` : k; };
 async function copyPrompt(btn, k) {
   try {
     let t = await (await fetch("chapter-info-prompt.txt", { cache: "no-cache" })).text();
-    if (k) t = t.replace(/\[write the key here[^\]]*\]/, k);
+    if (k) t = t.replace(/\[write the key here[^\]]*\]/, keyText(k));
     await navigator.clipboard.writeText(t);
     btn.textContent = "✓ Prompt copied";
   } catch (ex) { btn.textContent = "Copy failed: use Download"; }
@@ -1742,10 +1744,10 @@ const infoHelp = k => `<p class="cat-sub"><b>How:</b> 1) Copy the prompt. 2) In 
   <div class="actions"><button class="btn btn-line btn-sm" type="button" data-copy-prompt="${k || ""}">📋 Copy the prompt</button><a class="btn btn-line btn-sm" href="chapter-info-prompt.txt" download>⬇ Download prompt</a></div>`;
 function infoDialog(k) {
   const c = k && findChapter(k);
-  openDialog(k ? `Chapter info · ${clsName(c.cls)} Chapter ${c.n}` : "Chapter info & quizzes (many chapters)", `
+  openDialog(k ? `Chapter info · ${clsName(c.cls)} ${chNo(c)}` : "Chapter info & quizzes (many chapters)", `
     ${infoHelp(k)}
     <div class="field"><label for="d-info">${k ? "The AI's answer for this chapter" : "Answers for one or more chapters (each starts with ### 11-1)"}</label>
-      <textarea id="d-info" rows="12" spellcheck="false" placeholder="### ${k || "11-1"}\nTitle: …\nPages: …\nFigures: …\nTopic: … | Section … | 4\n- … | 5\nQuiz:\nQ: …"></textarea></div>
+      <textarea id="d-info" rows="12" spellcheck="false" placeholder="### ${k ? keyText(k) : "11-1"}\nTitle: …\nPages: …\nFigures: …\nTopic: … | Section … | 4\n- … | 5\nQuiz:\nQ: …"></textarea></div>
     <div class="field"><label for="d-info-file">Or choose the .txt file${k ? "" : "s"}</label><input id="d-info-file" type="file" accept=".txt,.md,text/plain"${k ? "" : " multiple"}></div>
     <p class="cat-sub">Saving replaces this chapter's topics, counts and highlights on the website${k ? "" : "s"}, and its quiz if the text has one. Prices stay as they are.</p>
     <div id="d-info-check" role="status"></div>`,
@@ -1949,7 +1951,7 @@ function renderCatalog() {
   $("#cat-book-name").textContent = book ? `Book: ${book.name}` : "";
   const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === catCls).sort((a, b) => a[0].n - b[0].n);
   $("#cat-list").innerHTML = list.length ? list.map(([c, i]) => `<button class="ch-item" type="button" data-edit-ch="${i}">
-      <span class="no">${c.n}</span>
+      <span class="no">${isBonus(c) ? "B" + (c.n - BONUS_FROM) : c.n}</span>
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
       <span class="go">Edit ›</span>
       <span class="pr">${priceLine(c.price, c.mrp)}</span>
@@ -2110,35 +2112,40 @@ function readPrices(old = {}, oldMrp = {}) {
   return { price, mrp };
 }
 const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
-function chapterDialog(i) {
-  const isNew = i == null, c = isNew ? { cls: catCls, n: (Math.max(0, ...cat.chapters.filter(x => +x.cls === catCls).map(x => +x.n)) + 1), title: "", short: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] } : cat.chapters[i];
+// A bonus chapter (competition exams) is numbered from 101 in its class, and shows as "Bonus 1", "Bonus 2"…
+function chapterDialog(i, bonusNew) {
+  const inCls = cat.chapters.filter(x => +x.cls === catCls && isBonus(x) === !!bonusNew).map(x => +x.n);
+  const isNew = i == null, c = isNew ? { cls: catCls, n: Math.max(bonusNew ? BONUS_FROM : 0, ...inCls) + 1, title: "", short: "", tag: "", pages: null, soon: true, price: {}, mrp: {}, topics: [], ...(bonusNew ? { bonus: true } : {}) } : cat.chapters[i];
+  const bonus = isBonus(c), off = bonus ? BONUS_FROM : 0;
   const custom = isNew || !isBaseChapter(c);
   const topicsText = (c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n");
-  openDialog(isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · Chapter ${c.n}`, `
+  openDialog(isNew ? `New ${bonus ? "bonus chapter (JEE / NEET)" : "chapter"} in ${clsName(catCls)}` : `${clsName(c.cls)} · ${chNo(c)}`, `
+    ${bonus ? `<p class="cat-sub">🏆 Bonus chapters show after the book's chapters, in a "Bonus chapters: competition exams" section. Price them like any chapter, add them to a combo, or give them free with "Give chapters".</p>` : ""}
     <div class="cat-row">
-      ${isNew ? `<div class="field sm"><label for="d-n">Chapter no.</label><input id="d-n" type="number" min="1" inputmode="numeric" value="${c.n}"></div>` : ""}
+      ${isNew ? `<div class="field sm"><label for="d-n">${bonus ? "Bonus no." : "Chapter no."}</label><input id="d-n" type="number" min="1" max="99" inputmode="numeric" value="${c.n - off}"></div>` : ""}
       <div class="field lg"><label for="d-title">Chapter name</label><input id="d-title" value="${esc(c.title)}"></div>
     </div>
     <div class="cat-row">
       <div class="field"><label for="d-short">Short name (optional)</label><input id="d-short" value="${esc(c.short || "")}"></div>
+      ${custom ? `<div class="field"><label for="d-tag">One-line tagline (optional)</label><input id="d-tag" maxlength="160" value="${esc(c.tag || "")}" placeholder="${bonus ? "JEE ke tricky questions, aasaan tareeke se" : ""}"></div>` : ""}
       <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
       <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live (can be ordered)</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
     ${priceFields(c.price, c.mrp)}
     ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}`,
     async () => {
-      const n = isNew ? parseInt(val("d-n"), 10) : c.n, title = val("d-title");
-      if (!(n >= 1)) throw new Error("Chapter number: 1 or more.");
+      const n = isNew ? off + parseInt(val("d-n"), 10) : c.n, title = val("d-title");
+      if (!(n - off >= 1 && n - off <= 99)) throw new Error(`${bonus ? "Bonus" : "Chapter"} number: 1 to 99.`);
       if (!title) throw new Error("Write the chapter name.");
-      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has a Chapter ${n}.`);
+      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ n })}.`);
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
       if (!soon && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or set it to Coming soon.");
-      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp });
+      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp }, custom ? { tag: val("d-tag") } : {});
       // Topics left as they were keep their sections and sub-topics.
       if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} Chapter ${n} saved.`);
+      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
     },
-    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `${clsName(c.cls)} Chapter ${c.n} removed.`); } : null);
+    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
 }
 // A school class (1 to 12) or a university / college book. University books get numbers from 101 up,
 // and their own label ("B.Sc 1st Year") is shown wherever a school book says "Class 11".
@@ -2189,7 +2196,7 @@ function comboDialog(i) {
     <div><b>Chapters in this combo</b><div class="chap-picks" id="d-cpicks">${classesOf().map(cls => {
       const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
       return chs.length ? `<div class="pick-head"><b>${esc(clsName(cls))}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of ${esc(clsName(cls))}</button></div>` +
-        chs.map(c => `<label><input type="checkbox" value="${ckey(c)}"${x.chapters.includes(ckey(c)) ? " checked" : ""}> Ch ${c.n} ${esc(c.short || c.title)}</label>`).join("") : "";
+        chs.map(c => `<label><input type="checkbox" value="${ckey(c)}"${x.chapters.includes(ckey(c)) ? " checked" : ""}> ${chShort(c)} ${esc(c.short || c.title)}</label>`).join("") : "";
     }).join("")}</div></div>
     <div id="d-cprices">${priceFields(x.price, x.mrp, single(x.chapters))}</div>`,
     async () => {
@@ -2221,6 +2228,7 @@ $("#t-catalog").addEventListener("click", async e => {
   if (!b) return;
   const act = b.dataset.cat;
   if (act === "new-ch") return chapterDialog(null);
+  if (act === "new-bonus") return chapterDialog(null, true);
   if (act === "edit-class") return classDialog(false);
   if (act === "new-class") return classDialog(true);
   if (act === "new-combo") return comboDialog(null);
@@ -2334,15 +2342,15 @@ const chapSummary = c => [[(c.topics || []).length, "topics"], [c.fig, "figures"
 function chapRow(c, k, u) {
   return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
     ${coverOf(c) ? `<img class="ch-cv" src="${coverOf(c)}" alt="" width="44" height="62" loading="lazy">` : `<span class="ch-cv"></span>`}
-    <div style="min-width:0"><h3>Chapter ${c.n}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
+    <div style="min-width:0"><h3>${chNo(c)}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
       <div class="chap-info">${chapSummary(c) || "No chapter info yet: tap 📄 Info"}</div>
       <progress max="100" value="0" hidden></progress></div>
     <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
       ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
-      : `<input type="file" accept="application/pdf" aria-label="PDF for Chapter ${c.n}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
-    ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace chapter ${c.n}" hidden>
-      <p><b>Replace Chapter ${c.n}: ${esc(c.short || c.title)}?</b></p>
+      : `<input type="file" accept="application/pdf" aria-label="PDF for ${chNo(c)}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
+    ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace ${chNo(c)}" hidden>
+      <p><b>Replace ${chNo(c)}: ${esc(c.short || c.title)}?</b></p>
       <p>The new PDF will replace all ${u.pageCount} pages that students are reading now. While it uploads, students may see some old and some new pages. Use only the final, checked PDF.</p>
       <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-unlock-yes>Yes, unlock</button><button class="btn btn-line btn-sm" type="button" data-unlock-no>Cancel</button></div>
     </div>` : ""}
@@ -2476,7 +2484,7 @@ async function quizDialog(k) {
   const c = findChapter(k), ref = doc(db, "quizzes", k);
   let old = [];
   try { const s = await getDoc(ref); old = s.exists() ? s.data().qs || [] : []; } catch (ex) { alert(why(ex)); return; }
-  openDialog(`Quiz · ${clsName(c.cls)} Chapter ${c.n}`, `
+  openDialog(`Quiz · ${clsName(c.cls)} ${chNo(c)}`, `
     <p class="cat-sub">Students take it from their library, one question at a time, and see the right answer and the "Why" after each. Their best score shows in their reading record.</p>
     <details><summary><b>How to write it</b> (tap to see an example)</summary>
       <p class="cat-sub">Start each question with <b>Q:</b>, then options <b>A) B) C) D)</b>. Put <b>*</b> after the right option. A <b>Why:</b> line (optional) explains it. Leave an empty line between questions. Write <b>H_2O</b> for H₂O and <b>Cu^2+</b> for Cu²⁺.</p>

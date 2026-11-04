@@ -215,6 +215,14 @@ Nayi PDF upload karne se website par uske topics, figures, solved examples wager
 
 Kai chapters ek saath: upar **📄 Chapter info & quizzes** button, har chapter `### 12-1` se shuru.
 
+## 23. Bonus chapters (JEE / NEET, competition exams)
+
+1. Admin → **Books & prices** → class choose karo → **🏆 + Add bonus chapter (JEE / NEET)**.
+2. Naam, tagline, pages aur price bharo. "Live" ya "Coming soon" chuno → Save. Yeh "Bonus 1, Bonus 2…" ke naam se dikhenge.
+3. **Chapters** tab mein uski PDF upload karo (pehla page apne aap cover ban jata hai), phir **📄 Info** se topics aur quiz bharo. Prompt mein key `11-B1` jaisi hoti hai (Copy the prompt khud bhar deta hai).
+4. Website par har class ki shelf mein book ke chapters ke baad **"🏆 Bonus chapters: competition exams"** section aata hai.
+5. Bechne ke tareeke: alag price, ya kisi combo mein daal do (jaise "Class 11 full book + JEE bonus"), ya kisi student ko "Give chapters" / promo code se free do.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**
