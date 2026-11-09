@@ -63,12 +63,37 @@ let PAY = DEFAULT_PAY;
 // a number above 100 and its own label from the catalog, e.g. "B.Sc 1st Year".
 const CLASS_LABEL = {};
 const isUni = cls => +cls > 100;
-// Bonus chapters (competition exams: JEE / NEET) are numbered from 101 in each class, so their keys never
-// clash with the book's chapters: Class 11 Bonus 1 is "11-101". They show as "Bonus 1", after the chapters.
-const BONUS_FROM = 100;
-const isBonus = c => +(c && c.n) > BONUS_FROM;
-const chNo = c => isBonus(c) ? `Bonus ${c.n - BONUS_FROM}` : `Chapter ${c.n}`;
-const chShort = c => isBonus(c) ? `Bonus ${c.n - BONUS_FROM}` : `Ch ${c.n}`;
+// Every chapter of a class has a number n, and the number says what kind of chapter it is, so keys stay
+// "class-n" (11-1, 11-101…) everywhere: Firebase, links, rules.
+//   1–99     the class's Chemistry chapters            "Chapter 1"          (prompt key 11-1)
+//   101–199  JEE / NEET special chapters               "JEE/NEET Special 1" (11-S1)
+//   201–299  Physics chapters (Class 9 and 10)         "Physics Ch 1"       (9-P1)
+//   301–399  Biology chapters (Class 9 and 10)         "Biology Ch 1"       (9-Bio1)
+//   1000+n   the JEE / NEET extra topics of chapter n, its own PDF   "Chapter 1 · JEE/NEET extra" (11-1X)
+const BONUS_FROM = 100, PART_FROM = 1000;
+const KINDS = { chem: { from: 0, label: "Chapter", short: "Ch", key: "", subject: "Chemistry" },
+  special: { from: 100, label: "JEE/NEET Special", short: "Special", key: "S", subject: "Chemistry" },
+  phy: { from: 200, label: "Physics Ch", short: "Phy", key: "P", subject: "Physics" },
+  bio: { from: 300, label: "Biology Ch", short: "Bio", key: "Bio", subject: "Biology" } };
+const isPart = c => +(c && c.n) >= PART_FROM;
+const baseN = n => +n % PART_FROM;
+const kindOf = c => { const n = baseN(c && c.n); return n > 300 ? "bio" : n > 200 ? "phy" : n > 100 ? "special" : "chem"; };
+const isBonus = c => kindOf(c) === "special";
+const numIn = c => baseN(c.n) - KINDS[kindOf(c)].from;
+const chNo = c => `${KINDS[kindOf(c)].label} ${numIn(c)}${isPart(c) ? " · JEE/NEET extra" : ""}`;
+const chShort = c => `${KINDS[kindOf(c)].short} ${numIn(c)}${isPart(c) ? " extra" : ""}`;
+// Chapters in reading order: by kind and number, with a chapter's extra topics right after it.
+const orderN = c => baseN(c.n) * 2 + (isPart(c) ? 1 : 0);
+const parentKey = k => { const [c, n] = String(k).split("-"); return +n >= PART_FROM ? `${c}-${+n % PART_FROM}` : null; };
+// "11-1", "11-S1" (or the older 11-B1), "9-P2", "9-Bio3", "11-1X" → the chapter key; and back again.
+function parseKey(text) {
+  const m = String(text).match(/(\d+)\s*[-–.:]\s*(bio|s|b|j|p)?\s*(\d+)\s*(x|extra)?/i);
+  if (!m) return null;
+  const kind = (m[2] || "").toLowerCase(), from = kind === "bio" ? 300 : kind === "p" ? 200 : kind ? 100 : 0;
+  const n = +m[3] < 100 || from ? from + +m[3] : +m[3];
+  return `${+m[1]}-${n + (m[4] ? PART_FROM : 0)}`;
+}
+const keyText = k => { const [cl, n] = String(k).split("-"), c = { n: +n }, K = KINDS[kindOf(c)]; return `${cl}-${K.key}${numIn(c)}${isPart(c) ? "X" : ""}`; };
 const clsName = cls => CLASS_LABEL[cls] || (isUni(cls) ? "University book" : `Class ${cls}`);
 
 // Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).
@@ -358,12 +383,14 @@ function applyCatalog(cat) {
     ["fig", "solved", "practice", "qr"].forEach(f => { if (x[f] != null && x[f] !== "") c[f] = x[f]; });
     if (Array.isArray(x.highlights)) c.highlights = x.highlights.filter(Boolean);
     c.free = !!x.free;
+    if (isPart(c)) c.included = x.included !== false;
+    if (x.qbank) c.qbank = +x.qbank;
     if (Array.isArray(x.topics) && x.topics.length) c.topics = x.topics.map(t => [t[0], t[1] || "", +t[2] || 1, t[3] || ""]);
     PRICES[keyOf(c)] = Object.assign({}, x.price);
     MRP[keyOf(c)] = Object.assign({}, x.mrp);
     (x.soon ? soon : live).push(c);
   });
-  const order = (a, b) => a.cls - b.cls || a.n - b.n;
+  const order = (a, b) => a.cls - b.cls || orderN(a) - orderN(b);
   CHAPTERS.length = 0; live.sort(order).forEach(c => CHAPTERS.push(c));
   SOON_CHAPTERS.length = 0; soon.sort(order).forEach(c => SOON_CHAPTERS.push(c));
   UPCOMING.length = 0; SOON_CHAPTERS.forEach(c => UPCOMING.push({ cls: c.cls, n: c.n, title: c.title, tag: c.tag || "Coming soon", f: "" }));

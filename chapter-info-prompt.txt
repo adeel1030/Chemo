@@ -1,7 +1,7 @@
 I am Mohd Adeel Khan (Adeel Sir), author of the Chemophile Chemistry booklets. I have attached the PDF of one chapter booklet. Read the whole PDF, page by page, and give me its "chapter info" for my website, in the exact text format below. My website reads your answer line by line, so follow the format exactly.
 
 STEP 1: FIND THESE FROM THE PDF
-1. Chapter key: <class>-<chapter number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3. A bonus chapter (for competition exams) is <class>-B<number>: Class 11 Bonus 1 is 11-B1. (For a university book, I will tell you the key.)
+1. Chapter key: <class>-<chapter number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3. A JEE / NEET special chapter is <class>-S<number> (Class 11 Special 1 is 11-S1). Physics and Biology chapters of Class 9 and 10 are 9-P1, 10-Bio2 and so on. The JEE / NEET extra topics of a chapter add X: 11-1X. (For a university book, I will tell you the key.)
 2. Title: the chapter name as printed on the cover.
 3. Short: a short name of 1 to 3 words (for small buttons). Example: "Basic Concepts".
 4. Tagline: one catchy Hinglish line (8 to 14 words) that makes a student want to read it. Use the cover line if the book has one.
@@ -15,7 +15,7 @@ STEP 1: FIND THESE FROM THE PDF
     - its NCERT section (like "Section 1.3" or "Section 2.6.1, 2.6.2"; for the revision part write "Complete chapter"),
     - the page where it starts.
     Under each topic, its sub-topics with their start pages, exactly as on the contents page.
-12. Quiz: every MCQ that has options, from the "Final test: Part A" and from the "Ek nazar mein + quick check" boxes (Assertion–Reason questions with options too). In a bonus chapter, take the MCQs from its practice sets and previous-year questions (JEE / NEET) that have answers in the book. At most 30. Take the right answer from the book's answer key. Never guess.
+12. Quiz: every MCQ that has options, from the "Final test: Part A" and from the "Ek nazar mein + quick check" boxes (Assertion–Reason questions with options too). In a JEE / NEET special chapter or extra topics, take the MCQs from its practice sets and previous-year questions (JEE / NEET) that have answers in the book. At most 30. Take the right answer from the book's answer key. Never guess.
 
 PAGE NUMBERS (very important)
 Every page number you write is the position of that page in the PDF file, counting the cover as page 1. If the number printed on the page is different, still use the PDF position.
@@ -84,6 +84,7 @@ CHAPTER KEYS
 Class 11 (Part 1): 11-1 Some Basic Concepts · 11-2 Structure of Atom · 11-3 Classification of Elements · 11-4 Chemical Bonding · 11-5 Thermodynamics · 11-6 Equilibrium · 11-7 Redox Reactions · 11-8 Organic Chemistry: Basic Principles · 11-9 Hydrocarbons
 Class 12 (Part 2): 12-1 Solutions · 12-2 Electrochemistry · 12-3 Chemical Kinetics · 12-4 d- and f-Block · 12-5 Coordination Compounds · 12-6 Haloalkanes and Haloarenes · 12-7 Alcohols, Phenols and Ethers · 12-8 Aldehydes, Ketones and Carboxylic Acids · 12-9 Amines · 12-10 Biomolecules
 
-Bonus chapters (competition exams: JEE / NEET): 11-B1, 11-B2 … for Class 11; 12-B1, 12-B2 … for Class 12
+JEE / NEET special chapters: 11-S1, 11-S2 … for Class 11; 12-S1, 12-S2 … for Class 12. Extra topics of a chapter: 11-1X, 12-3X …
+Class 9 and 10: Chemistry 9-1, 10-1 …; Physics 9-P1, 10-P1 …; Biology 9-Bio1, 10-Bio1 …
 
 This PDF is chapter: [write the key here, e.g. 12-1]

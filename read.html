@@ -289,6 +289,18 @@
 .quiz .review .ok { color: var(--good); font-weight: 700; }
 .quiz .review .no { color: var(--bad); font-weight: 700; }
 .quiz .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.qb-start { display: grid; gap: 14px; }
+.qb-start .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.qb-start .check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.quiz .qn .lv, .quiz .qn .tp { display: inline-block; margin-left: 6px; border-radius: 6px; padding: 1px 8px; font-size: .7rem; letter-spacing: 0; text-transform: none; }
+.quiz .qn .lv { background: var(--sun); color: var(--sun-ink); }
+.quiz .qn .tp { border: 1px solid var(--line); color: var(--muted); }
+.quiz .verdict { border-radius: 12px; padding: 10px 14px; font-weight: 800; }
+.quiz .verdict.ok { background: color-mix(in srgb, var(--good) 14%, var(--surface)); color: var(--good); }
+.quiz .verdict.no { background: color-mix(in srgb, var(--bad) 12%, var(--surface)); color: var(--bad); }
+.quiz .why.sol { line-height: 1.55; }
+.quiz .review details { margin-top: 6px; }
+.quiz .review summary { cursor: pointer; font-weight: 700; color: var(--accent); }
 .theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
 .theme-btn:hover { background: rgba(255,255,255,.12); }
 </style>
@@ -878,6 +890,9 @@ function access(k) {
   if (till && till > now) return { open: true, monthly: true, till };
   if (g && g > now) return { open: true, grant: true, till: g };
   if (isFreeCh(k)) return { open: true, free: true };
+  // A chapter's JEE/NEET extra topics, when included with it, open whenever the chapter does.
+  const pk = parentKey(k), pc = pk && findChapter(k);
+  if (pc && pc.included !== false && !bought) { const a = access(pk); if (a.open || a.till) return Object.assign({}, a, { part: true }); }
   if (till) return { open: false, monthly: true, till };
   if (g) return { open: false, grant: true, till: g };
   return { open: false, till: exp };
@@ -907,7 +922,9 @@ async function renderLibrary() {
   if (unpaid && !freeKeys().length) return renderFree();
   $(".lib-tools h2").textContent = "My chapters";
   const subKeys = Object.keys(me.subs || {});
-  const keys = [...new Set([...(me.chapters || []), ...subKeys, ...grants.keys(), ...freeKeys()])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
+  const own = [...new Set([...(me.chapters || []), ...subKeys, ...grants.keys(), ...freeKeys()])];
+  const parts = CHAPTERS.filter(c => isPart(c) && c.included !== false && own.includes(parentKey(chapterKey(c)))).map(chapterKey);
+  const keys = [...new Set([...own, ...parts])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || orderN({ n: x[1] }) - orderN({ n: y[1] }); });
   // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
   let loadErr = null;
   await Promise.all(keys.map(async k => {
@@ -978,7 +995,7 @@ async function renderLibrary() {
     const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : chNo({ n: +n });
     const open = pr.ready && ac.open;
     const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`)
-      : ac.free ? `<span class="plan-tag free">Free chapter</span>`
+      : ac.free ? `<span class="plan-tag free">Free chapter</span>` : ac.part ? `<span class="plan-tag free">Included with ${esc(chNo({ n: baseN(n) }))}</span>`
       : ac.grant ? (ac.open ? `<span class="plan-tag">Free access till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Free access ended ${fmtDate(ac.till)}</span>`) : "";
     const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : ac.grant ? "Buy it to keep reading; your place stays saved." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
@@ -990,7 +1007,7 @@ async function renderLibrary() {
         ${open ? topicMap(k, c, pr) : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
         ${open && certReady(k) ? `<button class="btn btn-sm cert-btn" type="button" data-cert="${k}">🏅 My certificate</button><br>` : ""}
-        ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}`
+        ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}${info && info.qbank ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-qbank="${k}">📝 Question bank · ${info.qbank}</button>` : ""}`
           : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} ${chNo({ n: +n })} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
     </div>`;
   };
@@ -1635,7 +1652,7 @@ let qz = null;
 const LETTERS = "ABCDEF";
 // "H_2O" → H₂O, "Cu^2+" → Cu²⁺, "x^{-1}" → x⁻¹ (subscript and superscript in questions).
 const chem = t => esc(t).replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>").replace(/_\{([^}]*)\}/g, "<sub>$1</sub>")
-  .replace(/\^(\d*[+\-−]|\d+)/g, "<sup>$1</sup>").replace(/_(\d+)/g, "<sub>$1</sub>");
+  .replace(/\^(\d*[+\-−]|\d+)/g, "<sup>$1</sup>").replace(/_(\d+)/g, "<sub>$1</sub>").replace(/_([A-Za-z])(?![A-Za-z])/g, "<sub>$1</sub>");
 const quizTop = () => { const c = findChapter(qz.k) || {}; return `<div class="quiz-top"><b>Quiz · ${esc(c.short || c.title || qz.k)}</b><button class="x" type="button" data-q="close">Close ✕</button></div>`; };
 async function openQuiz(k) {
   qz = { k, qs: [], i: 0, picks: [] };
@@ -1695,6 +1712,95 @@ $("#quiz").addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#quiz").hidden) closeQuiz(); });
 $("#v-library").addEventListener("click", e => { const b = e.target.closest("[data-quiz]"); if (b) openQuiz(b.dataset.quiz); });
+
+
+// ---------- question bank practice ----------
+// qbank/{chapter} = { qs: [{ q, o, a, why (solution), lv (Board / JEE Main / JEE Advanced / NEET), tp (topic) }] }.
+// The student picks a level, a topic and how many; answers; and after each answer, right or wrong, can open
+// the full solution. The last practice score is kept in users/{uid}/quiz/{chapter}-qb.
+let qbAll = [];
+const qbTop = () => { const c = findChapter(qz.k) || {}; return `<div class="quiz-top"><b>📝 Question bank · ${esc(c.short || c.title || qz.k)}</b><button class="x" type="button" data-q="close">Close ✕</button></div>`; };
+const solHtml = t => chem(t).replace(/\n/g, "<br>");
+async function openQB(k) {
+  qz = { k, qs: [], i: 0, picks: [], mode: "qb", sol: {} };
+  $("#quiz").hidden = false; document.body.style.overflow = "hidden";
+  $("#quiz-in").innerHTML = qbTop() + `<div class="spinner" role="status" aria-label="Loading" style="margin: 40px auto"></div>`;
+  try {
+    const s = await getDoc(doc(db, "qbank", k));
+    qbAll = s.exists() ? (s.data().qs || []) : [];
+    if (!qbAll.length) throw new Error("empty");
+    drawQBStart();
+  } catch (e) {
+    $("#quiz-in").innerHTML = qbTop() + `<p class="msg bad">${e.message === "empty" ? "This question bank has no questions yet." : e.code === "permission-denied" ? "The question bank opens only for chapters you can read now." : "It couldn't load. Check your internet and try again."}</p>`;
+  }
+}
+function drawQBStart() {
+  const lv = {}, tp = {};
+  qbAll.forEach(q => { const l = q.lv || "Practice"; lv[l] = (lv[l] || 0) + 1; if (q.tp) tp[q.tp] = (tp[q.tp] || 0) + 1; });
+  const last = quizRes.get(qz.k + "-qb");
+  $("#quiz-in").innerHTML = qbTop() + `<div class="qb-start">
+    <p class="hint">${qbAll.length} questions with solutions. Answer, then tap <b>See solution</b> to understand it, right or wrong.${last ? ` Last practice: ${last.last}/${last.total}.` : ""}</p>
+    <div class="field"><label>Level</label><div class="chips" data-pick="lv"><button class="chip" type="button" data-v="" aria-pressed="true">All · ${qbAll.length}</button>${Object.entries(lv).map(([l, n]) => `<button class="chip" type="button" data-v="${esc(l)}" aria-pressed="false">${esc(l)} · ${n}</button>`).join("")}</div></div>
+    ${Object.keys(tp).length > 1 ? `<div class="field"><label for="qb-tp">Topic</label><select id="qb-tp"><option value="">All topics</option>${Object.entries(tp).map(([t, n]) => `<option value="${esc(t)}">${esc(t)} (${n})</option>`).join("")}</select></div>` : ""}
+    <div class="field"><label>How many</label><div class="chips" data-pick="n">${[10, 20, 30].filter(n => n < qbAll.length).map((n, i) => `<button class="chip" type="button" data-v="${n}" aria-pressed="${i === 0}">${n}</button>`).join("")}<button class="chip" type="button" data-v="0" aria-pressed="${qbAll.length <= 10}">All</button></div></div>
+    <label class="check"><input type="checkbox" id="qb-mix" checked> Mix up the order</label>
+    <div class="row"><button class="btn btn-sun" type="button" data-q="qb-go">Start practice →</button></div></div>`;
+}
+function qbBegin() {
+  const pick = n => { const b = $(`#quiz-in [data-pick="${n}"] [aria-pressed="true"]`); return b ? b.dataset.v : ""; };
+  const lv = pick("lv"), tp = ($("#qb-tp") || {}).value || "", n = +pick("n") || 0;
+  let list = qbAll.filter(q => (!lv || (q.lv || "Practice") === lv) && (!tp || q.tp === tp));
+  if ($("#qb-mix").checked) list = list.map(q => [Math.random(), q]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  qz.qs = n ? list.slice(0, n) : list; qz.i = 0; qz.picks = []; qz.sol = {};
+  if (!qz.qs.length) return;
+  drawQB();
+}
+function drawQB() {
+  const q = qz.qs[qz.i], n = qz.qs.length, p = qz.picks[qz.i], done = p != null, open = qz.sol[qz.i];
+  $("#quiz-in").innerHTML = qbTop() + `<div class="bar"><i style="width: ${Math.round(((qz.i + (done ? 1 : 0)) / n) * 100)}%"></i></div>
+    <div class="qn">Question ${qz.i + 1} of ${n}${q.lv ? ` <span class="lv">${esc(q.lv)}</span>` : ""}${q.tp ? ` <span class="tp">${esc(q.tp)}</span>` : ""}</div><div class="q">${chem(q.q)}</div>
+    <div class="opts">${q.o.map((o, j) => `<button class="opt${done ? (j === q.a ? " right" : j === p ? " wrong" : "") : ""}" type="button" data-opt="${j}"${done ? " disabled" : ""}><span class="l">${LETTERS[j]}</span><span>${chem(o)}</span></button>`).join("")}</div>
+    ${done ? `<div class="verdict ${p === q.a ? "ok" : "no"}" role="status">${p === q.a ? "✓ Sahi jawab!" : `✗ Galat. Sahi jawab: ${LETTERS[q.a]}`}</div>
+      ${q.why ? `<button class="btn btn-line" type="button" data-q="sol" aria-expanded="${!!open}">${open ? "Hide solution" : "📖 See solution"}</button>${open ? `<div class="why sol">${solHtml(q.why)}</div>` : ""}` : ""}
+      <div class="row"><button class="btn btn-sun" type="button" data-q="next">${qz.i + 1 < n ? "Next question →" : "See my score"}</button></div>`
+    : `<div class="row"><button class="btn btn-line" type="button" data-q="skip">Skip</button></div>`}`;
+}
+function drawQBEnd() {
+  const n = qz.qs.length, done = qz.picks.filter(p => p != null && p >= 0).length, score = qz.picks.filter((p, i) => p === qz.qs[i].a).length, pct = n ? Math.round((score / n) * 100) : 0;
+  const key = qz.k + "-qb", old = quizRes.get(key) || {};
+  const res = { best: Math.max(old.total === n ? old.best || 0 : 0, score), last: score, total: n, tries: (old.tries || 0) + 1 };
+  if (!me.admin) {
+    quizRes.set(key, Object.assign({}, res, { at: Timestamp.now() }));
+    setDoc(doc(db, "users", auth.currentUser.uid, "quiz", key), Object.assign({}, res, { at: serverTimestamp() })).catch(e => console.warn("qbank", e));
+  }
+  const color = pct >= 80 ? "var(--good)" : pct >= 50 ? "#e0a800" : "var(--bad)";
+  $("#quiz-in").innerHTML = qbTop() + `<div class="end">
+    <div class="ring" style="--p: ${pct}; --c: ${color}"><span>${score}/${n}<small>${pct}%</small></span></div>
+    <h2>${pct >= 80 ? "Shabaash! 🎉" : pct >= 50 ? "Accha hai! Galat waale dobara dekho." : "Solutions padho, phir dobara try karo. Ho jayega!"}</h2>
+    <p class="hint">${done} answered · ${n - done} skipped</p>
+    <div class="row"><button class="btn btn-sun" type="button" data-q="qb-new">Practise more</button><button class="btn btn-line" type="button" data-q="review">See all solutions</button><button class="btn btn-line" type="button" data-q="close">Back to my chapters</button></div>
+    <div class="review" id="q-review" hidden>${qz.qs.map((q, i) => { const p = qz.picks[i]; return `<div><b>${i + 1}. ${chem(q.q)}</b><br>
+      ${p === q.a ? `<span class="ok">✓ ${LETTERS[q.a]}. ${chem(q.o[q.a])}</span>` : `${p >= 0 && p != null ? `<span class="no">✗ You: ${LETTERS[p]}. ${chem(q.o[p])}</span><br>` : `<span class="hint">Skipped</span><br>`}<span class="ok">Right: ${LETTERS[q.a]}. ${chem(q.o[q.a])}</span>`}
+      ${q.why ? `<details><summary>Solution</summary><div class="hint">${solHtml(q.why)}</div></details>` : ""}</div>`; }).join("")}</div></div>`;
+}
+$("#quiz").addEventListener("click", e => {
+  if (!qz || qz.mode !== "qb") return;
+  const c = e.target.closest("[data-pick] .chip");
+  if (c) { c.parentNode.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", String(x === c))); return; }
+  const o = e.target.closest("[data-opt]"), b = e.target.closest("[data-q]");
+  if (o && qz.qs.length && qz.picks[qz.i] == null) { qz.picks[qz.i] = +o.dataset.opt; drawQB(); e.stopImmediatePropagation(); return; }
+  if (!b) return;
+  const a = b.dataset.q;
+  if (a === "close") return;
+  e.stopImmediatePropagation();
+  if (a === "qb-go") qbBegin();
+  if (a === "qb-new") drawQBStart();
+  if (a === "sol") { qz.sol[qz.i] = !qz.sol[qz.i]; drawQB(); }
+  if (a === "skip") { qz.picks[qz.i] = -1; if (qz.i + 1 < qz.qs.length) { qz.i++; drawQB(); } else drawQBEnd(); $("#quiz").scrollTo(0, 0); }
+  if (a === "next") { if (qz.i + 1 < qz.qs.length) { qz.i++; drawQB(); $("#quiz").scrollTo(0, 0); } else drawQBEnd(); }
+  if (a === "review") { const r = $("#q-review"); r.hidden = !r.hidden; b.textContent = r.hidden ? "See all solutions" : "Hide solutions"; }
+}, true);
+$("#v-library").addEventListener("click", e => { const b = e.target.closest("[data-qbank]"); if (b) openQB(b.dataset.qbank); });
 
 // ---------- reading record ----------
 // One Firestore document per chapter (users/{uid}/reading/{chapter}), shown here and in the admin panel.

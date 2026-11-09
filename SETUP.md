@@ -236,6 +236,29 @@ Kai chapters ek saath: upar **📄 Chapter info & quizzes** button, har chapter 
 
 **Website ka look:** poori website ek hi rang mein hai, booklets ke cover jaisi: raat ka neela aasmaan, peela "Chemophile", safed aur outline pills, chalk formulas, stat chips, "Adeel Sir" badge aur neeche rang-birangi patti.
 
+## 25. JEE/NEET special chapters, extra topics, Physics/Biology, Question bank
+
+**Naye Firebase rules zaroori hain** (extra topics aur question bank ke liye).
+
+**Kya kahan jata hai**
+
+| Kya | Admin mein kahan | Website / app par kahan |
+|---|---|---|
+| JEE/NEET special chapter (alag chapter) | Books & prices → + Add chapter → "JEE / NEET special chapter" | Class ki shelf mein "🏆 JEE / NEET special chapters" section; alag price, combo mein bhi daal sakte ho |
+| Kisi chapter ke JEE/NEET extra topics (alag PDF) | Books & prices → chapter → Edit → "🎯 + Add JEE/NEET extra topics" | "Included" ho to chapter ke card par "🎯 + JEE/NEET extra topics", aur kharidne wale ki library mein chapter ke theek neeche. Untick karke alag price bhi rakh sakte ho |
+| Physics / Biology chapter (9th, 10th) | Books & prices → class 9/10 → + Add chapter → "Physics chapter" / "Biology chapter" | Class ki shelf mein "🧪 Chemistry", "⚡ Physics", "🧬 Biology" alag sections |
+| Question bank (MCQ + solution) | Chapters → chapter ke saamne "📝 + QB" (ya upar "📝 Question banks" kai chapters ek saath) | Library mein chapter par "📝 Question bank · N" → level / topic / kitne sawal chuno → jawab do → "📖 See solution". Website par chapter card par "📝 N-question bank" |
+
+**PDF upload:** naya special chapter, Physics/Biology chapter, ya extra topics: sab Chapters tab mein apni row mein upload hote hain (pehla page cover).
+
+**Question bank kaise banayein**
+1. Chapters → chapter ke saamne **📝 + QB** → **📋 Copy the prompt** (chapter ki key khud bhar jati hai).
+2. Jis AI chat mein book banai thi, wahan chapter ki PDF attach karke prompt paste karo. Lamba chapter ho to "continue" likhte raho.
+3. Saare jawab ek ke baad ek box mein paste karo (ya .txt file choose karo). "continue" wale hisse apne aap jud jaate hain.
+4. Neeche count dikhega (Board / NEET / JEE kitne, kitne topics, kitne solutions). Galti laal mein. **Save question bank**. Dobara save karne par purana bank badal jata hai.
+
+**Prompt ki keys:** 11-1 (chapter), 11-S1 (JEE/NEET special), 9-P1 (Physics), 9-Bio1 (Biology), 11-1X (chapter 1 ke extra topics).
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

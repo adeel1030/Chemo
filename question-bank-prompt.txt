@@ -1,0 +1,67 @@
+I am Mohd Adeel Khan (Adeel Sir), author of the Chemophile booklets. Make a QUESTION BANK for the chapter I give you (I have attached its PDF), for chapter-wise practice on my website. Students answer each MCQ, see if they were right or wrong, and then open your solution. So every solution must teach.
+
+WHAT TO MAKE
+1. 60 to 150 multiple-choice questions for this one chapter, covering every topic of the chapter in the book's order.
+2. A good mix of levels, and tag each question with one level:
+   - Board: NCERT / CBSE board level (about 40%)
+   - NEET: NEET pattern (about 30%)
+   - JEE Main: JEE Main pattern (about 25%)
+   - JEE Advanced: harder, multi-concept (about 5%; skip for Class 9 and 10)
+   For a JEE / NEET special chapter, or the JEE / NEET extra topics of a chapter, use only NEET, JEE Main and JEE Advanced.
+3. Include previous-year style questions, numericals (as MCQs with 4 numerical options), Assertion–Reason (with the standard 4 options) and statement-based questions. Every question must have exactly one correct option.
+4. Use the book's own content, examples and wording where you can. Hinglish is fine for questions and solutions (as in the book); keep technical terms in English.
+5. Check every answer by solving it yourself. Never guess. If you are not sure about a question, leave it out.
+
+THE SOLUTION OF EVERY QUESTION
+- Explain why the right option is right, step by step (for a numerical: formula → values → calculation → answer with unit).
+- In one line, say why the most tempting wrong option is wrong.
+- 2 to 6 lines. No blank lines inside a solution.
+
+EXACT FORMAT (my website reads it line by line; follow it exactly)
+- First line: ### <chapter key>   (keys are listed at the end)
+- Each question starts with "Q: " (one line; long questions stay on one line).
+- Options on separate lines: "A) ", "B) ", "C) ", "D) ".
+- Put " *" (a space and a star) at the end of the correct option. Exactly one star per question.
+- "Level: " then one of: Board, NEET, JEE Main, JEE Advanced
+- "Topic: " then the topic name from the book's contents page (short, the same spelling every time).
+- "Solution: " then the solution. It may continue on the next lines, but no empty line inside it.
+- ONE empty line between questions, and empty lines nowhere else.
+- Chemistry and maths text without special formatting:
+  - subscript with _ : H_2O, CO_2, K_{sp}, E^0_{cell}
+  - superscript with ^ : 10^{23}, Cu^{2+}, SO_4^{2-}, mol^{-1}, x^2
+  - arrows → and ⇌; Greek letters as they are (Δ, λ, ν, π); × for multiply; √ for square root
+- No markdown, no bold (**), no tables, no numbering other than "Q:", no images, no code box, nothing before the ### line and nothing after the last solution.
+
+EXAMPLE
+### 11-1
+Q: 0.5 mol of CO_2 mein kitne molecules hain?
+A) 6.022 × 10^{23}
+B) 3.011 × 10^{23} *
+C) 1.204 × 10^{24}
+D) 3.011 × 10^{22}
+Level: Board
+Topic: Mole concept
+Solution: Molecules = moles × N_A = 0.5 × 6.022 × 10^{23} = 3.011 × 10^{23}.
+Option A 1 mol ka answer hai, 0.5 mol ka nahi.
+
+Q: Assertion (A): 1 mol O_2 aur 1 mol N_2 mein molecules barabar hote hain. Reason (R): Ek mole mein hamesha N_A particles hote hain.
+A) A aur R dono sahi, R sahi explanation hai *
+B) A aur R dono sahi, par R sahi explanation nahi hai
+C) A sahi, R galat
+D) A galat, R sahi
+Level: NEET
+Topic: Mole concept
+Solution: Har substance ke 1 mol mein N_A = 6.022 × 10^{23} particles hote hain, chahe mass alag ho. Isliye A sahi hai aur R hi uski wajah hai.
+Option B tab hota jab R sahi hota par A ko explain na karta.
+
+CHAPTER KEYS
+- The book's chapters: <class>-<number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3.
+- JEE / NEET special chapters: <class>-S<number>. Class 11 Special 1 is 11-S1.
+- Physics and Biology (Class 9 and 10): 9-P1 is Class 9 Physics chapter 1, 10-Bio2 is Class 10 Biology chapter 2.
+- The JEE / NEET extra topics of a chapter: add X. The extra topics of Class 11 Chapter 1 are 11-1X.
+Class 11 (Part 1): 11-1 Some Basic Concepts · 11-2 Structure of Atom · 11-3 Classification of Elements · 11-4 Chemical Bonding · 11-5 Thermodynamics · 11-6 Equilibrium · 11-7 Redox Reactions · 11-8 Organic Chemistry: Basic Principles · 11-9 Hydrocarbons
+Class 12 (Part 2): 12-1 Solutions · 12-2 Electrochemistry · 12-3 Chemical Kinetics · 12-4 d- and f-Block · 12-5 Coordination Compounds · 12-6 Haloalkanes and Haloarenes · 12-7 Alcohols, Phenols and Ethers · 12-8 Aldehydes, Ketones and Carboxylic Acids · 12-9 Amines · 12-10 Biomolecules
+
+If the chapter is long, I will ask you for the rest with "continue": then go on from where you stopped, again starting with the same ### line, and do not repeat questions.
+
+This PDF is chapter: [write the key here, e.g. 12-1]

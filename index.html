@@ -533,6 +533,10 @@ section.block { padding-block: 64px; }
 .sample-card.soon-free { grid-template-columns: minmax(0, 1fr); }
 .sample-card a.cv { display: block; }
 .sample-card .cv .soon-cover { transform: rotate(-2deg); }
+.shelf-head.first { border-top: 0 !important; padding-top: 0; margin-top: 0; }
+.xchips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.xchip { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: 1px 8px; background: rgba(255, 211, 77, .12); border: 1px solid rgba(255, 211, 77, .35); color: var(--sun); }
+.card.part .ch { background: var(--rose); color: #4a0d24; }
 .shelf-head { grid-column: 1 / -1; border-top: 2px dashed var(--line); padding-top: 18px; margin-top: 6px; }
 .shelf-head h3 { margin: 0; font: 800 1.3rem/1.2 var(--font-display); }
 .shelf-head p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
@@ -1289,8 +1293,9 @@ const store = {
   // Stat chips like the ones on every cover: the number in yellow, then what it counts.
   const sum = f => CHAPTERS.reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0);
   const items = [
-    [CHAPTERS.length, "chapters ready"], [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
+    [CHAPTERS.filter(c => !isPart(c)).length, "chapters ready"], [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
     [sum("practice") + "+", "practice questions"], [Object.keys(SAMPLE_BOOKS).length + CHAPTERS.filter(c => c.free).length, "free books aur chapters"],
+    ...(CHAPTERS.some(c => c.qbank) ? [[sum("qbank"), "question bank MCQs with solutions"]] : []),
     ["", "JEE/NEET extra boxes"], ["", "QR simulations"], ["", "Board pattern test"]
   ];
   $("#numbers").innerHTML = items.map(([v, l]) => `<span class="chip">${v !== "" ? `<b data-to="${parseInt(v, 10)}" data-suffix="${String(v).replace(/^\d+/, "")}">${v}</b> ` : ""}${l}</span>`).join("");
@@ -1372,7 +1377,7 @@ const store = {
 
 // ---------- pack state ----------
 // Free chapters are read after a free sign-up, so they never go in the pack.
-const BUYABLE = CHAPTERS.filter(c => !c.free);
+const BUYABLE = CHAPTERS.filter(c => !c.free && !(isPart(c) && c.included !== false));
 const pack = new Set((store.get("chemophile-pack") || []).filter(k => BUYABLE.some(c => key(c) === k)));
 // Formats on sale, from the catalog, plus "Online + paperback" when both kinds are sold.
 // The online book is valid for onlineDays() (365), so its note says so.
@@ -1446,8 +1451,8 @@ function setClass(k, opts = {}) {
 function madeCover(c) {
   return `<div class="soon-cover made-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(PART[c.cls] || clsName(c.cls))}</span>
-      <span class="f"><span>${isBonus(c) ? "🏆" : c.n}</span></span>
-      <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isBonus(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
+      <span class="f"><span>${isPart(c) ? "🎯" : ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(c)] || numIn(c)}</span></span>
+      <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isBonus(c) || isPart(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
     </div>`;
 }
 const coverHtml = c => coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : madeCover(c);
@@ -1456,29 +1461,41 @@ function soonCover(u) {
   if (img) return `<div class="soon-cover" style="padding: 0"><img src="${img}" alt="" width="360" height="509" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; box-shadow: none"><span class="rib">Coming soon</span></div>`;
   return `<div class="soon-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(PART[u.cls] || clsName(u.cls))}</span>
-      <span class="f"><span>${u.f || (isBonus(u) ? "🏆" : "")}</span></span>
+      <span class="f"><span>${u.f || ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(u)] || ""}</span></span>
       <span class="c">${chNo(u)}</span><span class="t">${esc(u.title)}</span>
       <span class="rib">Coming soon</span><span class="bar"></span>
     </div>`;
 }
+// Shelf sections of a class: its Chemistry book, then JEE/NEET specials, then Physics and Biology (Class 9, 10).
+const SHELF_GROUPS = {
+  chem: ["🧪 Chemistry", ""],
+  special: ["🏆 JEE / NEET special chapters", "JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho."],
+  phy: ["⚡ Physics", "Physics bhi Hinglish mein: rozana ki cheezon se samjho, exam ke liye English mein likho."],
+  bio: ["🧬 Biology", "Biology bhi Hinglish mein: diagrams ke saath, aasaan bhasha mein."]
+};
+// A chapter's JEE/NEET extra topics: shown on the chapter's own card when included, as a card when sold on their own.
+const extraOf = c => CHAPTERS.find(x => isPart(x) && x.cls === c.cls && baseN(x.n) === +c.n);
+const extraChips = c => { const x = !isPart(c) && extraOf(c);
+  return [x && x.included !== false ? `<span class="xchip">🎯 + JEE/NEET extra topics</span>` : "", c.qbank ? `<span class="xchip">📝 ${c.qbank}-question bank</span>` : ""].join(""); };
 function renderShelf() {
-  const ready = CHAPTERS.filter(c => c.cls === cls);
+  const ready = CHAPTERS.filter(c => c.cls === cls && !(isPart(c) && c.included !== false));
   const soon = UPCOMING.filter(u => u.cls === cls);
-  const bonus = ready.filter(isBonus).length + soon.filter(isBonus).length;
-  const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => (a.c || a.u).n - (b.c || b.u).n);
-  const firstBonus = items.findIndex(x => isBonus(x.c || x.u));
-  $("#shelf").innerHTML = items.map(({ c, u }, i) => (i === firstBonus ? `<div class="shelf-head">
-      <h3>🏆 Bonus chapters: competition exams</h3>
-      <p>JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho.</p>
-    </div>` : "") + (() => {
+  const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => orderN(a.c || a.u) - orderN(b.c || b.u));
+  const kinds = [...new Set(items.map(x => kindOf(x.c || x.u)))];
+  const many = kinds.some(k => k === "phy" || k === "bio");
+  let lastKind = null;
+  $("#shelf").innerHTML = items.map(({ c, u }) => {
+    const kind = kindOf(c || u), head = kind !== lastKind && (kind !== "chem" || many) ? `<div class="shelf-head${lastKind ? "" : " first"}"><h3>${SHELF_GROUPS[kind][0]}</h3>${SHELF_GROUPS[kind][1] ? `<p>${SHELF_GROUPS[kind][1]}</p>` : ""}</div>` : "";
+    lastKind = kind;
     if (c) {
       const k = key(c), on = pack.has(k);
-      return `<div class="card${isBonus(c) ? " bonus" : ""}${c.free ? " free" : ""}">
+      return head + `<div class="card${isBonus(c) ? " bonus" : ""}${isPart(c) ? " part" : ""}${c.free ? " free" : ""}">
         <button class="cover-btn" type="button" data-sheet="${k}" aria-label="See topics of ${chNo(c)}: ${esc(c.title)}">
           ${coverHtml(c)}
         </button>
         <div><div class="ch">${chNo(c)}</div><div class="nm">${esc(nameOf(c))}</div>
-        <div class="meta">${[c.topics.length && `${c.topics.length} topics`, c.pages && `${c.pages} pages`, c.solved && `${c.solved} solved`].filter(Boolean).join(" · ")}</div></div>
+        <div class="meta">${[c.topics.length && `${c.topics.length} topics`, c.pages && `${c.pages} pages`, c.solved && `${c.solved} solved`].filter(Boolean).join(" · ")}</div>
+        ${extraChips(c) ? `<div class="xchips">${extraChips(c)}</div>` : ""}</div>
         ${c.free ? freeChip : priceChips(c)}
         <div class="card-actions">
           ${c.free ? readFree : `<button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In pack" : "+ Add to pack"}</button>`}
@@ -1487,23 +1504,25 @@ function renderShelf() {
       </div>`;
     }
     const msg = `Hello Adeel Sir, please tell me when Chemophile ${clsName(u.cls)} ${chNo(u)} (${plain(u.title)}) is ready.`;
-    return `<div class="card">
+    return head + `<div class="card">
       ${soonCover(u)}
       <div><div class="ch">${chNo(u)}</div><div class="nm">${esc(u.title)}</div>
       <div class="soon-tag">${u.tag}</div></div>
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Notify me →</a>
     </div>`;
-  })()).join("") || `<div class="shelf-head"><h3>${esc(clsName(cls))}: books coming soon</h3><p>${SAMPLE_BOOKS[cls] ? `The free sample is ready: <a href="#free-sample">read it now →</a> ` : ""}Adeel Sir is writing the books now. <a href="${wa(`Hello Adeel Sir, please tell me when the Chemophile ${clsName(cls)} books are ready.`)}" target="_blank" rel="noopener">Get a WhatsApp message when they're ready →</a></p></div>`;
+  }).join("") || `<div class="shelf-head"><h3>${esc(clsName(cls))}: books coming soon</h3><p>${SAMPLE_BOOKS[cls] ? `The free sample is ready: <a href="#free-sample">read it now →</a> ` : ""}Adeel Sir is writing the books now. <a href="${wa(`Hello Adeel Sir, please tell me when the Chemophile ${clsName(cls)} books are ready.`)}" target="_blank" rel="noopener">Get a WhatsApp message when they're ready →</a></p></div>`;
   const book = PART[cls] ? `Chemophile ${PART[cls]}` : clsName(cls);
-  const mainReady = ready.filter(c => !isBonus(c)).length, mainSoon = soon.filter(u => !isBonus(u)).length;
+  const count = kind => [ready.filter(c => kindOf(c) === kind && !isPart(c)).length, soon.filter(u => kindOf(u) === kind).length];
+  const [mainReady, mainSoon] = count("chem"), extra = ["special", "phy", "bio"].map(k => [k, count(k)[0] + count(k)[1]]).filter(([, n]) => n);
+  const names = { special: "JEE/NEET special", phy: "Physics", bio: "Biology" };
   $("#shelf-note").textContent = (mainReady
     ? `${book}: ${mainSoon ? `${mainReady} chapters ready, ${mainSoon} coming soon.` : mainReady === 1 ? "1 chapter is ready." : `all ${mainReady} chapters are ready.`}`
     : mainSoon ? `${book}: all ${mainSoon} chapters are coming soon. Tap "Notify me" under the ones you want.` : `${book}.`)
-    + (bonus ? ` Plus ${bonus} bonus chapter${bonus > 1 ? "s" : ""} for JEE / NEET.` : "");
+    + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} chapter${n > 1 ? "s" : ""}`).join(", ")}.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
-  const ready = CHAPTERS.filter(c => c.cls === k).length;
+  const ready = CHAPTERS.filter(c => c.cls === k && !isPart(c)).length;
   return `<button type="button" role="tab" aria-controls="shelf" aria-selected="${k === cls}" data-cls="${k}">${esc(clsName(k))} <small>${ready ? `${ready} ready` : "coming soon"}</small></button>`;
 }).join("");
 document.querySelector(".tabs").addEventListener("click", e => {
@@ -1734,6 +1753,11 @@ function openSheet(k, topicId) {
     <div class="sheet-buy">${c.free ? freeChip : priceChips(c)}
       ${c.free ? readFree : `<button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In your pack" : "+ Add to pack"}</button>`}
     </div>
+    ${(() => { const x = !isPart(c) && extraOf(c), parentC = isPart(c) && CHAPTERS.find(y => y.cls === c.cls && +y.n === baseN(c.n));
+      const rows = [x ? `<li>🎯 <b>JEE/NEET extra topics</b>: ${esc(x.title)}${x.pages ? ` · ${x.pages} pages` : ""}${x.included !== false ? " · <b>included</b> with this chapter" : " · sold on its own"}</li>` : "",
+        c.qbank ? `<li>📝 <b>Question bank</b>: ${c.qbank} questions, chapter-wise practice in the app, with the full solution of every question</li>` : "",
+        parentC ? `<li>📘 The extra topics of <b>${esc(chNo(parentC))}: ${esc(parentC.title)}</b></li>` : ""].join("");
+      return rows ? `<h4 class="sub">Is chapter ke saath</h4><ul class="hl-list">${rows}</ul>` : ""; })()}
     ${(c.highlights || []).length ? `<h4 class="sub">Is chapter mein khaas</h4>
     <ul class="hl-list">${c.highlights.map(h => `<li>${h}</li>`).join("")}</ul>` : ""}
     ${samples ? `<h4 class="sub">Free sample pages</h4>

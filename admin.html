@@ -473,7 +473,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
           <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class or university book</button></div>
         </div>
         <div class="ch-list" id="cat-list"></div>
-        <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button><button class="btn btn-line btn-sm" type="button" data-cat="new-bonus">🏆 + Add bonus chapter (JEE / NEET)</button></div>
+        <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button></div>
       </div>
 
       <div class="card stack" id="cat-combo" hidden>
@@ -548,7 +548,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div>
-        <button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📄 Chapter info &amp; quizzes</button></div>
+        <div class="actions"><button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📄 Chapter info &amp; quizzes</button><button class="btn btn-line btn-sm" type="button" id="qb-bulk">📝 Question banks</button></div></div>
       <div class="card">
         <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
@@ -1693,8 +1693,8 @@ function bulkParse(text, only) {
   const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
   parts.forEach(part => {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
-    // "11-1" is Class 11 Chapter 1; "11-B1" (or 11-101) is Class 11 Bonus 1.
-    const m = head.match(/(\d+)\s*[-–.:]\s*(b(?:onus)?\s*)?(\d+)/i), k = m ? `${+m[1]}-${(m[2] && +m[3] <= BONUS_FROM ? BONUS_FROM : 0) + +m[3]}` : head.split(/\s+/)[0];
+    // "11-1" is Class 11 Chapter 1; 11-S1 a JEE/NEET special, 9-P1 Physics, 9-Bio1 Biology, 11-1X extra topics.
+    const k = parseKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}. Change the ### line, or paste it in ${keyText(k)}.`); return; }
     if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
     const p = parseInfo(body), e = (p.errs || []).map(x => `${k}: ${x}`);
@@ -1746,7 +1746,6 @@ async function saveInfo(list) {
   $("#chap-progress").textContent = `Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`;
 }
 // The prompt to give the AI chat with the PDF, with the chapter key filled in.
-const keyText = k => { const [cl, n] = k.split("-"); return +n > BONUS_FROM ? `${cl}-B${n - BONUS_FROM}` : k; };
 async function copyPrompt(btn, k) {
   try {
     let t = await (await fetch("chapter-info-prompt.txt", { cache: "no-cache" })).text();
@@ -2022,9 +2021,9 @@ function renderCatalog() {
   }).join("");
   const book = cat.books.find(b => +b.cls === catCls);
   $("#cat-book-name").textContent = book ? `Book: ${book.name}` : "";
-  const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === catCls).sort((a, b) => a[0].n - b[0].n);
+  const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === catCls).sort((a, b) => orderN(a[0]) - orderN(b[0]));
   $("#cat-list").innerHTML = list.length ? list.map(([c, i]) => `<button class="ch-item" type="button" data-edit-ch="${i}">
-      <span class="no">${isBonus(c) ? "B" + (c.n - BONUS_FROM) : c.n}</span>
+      <span class="no">${keyText(ckey(c)).split("-")[1]}</span>
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
       <span class="go">Edit ›</span>
       <span class="pr">${c.free ? `<span><b style="color: var(--good)">FREE</b></span>` : priceLine(c.price, c.mrp)}</span>
@@ -2195,44 +2194,66 @@ function readPrices(old = {}, oldMrp = {}) {
   return { price, mrp };
 }
 const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
-// A bonus chapter (competition exams) is numbered from 101 in its class, and shows as "Bonus 1", "Bonus 2"…
-function chapterDialog(i, bonusNew) {
-  const inCls = cat.chapters.filter(x => +x.cls === catCls && isBonus(x) === !!bonusNew).map(x => +x.n);
-  const isNew = i == null, c = isNew ? { cls: catCls, n: Math.max(bonusNew ? BONUS_FROM : 0, ...inCls) + 1, title: "", short: "", tag: "", pages: null, soon: true, price: {}, mrp: {}, topics: [], ...(bonusNew ? { bonus: true } : {}) } : cat.chapters[i];
-  const bonus = isBonus(c), off = bonus ? BONUS_FROM : 0;
-  const custom = isNew || !isBaseChapter(c);
+// What a new chapter can be (its number range says it; see KINDS in js/chapters.js).
+const KIND_OPTS = [["chem", "Chemistry chapter (the book)"], ["special", "JEE / NEET special chapter"], ["phy", "Physics chapter"], ["bio", "Biology chapter"]];
+const nextN = (cls, kind) => Math.max(KINDS[kind].from, ...cat.chapters.filter(x => +x.cls === +cls && !isPart(x) && kindOf(x) === kind).map(x => +x.n)) + 1;
+// One dialog for every chapter: a book chapter, a JEE/NEET special, a Physics or Biology chapter, or the
+// JEE/NEET extra topics of a chapter (its own PDF, "included" with the chapter or sold on its own).
+function chapterDialog(i, kindNew, parent) {
+  const isNew = i == null, partNew = isNew && !!parent;
+  const c = !isNew ? cat.chapters[i] : partNew
+    ? { cls: parent.cls, n: +parent.n + PART_FROM, title: `${parent.title}: JEE/NEET extra topics`, short: "", tag: "JEE Main, JEE Advanced aur NEET ke extra topics", pages: null, soon: true, included: true, price: {}, mrp: {}, topics: [] }
+    : { cls: catCls, n: nextN(catCls, kindNew || "chem"), title: "", short: "", tag: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] };
+  const part = isPart(c), custom = isNew || !isBaseChapter(c);
   const topicsText = (c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n");
-  openDialog(isNew ? `New ${bonus ? "bonus chapter (JEE / NEET)" : "chapter"} in ${clsName(catCls)}` : `${clsName(c.cls)} · ${chNo(c)}`, `
-    ${bonus ? `<p class="cat-sub">🏆 Bonus chapters show after the book's chapters, in a "Bonus chapters: competition exams" section. Price them like any chapter, add them to a combo, or give them free with "Give chapters".</p>` : ""}
+  const myPart = !part && !isNew && cat.chapters.find(x => +x.cls === +c.cls && +x.n === +c.n + PART_FROM);
+  openDialog(partNew ? `JEE/NEET extra topics · ${clsName(c.cls)} ${chNo(parent)}` : isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · ${chNo(c)}`, `
+    ${part ? `<p class="cat-sub">🎯 The JEE / NEET extra topics of <b>${esc(chNo({ n: baseN(c.n) }))}</b>, as their own PDF. Upload it in the Chapters tab like any chapter. Students find it right under the chapter.</p>` : ""}
+    ${isNew && !part ? `<div class="field"><label for="d-kind">What is it?</label><select id="d-kind">${KIND_OPTS.map(([k, l]) => `<option value="${k}"${k === kindOf(c) ? " selected" : ""}>${l}</option>`).join("")}</select>
+      <span class="hint">JEE/NEET special chapters, and Physics and Biology chapters, show in their own section of the class on the website.</span></div>` : ""}
     <div class="cat-row">
-      ${isNew ? `<div class="field sm"><label for="d-n">${bonus ? "Bonus no." : "Chapter no."}</label><input id="d-n" type="number" min="1" max="99" inputmode="numeric" value="${c.n - off}"></div>` : ""}
-      <div class="field lg"><label for="d-title">Chapter name</label><input id="d-title" value="${esc(c.title)}"></div>
+      ${isNew && !part ? `<div class="field sm"><label for="d-n" id="d-n-l">${KINDS[kindOf(c)].label.replace(" Ch", "")} no.</label><input id="d-n" type="number" min="1" max="99" inputmode="numeric" value="${numIn(c)}"></div>` : ""}
+      <div class="field lg"><label for="d-title">Name</label><input id="d-title" value="${esc(c.title)}"></div>
     </div>
     <div class="cat-row">
       <div class="field"><label for="d-short">Short name (optional)</label><input id="d-short" value="${esc(c.short || "")}"></div>
-      ${custom ? `<div class="field"><label for="d-tag">One-line tagline (optional)</label><input id="d-tag" maxlength="160" value="${esc(c.tag || "")}" placeholder="${bonus ? "JEE ke tricky questions, aasaan tareeke se" : ""}"></div>` : ""}
+      ${custom ? `<div class="field"><label for="d-tag">One-line tagline (optional)</label><input id="d-tag" maxlength="160" value="${esc(c.tag || "")}"></div>` : ""}
       <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
-      <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live (can be ordered)</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
+      <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
-    <label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>
-    ${priceFields(c.price, c.mrp)}
-    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}`,
+    ${part ? `<label class="cat-check free-check"><input type="checkbox" id="d-incl"${c.included !== false ? " checked" : ""}> <span><b>Included with the chapter</b>: everyone who has ${esc(chNo({ n: baseN(c.n) }))} reads these too, at no extra cost. Untick to sell them on their own, with the prices below.</span></label>`
+      : `<label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>`}
+    <div id="d-prices">${priceFields(c.price, c.mrp)}</div>
+    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}
+    ${!part && !isNew ? `<div class="field"><label>JEE / NEET extra topics of this chapter</label><div class="actions">${myPart
+      ? `<button class="btn btn-line btn-sm" type="button" data-part-edit>🎯 Edit its JEE/NEET extra topics</button>`
+      : `<button class="btn btn-line btn-sm" type="button" data-part-new>🎯 + Add JEE/NEET extra topics (own PDF)</button>`}</div></div>` : ""}`,
     async () => {
-      const n = isNew ? off + parseInt(val("d-n"), 10) : c.n, title = val("d-title");
-      if (!(n - off >= 1 && n - off <= 99)) throw new Error(`${bonus ? "Bonus" : "Chapter"} number: 1 to 99.`);
-      if (!title) throw new Error("Write the chapter name.");
+      const kind = isNew && !part ? val("d-kind") : kindOf(c), from = KINDS[kind].from;
+      const n = isNew && !part ? from + parseInt(val("d-n"), 10) : +c.n, title = val("d-title");
+      if (isNew && !part && !(n - from >= 1 && n - from <= 99)) throw new Error("Number: 1 to 99.");
+      if (!title) throw new Error("Write the name.");
       if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ n })}.`);
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
-      const free = !!(dlg.querySelector("#d-free") || {}).checked;
-      if (!soon && !free && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, tick Free, or set it to Coming soon.");
-      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp, free }, custom ? { tag: val("d-tag") } : {});
-      // The reader's security rules read chapters/{key}.free, so a free chapter opens for every signed-up student.
-      if (!!c.free !== free || free) await setDoc(doc(db, "chapters", `${c.cls}-${n}`), { free }, { merge: true });
+      const free = !part && !!(dlg.querySelector("#d-free") || {}).checked, included = part && dlg.querySelector("#d-incl").checked;
+      if (!soon && !free && !included && !onFormats().some(f => price[f] > 0)) throw new Error(part ? "Give a price, or tick Included with the chapter." : "Give at least one price, tick Free, or set it to Coming soon.");
+      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp }, part ? { included } : { free }, custom ? { tag: val("d-tag") } : {});
+      // The reader's security rules read chapters/{key}.free and .included.
+      const k = `${c.cls}-${n}`;
+      if (part) await setDoc(doc(db, "chapters", k), { included }, { merge: true });
+      else if (!!c.free !== free || free) await setDoc(doc(db, "chapters", k), { free }, { merge: true });
       // Topics left as they were keep their sections and sub-topics.
       if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
       await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[at(next.chapters, c, ckey)] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
     },
     custom && !isNew ? async () => { await commit(next => { next.chapters.splice(at(next.chapters, c, ckey), 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
+  const kindSel = dlg.querySelector("#d-kind");
+  if (kindSel) kindSel.addEventListener("change", () => { const k = kindSel.value; dlg.querySelector("#d-n").value = nextN(catCls, k) - KINDS[k].from; dlg.querySelector("#d-n-l").textContent = KINDS[k].label.replace(" Ch", "") + " no."; });
+  const incl = dlg.querySelector("#d-incl"), prices = dlg.querySelector("#d-prices");
+  if (incl) { const sync = () => { prices.hidden = incl.checked; }; incl.addEventListener("change", sync); sync(); }
+  const pn = dlg.querySelector("[data-part-new]"), pe = dlg.querySelector("[data-part-edit]");
+  if (pn) pn.addEventListener("click", () => chapterDialog(null, null, c));
+  if (pe) pe.addEventListener("click", () => chapterDialog(cat.chapters.indexOf(myPart)));
 }
 // A school class (1 to 12) or a university / college book. University books get numbers from 101 up,
 // and their own label ("B.Sc 1st Year") is shown wherever a school book says "Class 11".
@@ -2315,7 +2336,6 @@ $("#t-catalog").addEventListener("click", async e => {
   if (!b) return;
   const act = b.dataset.cat;
   if (act === "new-ch") return chapterDialog(null);
-  if (act === "new-bonus") return chapterDialog(null, true);
   if (act === "edit-class") return classDialog(false);
   if (act === "new-class") return classDialog(true);
   if (act === "new-combo") return comboDialog(null);
@@ -2372,7 +2392,7 @@ async function loadChapters() {
   snap.docs.forEach(d => { chInfo.set(d.id, d.data()); if (d.data().pageCount) uploaded.set(d.id, d.data()); });
   chaptersLoaded = true;
   renderLighter();
-  const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || a.n - b.n);
+  const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || orderN(a) - orderN(b));
   $("#chap-rows").innerHTML = all.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k);
     return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">${esc(clsName(c.cls))}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
@@ -2433,7 +2453,7 @@ function chapRow(c, k, u) {
       <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
       <div class="chap-info">${chapSummary(c) || "No chapter info yet: tap 📄 Info"}</div>
       <progress max="100" value="0" hidden></progress></div>
-    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
+    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-qb>${(chInfo.get(k) || {}).qbank ? `📝 QB · ${chInfo.get(k).qbank}` : "📝 + QB"}</button><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
       ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
       : `<input type="file" accept="application/pdf" aria-label="PDF for ${chNo(c)}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
     ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace ${chNo(c)}" hidden>
@@ -2600,6 +2620,109 @@ async function quizDialog(k) {
   box.addEventListener("input", check); check();
 }
 $("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-quiz]"); if (b) quizDialog(b.closest(".chap-row").dataset.k); });
+
+// ---------- question banks ----------
+// Practice questions with full solutions, one bank per chapter (qbank/{chapter}), made with
+// question-bank-prompt.txt. Students practise them chapter-wise in the reader: pick a level, answer,
+// then open the solution. chapters/{chapter}.qbank (and the catalog) keep the number of questions.
+const QB_MAX = 600;
+const LEVELS = { board: "Board", "jee main": "JEE Main", "jee mains": "JEE Main", jee: "JEE Main", "jee advanced": "JEE Advanced", "jee adv": "JEE Advanced", neet: "NEET" };
+function parseQB(text) {
+  const qs = [], errs = [];
+  text.replace(/\r/g, "").split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach((block, i) => {
+    let q = "", o = [], a = -1, why = "", lv = "", tp = "", m, inSol = false;
+    block.split("\n").map(l => l.trim().replace(/\*\*/g, "")).filter(l => l && !/^```/.test(l)).forEach(l => {
+      if (!o.length && !inSol && (m = l.match(/^(?:q(?:uestion)?\s*\d*|\d+)\s*[:.)-]\s*(.+)$/i))) q = q ? q + " " + m[1] : m[1];
+      else if (!inSol && (m = l.match(/^\(?([a-f])\s*[).:]\s*(.*)$/i)) && m[1].toLowerCase().charCodeAt(0) - 97 === o.length) {
+        let t = m[2].trim(); if (/\*\s*$/.test(t)) { a = o.length; t = t.replace(/\s*\*\s*$/, ""); } o.push(t);
+      }
+      else if ((m = l.match(/^(?:ans(?:wer)?|correct)\s*[:.-]\s*\(?([a-f])\)?\.?$/i))) a = m[1].toLowerCase().charCodeAt(0) - 97;
+      else if ((m = l.match(/^level\s*[:.-]\s*(.+)$/i))) lv = LEVELS[m[1].toLowerCase().replace(/[^a-z ]/g, "").trim()] || m[1].trim().slice(0, 20);
+      else if ((m = l.match(/^topic\s*[:.-]\s*(.+)$/i))) tp = m[1].trim().slice(0, 80);
+      else if ((m = l.match(/^(?:solution|why|explanation|reason|hint)\s*[:.-]\s*(.*)$/i))) { why = m[1]; inSol = true; }
+      else if (inSol) why += "\n" + l;
+      else if (!o.length) q = q ? q + " " + l : l;
+      else o[o.length - 1] += " " + l;
+    });
+    const n = `Question ${i + 1}`;
+    if (!q) errs.push(`${n}: the question line is missing.`);
+    else if (o.length < 2) errs.push(`${n}: write at least 2 options, as A) … B) …`);
+    else if (o.some(x => !x)) errs.push(`${n}: one option is empty.`);
+    else if (a < 0 || a >= o.length) errs.push(`${n}: mark the right answer with * (or "Answer: B").`);
+    else qs.push(Object.assign({ q, o, a }, why ? { why: why.trim() } : {}, lv ? { lv } : {}, tp ? { tp } : {}));
+  });
+  if (qs.length > QB_MAX) errs.push(`At most ${QB_MAX} questions in one chapter's bank.`);
+  return { qs, errs };
+}
+// One chapter's text (with or without its ### line), or many chapters → [{ k, qs }] and errors.
+function qbParse(text, only) {
+  const ok = [], errs = [], src = text.replace(/\r/g, "");
+  const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
+  parts.forEach(part => {
+    const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
+    const k = parseKey(head) || head.split(/\s+/)[0];
+    if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}.`); return; }
+    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
+    const r = parseQB(body);
+    if (r.errs.length) r.errs.slice(0, 5).forEach(x => errs.push(`${keyText(k)}: ${x}`));
+    else if (!r.qs.length) errs.push(`${keyText(k)}: no questions.`);
+    else if (JSON.stringify(r.qs).length > 900000) errs.push(`${keyText(k)}: too much text for one bank. Split it into two chapters' worth.`);
+    else { const same = ok.find(x => x.k === k); if (same) same.qs.push(...r.qs); else ok.push({ k, qs: r.qs }); }   // "continue" answers add up
+  });
+  ok.forEach(x => { if (x.qs.length > QB_MAX) errs.push(`${keyText(x.k)}: at most ${QB_MAX} questions.`); else if (JSON.stringify(x.qs).length > 900000) errs.push(`${keyText(x.k)}: too much text for one bank.`); });
+  return { ok: errs.length ? [] : ok, errs };
+}
+const qbSummary = qs => { const by = {}; qs.forEach(q => { by[q.lv || "No level"] = (by[q.lv || "No level"] || 0) + 1; }); const tps = new Set(qs.map(q => q.tp).filter(Boolean));
+  return `${qs.length} questions · ${Object.entries(by).map(([l, n]) => `${esc(l)} ${n}`).join(" · ")}${tps.size ? ` · ${tps.size} topics` : ""} · ${qs.filter(q => q.why).length} with solutions`; };
+async function saveQB(list) {
+  for (const { k, qs } of list) {
+    await setDoc(doc(db, "qbank", k), { qs, updatedAt: serverTimestamp() });
+    await setDoc(doc(db, "chapters", k), { qbank: qs.length }, { merge: true });
+    chInfo.set(k, Object.assign({}, chInfo.get(k), { qbank: qs.length }));
+  }
+  // The website shows "📝 N-question bank" on the chapter, from the catalog.
+  await commit(next => { list.forEach(({ k, qs }) => { const c = next.chapters.find(x => ckey(x) === k); if (c) c.qbank = qs.length; }); },
+    `Question bank saved: ${list.map(x => `${keyText(x.k)} (${x.qs.length})`).join(", ")}.`);
+  $("#chap-progress").textContent = `Question bank saved: ${list.map(x => `${keyText(x.k)} (${x.qs.length} Qs)`).join(", ")}.`;
+}
+async function qbDialog(k) {
+  const c = k && findChapter(k);
+  let old = [];
+  if (k) { try { const s = await getDoc(doc(db, "qbank", k)); old = s.exists() ? s.data().qs || [] : []; } catch (ex) {} }
+  openDialog(k ? `Question bank · ${clsName(c.cls)} ${chNo(c)}` : "Question banks (one or more chapters)", `
+    <p class="cat-sub"><b>How:</b> 1) Copy the prompt. 2) In the AI chat where you made the book, attach the chapter PDF and paste the prompt. 3) Paste its answer here, or save it as a .txt file and choose it. Check the count below, then Save. Saving replaces the chapter's old bank.</p>
+    <div class="actions"><button class="btn btn-line btn-sm" type="button" data-qb-prompt>📋 Copy the prompt</button><a class="btn btn-line btn-sm" href="question-bank-prompt.txt" download>⬇ Download prompt</a></div>
+    ${old.length ? `<p class="msg good" style="margin: 0">Now: ${qbSummary(old)}</p>` : ""}
+    <div class="field"><label for="d-qb">${k ? "Questions for this chapter" : "Questions for one or more chapters (each starts with ### 11-1)"}</label>
+      <textarea id="d-qb" rows="12" spellcheck="false" placeholder="### ${k ? keyText(k) : "11-1"}\nQ: …\nA) …\nB) … *\nC) …\nD) …\nLevel: NEET\nTopic: …\nSolution: …"></textarea></div>
+    <div class="field"><label for="d-qb-file">Or choose the .txt file${k ? "" : "s"}</label><input id="d-qb-file" type="file" accept=".txt,.md,text/plain"${k ? "" : " multiple"}></div>
+    <div id="d-qb-check" class="cat-sub" role="status"></div>`,
+    async () => {
+      const { ok, errs } = qbParse(val("d-qb"), k);
+      if (errs.length) throw new Error("Fix these first: " + errs.slice(0, 3).join(" "));
+      if (!ok.length) throw new Error("Paste the questions first.");
+      await saveQB(ok);
+    },
+    k && old.length ? async () => {
+      await deleteAll([doc(db, "qbank", k)]);
+      await setDoc(doc(db, "chapters", k), { qbank: 0 }, { merge: true });
+      chInfo.set(k, Object.assign({}, chInfo.get(k), { qbank: 0 }));
+      await commit(next => { const x = next.chapters.find(y => ckey(y) === k); if (x) delete x.qbank; }, `Question bank of ${keyText(k)} removed.`);
+    } : null, { saveLabel: "Save question bank" });
+  const box = dlg.querySelector("#d-qb"), out = dlg.querySelector("#d-qb-check"), check = () => {
+    const { ok, errs } = qbParse(box.value, k);
+    out.innerHTML = (ok.length ? `✓ Ready: ${ok.map(x => `<b>${esc(keyText(x.k))}</b> ${qbSummary(x.qs)}`).join("<br>")}` : "") + (errs.length ? `<br><span style="color: var(--bad)">${errs.slice(0, 6).map(esc).join("<br>")}</span>` : "");
+  };
+  box.addEventListener("input", check);
+  dlg.querySelector("#d-qb-file").addEventListener("change", async e => { box.value = (await Promise.all([...e.target.files].map(f => f.text()))).join("\n\n"); check(); });
+  dlg.querySelector("[data-qb-prompt]").addEventListener("click", async e => {
+    const btn = e.currentTarget;
+    try { let t = await (await fetch("question-bank-prompt.txt", { cache: "no-cache" })).text(); if (k) t = t.replace(/\[write the key here[^\]]*\]/, keyText(k)); await navigator.clipboard.writeText(t); btn.textContent = "✓ Prompt copied"; }
+    catch (ex) { btn.textContent = "Copy failed: use Download"; }
+  });
+}
+$("#qb-bulk").addEventListener("click", () => qbDialog(null));
+$("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-qb]"); if (b) qbDialog(b.closest(".chap-row").dataset.k); });
 
 // ---------- make old uploads lighter ----------
 // Chapters uploaded before pages were made 960 pixels wide are made smaller here, page by page,
