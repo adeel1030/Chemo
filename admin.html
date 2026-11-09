@@ -152,6 +152,20 @@ body { background: var(--paper); }
 .theme-pv span { flex: 1; font-size: .85rem; opacity: .85; }
 .theme-pv i { font-style: normal; font-weight: 700; font-size: .8rem; border-radius: 999px; padding: 4px 10px; }
 .free-check { align-items: flex-start; border: 1px dashed var(--good); border-radius: 10px; padding: 8px 10px; }
+.d-body.has-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 340px); gap: 14px; align-items: start; }
+.d-body.has-page .d-page { order: 2; }
+.d-main { display: grid; gap: 10px; min-width: 0; }
+.d-page { display: grid; gap: 6px; position: sticky; top: 76px; }
+.d-pg-box { border: 1px solid var(--line); border-radius: 10px; background: #fff; min-height: 120px; display: grid; place-items: center; overflow: hidden; }
+.d-pg-box img { width: 100%; height: auto; display: block; cursor: zoom-in; }
+.d-pg-bar { display: flex; align-items: center; gap: 6px; justify-content: center; }
+.d-pg-bar b { font-size: .85rem; min-width: 84px; text-align: center; }
+@media (max-width: 760px) { .d-body.has-page { grid-template-columns: minmax(0, 1fr); } .d-body.has-page .d-page { order: 0; position: static; } }
+.pg-big { max-height: 75vh; overflow: auto; border-radius: 10px; background: #fff; cursor: zoom-in; }
+.pg-big img { width: 100%; display: block; }
+.pg-big.zoom { cursor: zoom-out; }
+.pg-big.zoom img { width: 200%; max-width: none; }
+dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
 .ch-cv { width: 44px; height: 62px; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,.18); background: var(--paper); align-self: start; }
 .chap-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
 .chap-row.done { border-left: 4px solid var(--good); }
@@ -562,7 +576,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 
@@ -1798,6 +1812,10 @@ function renderDoubts() {
       <div style="min-width:0"><h3>${esc(d.name || d.loginId || "Student")}</h3><div class="sub">${esc(d.title || d.ch)}${d.page ? ` · <b>page ${d.page}</b>` : ""}${d.at ? " · " + agoText(d.at.toDate()) : ""}${d.loginId ? " · " + esc(d.loginId) : ""}</div></div>
       <div class="pills">${d.status === "answered" ? `<span class="pill good">Answered${d.seen ? " · seen" : ""}</span>` : `<span class="pill warn">Waiting</span>`}</div>
     </div>
+    <div class="d-body${d.page && d.ch ? " has-page" : ""}">
+    ${d.page && d.ch ? `<div class="d-page" data-dpage="${esc(d.ch)}|${d.page}"><div class="d-pg-box"><span class="hint">Opening page ${d.page}…</span></div>
+      <div class="d-pg-bar"><button class="btn btn-line btn-sm" type="button" data-dpg="-1" aria-label="Page before">‹</button><b class="d-pg-no">p. ${d.page}</b><button class="btn btn-line btn-sm" type="button" data-dpg="1" aria-label="Next page">›</button><button class="btn btn-line btn-sm" type="button" data-dpg="big">🔍 Big</button></div></div>` : ""}
+    <div class="d-main">
     <p class="news-text" style="font-weight: 600">${esc(d.text)}</p>
     <div class="field"><label for="ans-${d.id}">${d.status === "answered" ? "Your answer (edit and send again if needed)" : "Your answer"}</label><textarea id="ans-${d.id}" rows="3" maxlength="2000" placeholder="Write the explanation…">${esc(d.answer || "")}</textarea></div>
     <div class="actions">
@@ -1807,9 +1825,44 @@ function renderDoubts() {
       <button class="btn btn-danger btn-sm" type="button" data-dact="del">Delete</button>
     </div>
     <div class="msg" role="status" hidden></div>
+    </div></div>
   </div>`).join("") : `<p class="empty">${doubtFilter === "open" ? "No doubts waiting. 🎉" : "No doubts here yet."}</p>`;
   renderDash();
+  watchDoubtPages();
 }
+// The page the student asked about opens right beside the doubt (as they scroll to it), with the pages
+// before and after one tap away, and a big view for small print.
+const pageCache = new Map();
+async function pageImg(ch, n) {
+  const k = ch + "|" + n;
+  if (!pageCache.has(k)) pageCache.set(k, getDoc(doc(db, "pages", pageId(ch, n))).then(s => s.exists() ? s.data().img : null).catch(() => null));
+  return pageCache.get(k);
+}
+async function showDoubtPage(box, n) {
+  const [ch] = box.dataset.dpage.split("|"), max = (uploaded.get(ch) || {}).pageCount || 9999;
+  n = Math.max(1, Math.min(max, n)); box.dataset.n = n;
+  box.querySelector(".d-pg-no").textContent = `p. ${n}${+box.dataset.dpage.split("|")[1] === n ? " (asked)" : ""}`;
+  const img = await pageImg(ch, n), slot = box.querySelector(".d-pg-box");
+  if (+box.dataset.n !== n) return;
+  slot.innerHTML = img ? `<img src="${img}" alt="Page ${n}" data-dpg="big">` : `<span class="hint">Page ${n} is not uploaded.</span>`;
+}
+let pageWatch = null;
+function watchDoubtPages() {
+  if (pageWatch) pageWatch.disconnect();
+  const boxes = document.querySelectorAll("#doubts [data-dpage]");
+  if (!("IntersectionObserver" in window)) { boxes.forEach(b => showDoubtPage(b, +b.dataset.dpage.split("|")[1])); return; }
+  pageWatch = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { pageWatch.unobserve(en.target); showDoubtPage(en.target, +en.target.dataset.dpage.split("|")[1]); } }), { rootMargin: "300px" });
+  boxes.forEach(b => pageWatch.observe(b));
+}
+$("#doubts").addEventListener("click", async e => {
+  const b = e.target.closest("[data-dpg]"); if (!b) return;
+  const box = b.closest("[data-dpage]"), n = +box.dataset.n || +box.dataset.dpage.split("|")[1];
+  if (b.dataset.dpg !== "big") return showDoubtPage(box, n + +b.dataset.dpg);
+  const ch = box.dataset.dpage.split("|")[0], img = await pageImg(ch, n); if (!img) return;
+  openDialog(`Page ${n} · ${chName(ch)}`, `<div class="pg-big"><img src="${img}" alt="Page ${n}"></div><p class="hint">Tap the page to zoom in or out.</p>`, null, null);
+  const big = dlg.querySelector(".pg-big"); big.addEventListener("click", () => big.classList.toggle("zoom"));
+  dlg.classList.add("wide-dlg"); dlg.addEventListener("close", () => dlg.classList.remove("wide-dlg"), { once: true });
+});
 $("#doubt-filters").addEventListener("click", e => { const b = e.target.closest("[data-dfilter]"); if (b) { doubtFilter = b.dataset.dfilter; renderDoubts(); } });
 $("#doubts").addEventListener("click", async e => {
   const b = e.target.closest("[data-dact]"); if (!b) return;
@@ -1908,6 +1961,16 @@ $("#news").addEventListener("click", async e => {
 // One catalog document holds everything the website sells. Each Save here writes it at once.
 let cat = null, catSaved = null, catCls = null;
 const clone = o => JSON.parse(JSON.stringify(o));
+// Fill in anything an older saved catalog doesn't have yet (changes it in place).
+function startCatalogData(c) {
+  FORMAT_IDS.forEach(f => { c.formats = c.formats || {}; c.formats[f] = Object.assign(clone(FORMATS[f]), c.formats[f] || {}); });
+  c.books = c.books || []; c.chapters = c.chapters || []; c.combos = c.combos || [];
+  c.offer = Object.assign({ on: false, text: "", until: "" }, c.offer || {});
+  c.referral = Object.assign({ on: false, days: 30 }, c.referral || {});
+  c.pay = Object.assign({ upi: "", payee: "", link: "" }, c.pay || DEFAULT_PAY);
+  c.site = Object.assign({ videos: [], reviews: [] }, c.site || {});
+  return c;
+}
 function startCatalog(saved) {
   catSaved = saved ? clone(saved) : null;
   cat = saved ? clone(saved) : defaultCatalog();
@@ -1930,12 +1993,21 @@ const ckey = c => `${c.cls}-${c.n}`;
 const classesOf = () => [...cat.books].map(b => +b.cls).sort((a, b) => a - b);
 const fmtShort = f => ({ online: "Online", monthly: "Monthly", colour: "Colour", bw: "B/W" })[f];
 function catSay(t, cls = "good") { const m = $("#cat-msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }
-// Save a changed copy of the catalog; only if Firestore accepts it does the page switch to it.
+// Save a change to the catalog. The change is made on the latest saved catalog, read inside a transaction,
+// so a save from this page never undoes one made meanwhile from another tab or phone (for example a review
+// shown on the website). Only if Firestore accepts it does the page switch to it.
 async function commit(change, done) {
-  const next = clone(cat);
-  const problem = change(next);
-  if (problem) throw new Error(problem);
-  await setDoc(doc(db, "catalog", "main"), { data: JSON.stringify(next), updatedAt: serverTimestamp() });
+  const ref = doc(db, "catalog", "main");
+  const next = await runTransaction(db, async tx => {
+    const s = await tx.get(ref);
+    const base = s.exists() ? JSON.parse(s.data().data) : clone(cat);
+    if (s.exists()) { startCatalogData(base); }
+    const n = clone(base);
+    const problem = change(n);
+    if (problem) throw new Error(problem);
+    tx.set(ref, { data: JSON.stringify(n), updatedAt: serverTimestamp() });
+    return n;
+  });
   applyCatalog(clone(next));
   startCatalog(clone(next));
   catSay(done || "Saved. The website shows it now.");
@@ -1997,6 +2069,14 @@ $("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; 
 // ---------- website videos and reviews (catalog.site) ----------
 let reviewsIn = [];
 const starTxt = n => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+const onSite = x => cat.site.reviews.some(r => r.from === x.id);
+// Where an item opened in a dialog is in the latest saved catalog: by its key, else by its exact contents.
+// If someone changed or removed it meanwhile, nothing is saved over the wrong item.
+function at(list, item, keyOf = y => JSON.stringify(y)) {
+  const k = keyOf(item), j = list.findIndex(y => keyOf(y) === k);
+  if (j < 0) throw new Error("This was changed from another admin page meanwhile. Close this, and open it again.");
+  return j;
+}
 function renderSiteLists() {
   const v = cat.site.videos, r = cat.site.reviews;
   $("#vid-list").innerHTML = v.length ? v.map((x, i) => `<button class="ch-item" type="button" data-edit-vid="${i}">
@@ -2010,7 +2090,9 @@ function renderSiteLists() {
         <div style="min-width:0"><h3>${esc(x.name || "Student")}</h3><div class="sub">${esc([x.cls ? clsName(x.cls) : "", x.school, x.city].filter(Boolean).join(" · "))}${x.at ? " · " + fmtDate(x.at) : ""}</div></div>
         <div class="pills"><span class="stars" style="color: #f59f00">${starTxt(x.stars)}</span>${x.status === "shown" ? `<span class="pill good">On the website</span>` : x.status === "hidden" ? `<span class="pill">Not shown</span>` : `<span class="pill warn">New</span>`}${x.consent ? "" : `<span class="pill bad">No permission to show</span>`}</div></div>
       <p class="news-text">${esc(x.text)}</p>
-      <div class="actions">${x.status !== "shown" && x.consent ? `<button class="btn btn-sun btn-sm" type="button" data-rev-act="show">Show on website</button>` : ""}${x.status === "new" ? `<button class="btn btn-line btn-sm" type="button" data-rev-act="hide">Don't show</button>` : ""}<span class="spacer"></span><button class="btn btn-danger btn-sm" type="button" data-rev-act="del">Delete</button></div>
+      ${x.status === "shown" && !onSite(x) ? `<p class="msg warn" style="margin: 6px 0 0">Approved, but it is not on the website now (an older admin page saved over it). Tap "Show on website" again.</p>` : ""}
+      ${!x.consent ? `<p class="hint" style="margin: 6px 0 0">The student did not allow showing it on the website, so it stays private.</p>` : ""}
+      <div class="actions">${(x.status !== "shown" || !onSite(x)) && x.consent ? `<button class="btn btn-sun btn-sm" type="button" data-rev-act="show">Show on website</button>` : ""}${x.status === "new" ? `<button class="btn btn-line btn-sm" type="button" data-rev-act="hide">Don't show</button>` : ""}<span class="spacer"></span><button class="btn btn-danger btn-sm" type="button" data-rev-act="del">Delete</button></div>
     </div>`).join("") : `<p class="hint">None yet. Students are asked for a review after they finish a chapter or keep a 3-day streak.</p>`;
 }
 async function loadReviewsIn() {
@@ -2022,7 +2104,7 @@ async function reviewAction(b) {
   const row = b.closest("[data-rid]"), x = reviewsIn.find(r => r.id === row.dataset.rid), a = b.dataset.revAct;
   try {
     if (a === "show") {
-      await commit(next => { next.site.reviews.unshift({ name: x.name, school: x.school || "", city: x.city || "", cls: x.cls || 0, stars: x.stars, text: x.text, at: toInput(x.at) || inDays(0), from: x.id }); }, "Review shown on the website.");
+      await commit(next => { next.site.reviews = next.site.reviews.filter(r => r.from !== x.id); next.site.reviews.unshift({ name: x.name, school: x.school || "", city: x.city || "", cls: x.cls || 0, stars: x.stars, text: x.text, at: toInput(x.at) || inDays(0), from: x.id }); }, "Review shown on the website.");
       await updateDoc(doc(db, "reviews", x.id), { status: "shown" }); x.status = "shown";
     }
     if (a === "hide") { await updateDoc(doc(db, "reviews", x.id), { status: "hidden" }); x.status = "hidden"; }
@@ -2041,9 +2123,9 @@ function videoDialog(i) {
     async () => {
       const url = val("d-vurl"), title = val("d-vtitle");
       if (!youtubeId(url)) throw new Error("That is not a YouTube link. Copy it from YouTube: Share → Copy link.");
-      await commit(next => { const item = { url, title }; if (isNew) next.site.videos.push(item); else next.site.videos[i] = item; }, "Video saved. It shows on the website now.");
+      await commit(next => { const item = { url, title }; if (isNew) next.site.videos.push(item); else next.site.videos[at(next.site.videos, x)] = item; }, "Video saved. It shows on the website now.");
     },
-    isNew ? null : async () => { await commit(next => { next.site.videos.splice(i, 1); }, "Video removed."); });
+    isNew ? null : async () => { await commit(next => { next.site.videos.splice(at(next.site.videos, x), 1); }, "Video removed."); });
 }
 function reviewDialog(i) {
   const isNew = i == null, x = isNew ? { name: "", school: "", city: "", cls: 0, stars: 5, text: "", at: inDays(0) } : cat.site.reviews[i];
@@ -2064,10 +2146,10 @@ function reviewDialog(i) {
       if (item.name.length < 2) throw new Error("Write the student's name.");
       if (item.text.length < 3) throw new Error("Write what they said.");
       if (isNew && !dlg.querySelector("#d-rok").checked) throw new Error("Tick the box: only real reviews, shown with the student's permission.");
-      await commit(next => { if (isNew) next.site.reviews.unshift(item); else next.site.reviews[i] = item; }, "Review saved. It shows on the website now.");
+      await commit(next => { if (isNew) next.site.reviews.unshift(item); else next.site.reviews[at(next.site.reviews, x)] = item; }, "Review saved. It shows on the website now.");
     },
     isNew ? null : async () => {
-      await commit(next => { next.site.reviews.splice(i, 1); }, "Review removed from the website.");
+      await commit(next => { next.site.reviews.splice(at(next.site.reviews, x), 1); }, "Review removed from the website.");
       if (x.from) { await updateDoc(doc(db, "reviews", x.from), { status: "hidden" }).catch(() => {}); const r = reviewsIn.find(y => y.id === x.from); if (r) r.status = "hidden"; renderSiteLists(); }
     });
 }
@@ -2155,9 +2237,9 @@ function chapterDialog(i, bonusNew) {
       if (!!c.free !== free || free) await setDoc(doc(db, "chapters", `${c.cls}-${n}`), { free }, { merge: true });
       // Topics left as they were keep their sections and sub-topics.
       if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
+      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[at(next.chapters, c, ckey)] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
     },
-    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(i, 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
+    custom && !isNew ? async () => { await commit(next => { next.chapters.splice(at(next.chapters, c, ckey), 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
 }
 // A school class (1 to 12) or a university / college book. University books get numbers from 101 up,
 // and their own label ("B.Sc 1st Year") is shown wherever a school book says "Class 11".
@@ -2240,9 +2322,9 @@ function comboDialog(i) {
       if (!chapters.length) throw new Error("Tick the chapters in this combo.");
       if (on && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or untick Show on the website.");
       const item = Object.assign({}, x, { name, text: val("d-ctext"), on, chapters, price, mrp });
-      await commit(next => { if (isNew) next.combos.push(item); else next.combos[i] = item; }, `Combo "${name}" saved.`);
+      await commit(next => { if (isNew) next.combos.push(item); else next.combos[at(next.combos, x, y => y.id || JSON.stringify(y))] = item; }, `Combo "${name}" saved.`);
     },
-    isNew ? null : async () => { await commit(next => { next.combos.splice(i, 1); }, `Combo "${x.name}" removed.`); });
+    isNew ? null : async () => { await commit(next => { next.combos.splice(at(next.combos, x, y => y.id || JSON.stringify(y)), 1); }, `Combo "${x.name}" removed.`); });
   // Show what the ticked chapters cost one by one, to help set the MRP.
   const refresh = () => {
     const keys = [...dlg.querySelectorAll("#d-cpicks input:checked")].map(e => e.value), h = single(keys);
