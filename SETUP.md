@@ -223,6 +223,23 @@ Kai chapters ek saath: upar **📄 Chapter info & quizzes** button, har chapter 
 4. Website par har class ki shelf mein book ke chapters ke baad **"🏆 Bonus chapters: competition exams"** section aata hai.
 5. Bechne ke tareeke: alag price, ya kisi combo mein daal do (jaise "Class 11 full book + JEE bonus"), ya kisi student ko "Give chapters" / promo code se free do.
 
+## 24. Har class ke apne rang, Class 9 se 12, aur Free chapters
+
+**Naye Firebase rules zaroori hain** (free chapters ke liye): `firestore.rules` poori paste karke Publish karo.
+
+**Class 9 / 10 jodna**
+1. Admin → **Books & prices** → **+ Add class or university book** → School class → Class `9` → Book name (jaise "Part 0 (for 9th Class)") → Save. Class 10 ke liye bhi yahi.
+2. Us class mein **+ Add chapter to this class** → naam, pages → **Free chapter** tick karo (price nahi chahiye) → Live → Save.
+3. **Chapters** tab mein uski PDF upload karo. Pehla page cover banta hai, aur **usi cover se us class ke website ke rang apne aap set ho jaate hain** (background + title ka rang).
+
+**Rang badalna ho to:** Books & prices → class chuno → **Edit** → "Website colours" mein Background aur Highlight chuno (preview wahin dikhta hai), ya **📷 Take from the covers** dabao → Save.
+
+**Website par:**
+- Sabse upar **"Aap kis class mein ho?"**: har class ka button uske cover ke rang mein. Chunte hi poori website us class ke rang mein ho jaati hai: hero, covers, Free section, chapters, sab.
+- Website yaad rakhti hai ki visitor kis class ka tha. Kisi class ka seedha link: `https://chemophile.maproductsindia.com/?class=9` (WhatsApp/Instagram par share karne ke liye).
+- Free chapters par **FREE** likha hota hai, "Add to pack" ki jagah **Read free →**. Student free sign up karke, apni class tick karke, app mein padh leta hai.
+- Reader app bhi student ki class ke rang mein dikhta hai.
+
 ## Yeh system kya rokta hai, kya nahi
 
 **Kya rokta hai:**

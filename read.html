@@ -14,6 +14,7 @@
 <meta name="theme-color" content="#15134a">
 <script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <script src="js/theme.js" defer></script>
+<script>try { var p = JSON.parse(localStorage.getItem("chemophile-paint")); if (p && p.v) for (var k in p.v) document.documentElement.style.setProperty(k, p.v[k]); } catch (e) {}</script>
 <link rel="manifest" href="read.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -102,6 +103,7 @@
 .rrow .m { font-size: .82rem; color: var(--muted); }
 .plan-tag { display: inline-block; margin-top: 4px; font: 700 .72rem var(--font-body); border-radius: 6px; padding: 2px 8px; background: var(--warn-bg); color: var(--fg); }
 .plan-tag.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.plan-tag.free { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
 .book .ch { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .book h3 { font: 700 1.08rem/1.2 var(--font-display); margin-top: 2px; }
 .meta { font-size: .82rem; color: var(--muted); margin-top: 6px; }
@@ -865,6 +867,12 @@ async function loadGrants(uid) {
 }
 const grantTill = k => { const g = grants.get(k); return g && g.till && g.till.toDate ? g.till.toDate() : null; };
 const liveGrant = () => [...grants.keys()].some(k => grantTill(k) > new Date());
+// Chapters the admin made free: every signed-up student of that class can read them.
+const isFreeCh = k => { const c = findChapter(k); return !!(c && c.free); };
+const myClasses = () => ((me.classes || []).length ? me.classes : classList()).map(Number);
+const freeKeys = () => CHAPTERS.filter(c => c.free && (me.admin || myClasses().includes(c.cls))).map(chapterKey);
+// The reader takes the colours of the student's class (the class they are looking at, else their first class).
+function paintMine() { const list = myClasses().filter(c => PART[c]); const k = libCls !== "all" && PART[+libCls] ? +libCls : list[0]; if (k) paintClass(k); }
 // Can this chapter open now? Bought (and the ID not past its end date), on a paid monthly plan, or free access.
 function access(k) {
   const now = new Date(), exp = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
@@ -872,6 +880,7 @@ function access(k) {
   if (bought && !(exp && exp < now)) return { open: true };
   if (till && till > now) return { open: true, monthly: true, till };
   if (g && g > now) return { open: true, grant: true, till: g };
+  if (isFreeCh(k)) return { open: true, free: true };
   if (till) return { open: false, monthly: true, till };
   if (g) return { open: false, grant: true, till: g };
   return { open: false, till: exp };
@@ -897,10 +906,12 @@ async function renderLibrary() {
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
   // Signed up but nothing bought yet: the free sample and the chapters they can unlock.
   renderTeacher(); renderRedeem(); askAbout();
-  if (!me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length && !liveGrant()) return renderFree();
+  paintMine();
+  const unpaid = !me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length && !liveGrant();
+  if (unpaid && !freeKeys().length) return renderFree();
   $(".lib-tools h2").textContent = "My chapters";
   const subKeys = Object.keys(me.subs || {});
-  const keys = [...new Set([...(me.chapters || []), ...subKeys, ...grants.keys()])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
+  const keys = [...new Set([...(me.chapters || []), ...subKeys, ...grants.keys(), ...freeKeys()])].sort((a, b) => { const [x, y] = [a, b].map(k => k.split("-").map(Number)); return x[0] - y[0] || x[1] - y[1]; });
   // A chapter that fails to load is not "coming soon": keep it unknown, say why, and try again next time.
   let loadErr = null;
   await Promise.all(keys.map(async k => {
@@ -959,6 +970,7 @@ async function renderLibrary() {
   $("#upsell").innerHTML = planCard || (me.promo ? `<div class="card upsell"><div><h3>Enjoying the book?</h3><p class="hint">This promo ends${expires ? ` on ${fmtDate(expires)}` : " soon"}. Get your own ID to keep reading, or order the paperback.</p></div>
     <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices</a><a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I read the Chemophile book with promo code ${me.promo}. I want to buy it.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>` : "");
 
+  if (unpaid && !planCard) $("#upsell").innerHTML = unlockCard();
   const classes = [...new Set(keys.map(k => +k.split("-")[0]))].sort((a, b) => a - b);
   if (!classes.includes(Number(libCls))) libCls = "all";
   $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), esc(clsName(c))])]
@@ -970,6 +982,7 @@ async function renderLibrary() {
     const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : chNo({ n: +n });
     const open = pr.ready && ac.open;
     const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`)
+      : ac.free ? `<span class="plan-tag free">Free chapter</span>`
       : ac.grant ? (ac.open ? `<span class="plan-tag">Free access till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Free access ended ${fmtDate(ac.till)}</span>`) : "";
     const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : ac.grant ? "Buy it to keep reading; your place stays saved." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
@@ -1041,8 +1054,19 @@ $("#pw-form").addEventListener("submit", async e => {
 
 // ---------- free account (signed up, nothing bought) ----------
 const rupee = v => "₹" + Number(v).toLocaleString("en-IN");
+// "Unlock the full chapters": for a student who has bought nothing yet.
+function unlockCard() {
+  const classes = myClasses(), what = classes.map(clsName).join(" + ");
+  const prices = CHAPTERS.filter(c => classes.includes(c.cls) && !c.free).map(c => priceOf(c, "online")).filter(Boolean), from = prices.length ? Math.min(...prices) : null;
+  if (!CHAPTERS.some(c => classes.includes(c.cls) && !c.free)) return "";
+  return `<div class="card unlock"><h3>Unlock the <span>full chapters</span></h3>
+    <p>Every page, every diagram, every solved example${FORMATS.online.on ? `, valid for ${onlineDays() === 365 ? "1 full year" : onlineDays() + " days"}` : ""}. Bought chapters open right here, on this same ID.</p>
+    <ul><li>Pay by UPI on the website, then send the screenshot on WhatsApp</li><li>Tell Adeel Sir your login ID: <b>${esc(me.loginId)}</b></li>${FORMATS.monthly.on ? "<li>Or start small with a monthly plan, and stop any time</li>" : ""}</ul>
+    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html?class=${classes[0] || ""}#pack">See prices and order${from ? ` · from ${rupee(from)}` : ""}</a>
+      <a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I signed up on Chemophile (ID ${me.loginId}, ${what}). I want to buy the online book.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>`;
+}
 function renderFree() {
-  renderTeacher(); renderRedeem(); askAbout();
+  renderTeacher(); renderRedeem(); askAbout(); paintMine();
   const classes = ((me.classes || []).length ? me.classes : classList()).map(Number);
   const samples = classes.filter(c => SAMPLE_BOOKS[c]);
   const chs = CHAPTERS.filter(c => classes.includes(c.cls));
@@ -1058,11 +1082,7 @@ function renderFree() {
     </div>`).join("") || `<div class="card">The free sample for ${esc(classes.map(clsName).join(" and "))} is coming soon. See the chapters you can unlock below.</div>`;
   $(".portal").classList.add("lift");
   const what = classes.map(clsName).join(" + ");
-  $("#upsell").innerHTML = `<div class="card unlock"><h3>Unlock the <span>full chapters</span></h3>
-    <p>Every page, every diagram, every solved example${FORMATS.online.on ? `, valid for ${onlineDays() === 365 ? "1 full year" : onlineDays() + " days"}` : ""}. Bought chapters open right here, on this same ID.</p>
-    <ul><li>Pay by UPI on the website, then send the screenshot on WhatsApp</li><li>Tell Adeel Sir your login ID: <b>${esc(me.loginId)}</b></li>${FORMATS.monthly.on ? "<li>Or start small with a monthly plan, and stop any time</li>" : ""}</ul>
-    <div class="actions"><a class="btn btn-sun btn-sm" href="index.html#pack">See prices and order${from ? ` · from ${rupee(from)}` : ""}</a>
-      <a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I signed up on Chemophile (ID ${me.loginId}, ${what}). I want to buy the online book.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>`;
+  $("#upsell").innerHTML = unlockCard();
   $(".lib-tools h2").textContent = "Chapters you can unlock";
   $("#lib-chips").innerHTML = "";
   $("#lib").innerHTML = classes.map(cls => {

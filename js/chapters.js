@@ -63,6 +63,68 @@ let PAY = DEFAULT_PAY;
 // a number above 100 and its own label from the catalog, e.g. "B.Sc 1st Year".
 const CLASS_LABEL = {};
 const isUni = cls => +cls > 100;
+// ---------- class colours ----------
+// Each class's book has its own cover colours: a dark background ("bg") and a bright highlight ("hi", the
+// colour of the word Chemophile on the cover). The admin panel reads them from the uploaded covers (or the
+// admin picks them), and the website, reader and admin take on the chosen class's colours.
+const CLASS_THEME = {};
+const DEFAULT_THEMES = {
+  9: { bg: "#0d4a4f", hi: "#ffd24a" }, 10: { bg: "#5a1736", hi: "#ffc94d" },
+  11: { bg: "#2b276d", hi: "#ffd24a" }, 12: { bg: "#2b276d", hi: "#ffd24a" }
+};
+const hexRgb = h => { const m = String(h || "").match(/^#?([0-9a-f]{6})$/i); const n = m ? parseInt(m[1], 16) : 0x2b276d; return [n >> 16, (n >> 8) & 255, n & 255]; };
+const rgbHex = c => "#" + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+const mixHex = (a, b, t) => { const x = hexRgb(a), y = hexRgb(b); return rgbHex(x.map((v, i) => v + (y[i] - v) * t)); };
+const lumOf = h => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; const [r, g, b] = hexRgb(h); return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+const contrastOf = (a, b) => { const x = lumOf(a), y = lumOf(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+const themeOf = cls => Object.assign({}, DEFAULT_THEMES[cls] || DEFAULT_THEMES[11], CLASS_THEME[cls] || {});
+// Every colour the pages use, worked out from a class's two cover colours.
+function themeVars(cls) {
+  let { bg, hi } = themeOf(cls);
+  while (lumOf(bg) > .06) bg = mixHex(bg, "#000000", .2);          // cover bands stay dark enough for white text
+  let accent = bg;                                                  // links and outlines on white paper
+  while (contrastOf(accent, "#ffffff") < 7) accent = mixHex(accent, "#000000", .12);
+  let accentDark = mixHex(bg, "#ffffff", .62);                      // the same, on dark paper
+  while (contrastOf(accentDark, mixHex(bg, "#000000", .55)) < 6) accentDark = mixHex(accentDark, "#ffffff", .2);
+  return {
+    "--night": bg, "--night-2": mixHex(bg, "#ffffff", .1), "--night-3": mixHex(bg, "#000000", .3),
+    "--night-fg": mixHex(bg, "#ffffff", .95), "--night-muted": mixHex(bg, "#ffffff", .7),
+    "--sun": hi, "--sun-ink": lumOf(hi) > .35 ? mixHex(hi, "#000000", .85) : "#ffffff",
+    "--cls-accent": accent, "--cls-accent-dark": accentDark,
+    "--cls-fg": mixHex(bg, "#000000", .35), "--cls-muted": mixHex(mixHex(bg, "#777777", .55), "#000000", .1),
+    "--cls-paper": mixHex(bg, "#ffffff", .955), "--cls-line": mixHex(bg, "#ffffff", .84), "--cls-mark": mixHex(hi, "#ffffff", .7),
+    "--cls-paper-dark": mixHex(bg, "#000000", .55), "--cls-surface-dark": mixHex(bg, "#000000", .32), "--cls-line-dark": mixHex(bg, "#ffffff", .14),
+    "--cls-fg-dark": mixHex(bg, "#ffffff", .93), "--cls-muted-dark": mixHex(bg, "#ffffff", .66)
+  };
+}
+// Paint the page in a class's colours (the class number is also kept on <html data-cls>).
+function paintClass(cls, root = document.documentElement) {
+  const v = themeVars(cls);
+  Object.keys(v).forEach(k => root.style.setProperty(k, v[k]));
+  root.dataset.cls = cls;
+  try { localStorage.setItem("chemophile-paint", JSON.stringify({ cls, v })); } catch (e) {}
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", v["--night"]);
+}
+// Cover colours from a cover picture (an <img> or <canvas>): the commonest dark colour, and the colour of the
+// bright title at the top (the word "Chemophile" on every cover). Used by the admin panel on upload.
+function coverColours(src) {
+  const w = 90, h = 127, cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const x = cv.getContext("2d", { willReadFrequently: true }); x.drawImage(src, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data, dark = new Map(), bright = new Map(), top = Math.round(h * .16);
+  const add = (m, k, r, g, b) => { const e = m.get(k) || [0, 0, 0, 0]; e[0] += r; e[1] += g; e[2] += b; e[3]++; m.set(k, e); };
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), sat = mx ? (mx - mn) / mx : 0;
+    if (mx < 110) add(dark, `${r >> 5}${g >> 5}${b >> 5}`, r, g, b);
+    else if (i / 4 / w < top && sat > .55 && mx > 190) {
+      const hue = Math.round((Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180 / Math.PI + 360) % 360 / 24);
+      add(bright, hue, r, g, b);
+    }
+  }
+  const best = m => { let e0 = null; m.forEach(e => { if (!e0 || e[3] > e0[3]) e0 = e; }); return e0 && e0[3] > 3 ? rgbHex([e0[0] / e0[3], e0[1] / e0[3], e0[2] / e0[3]]) : null; };
+  return { bg: best(dark) || DEFAULT_THEMES[11].bg, hi: best(bright) || DEFAULT_THEMES[11].hi };
+}
+
 // Bonus chapters (competition exams: JEE / NEET) are numbered from 101 in each class, so their keys never
 // clash with the book's chapters: Class 11 Bonus 1 is "11-101". They show as "Bonus 1", after the chapters.
 const BONUS_FROM = 100;
@@ -343,7 +405,8 @@ function applyCatalog(cat) {
   const base = new Map(STATIC_CHAPTERS.map(c => [keyOf(c), c]));
   Object.keys(PART).forEach(k => delete PART[k]);
   Object.keys(CLASS_LABEL).forEach(k => delete CLASS_LABEL[k]);
-  (cat.books || []).forEach(b => { PART[b.cls] = b.name; if (b.label) CLASS_LABEL[b.cls] = b.label; });
+  Object.keys(CLASS_THEME).forEach(k => delete CLASS_THEME[k]);
+  (cat.books || []).forEach(b => { PART[b.cls] = b.name; if (b.label) CLASS_LABEL[b.cls] = b.label; if (b.theme && b.theme.bg) CLASS_THEME[b.cls] = b.theme; });
   Object.keys(PRICES).forEach(k => delete PRICES[k]);
   Object.keys(MRP).forEach(k => delete MRP[k]);
   const live = [], soon = [];
@@ -357,6 +420,7 @@ function applyCatalog(cat) {
     // Counts and highlights read from the booklet ("Chapter info" in the admin panel) replace the built-in ones.
     ["fig", "solved", "practice", "qr"].forEach(f => { if (x[f] != null && x[f] !== "") c[f] = x[f]; });
     if (Array.isArray(x.highlights)) c.highlights = x.highlights.filter(Boolean);
+    c.free = !!x.free;
     if (Array.isArray(x.topics) && x.topics.length) c.topics = x.topics.map(t => [t[0], t[1] || "", +t[2] || 1, t[3] || ""]);
     PRICES[keyOf(c)] = Object.assign({}, x.price);
     MRP[keyOf(c)] = Object.assign({}, x.mrp);

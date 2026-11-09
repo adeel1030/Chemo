@@ -144,6 +144,14 @@ body { background: var(--paper); }
 .stu .actions .spacer { flex: 1; }
 .empty { text-align: center; padding: 28px 12px; color: var(--muted); }
 .chap-rows { display: grid; gap: 10px; }
+.theme-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.clr { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: .9rem; }
+.field .clr input[type="color"] { width: 48px; height: 38px; border: 2px solid var(--line); border-radius: 10px; padding: 2px; background: var(--surface); cursor: pointer; }
+.theme-pv { display: flex; align-items: center; gap: 10px; border-radius: 12px; padding: 12px 14px; margin-top: 8px; }
+.theme-pv b { font: 800 1.3rem/1 var(--font-display); }
+.theme-pv span { flex: 1; font-size: .85rem; opacity: .85; }
+.theme-pv i { font-style: normal; font-weight: 700; font-size: .8rem; border-radius: 999px; padding: 4px 10px; }
+.free-check { align-items: flex-start; border: 1px dashed var(--good); border-radius: 10px; padding: 8px 10px; }
 .ch-cv { width: 44px; height: 62px; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,.18); background: var(--paper); align-self: start; }
 .chap-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
 .chap-row.done { border-left: 4px solid var(--good); }
@@ -1954,7 +1962,7 @@ function renderCatalog() {
       <span class="no">${isBonus(c) ? "B" + (c.n - BONUS_FROM) : c.n}</span>
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
       <span class="go">Edit ›</span>
-      <span class="pr">${priceLine(c.price, c.mrp)}</span>
+      <span class="pr">${c.free ? `<span><b style="color: var(--good)">FREE</b></span>` : priceLine(c.price, c.mrp)}</span>
     </button>`).join("") : `<div class="ch-empty">No chapters in ${esc(clsName(catCls))} yet. Add the first one below.</div>`;
   $("#cat-combos").innerHTML = cat.combos.length ? [...cat.combos.map((x, i) => [x, i])].sort((a, b) => (a[0].name || "").localeCompare(b[0].name || "")).map(([x, i]) => `<button class="ch-item" type="button" data-edit-combo="${i}">
       <span class="no">${x.chapters.length}</span>
@@ -2131,6 +2139,7 @@ function chapterDialog(i, bonusNew) {
       <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
       <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live (can be ordered)</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
+    <label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>
     ${priceFields(c.price, c.mrp)}
     ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}`,
     async () => {
@@ -2139,8 +2148,11 @@ function chapterDialog(i, bonusNew) {
       if (!title) throw new Error("Write the chapter name.");
       if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ n })}.`);
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
-      if (!soon && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, or set it to Coming soon.");
-      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp }, custom ? { tag: val("d-tag") } : {});
+      const free = !!(dlg.querySelector("#d-free") || {}).checked;
+      if (!soon && !free && !onFormats().some(f => price[f] > 0)) throw new Error("Give at least one price, tick Free, or set it to Coming soon.");
+      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp, free }, custom ? { tag: val("d-tag") } : {});
+      // The reader's security rules read chapters/{key}.free, so a free chapter opens for every signed-up student.
+      if (!!c.free !== free || free) await setDoc(doc(db, "chapters", `${c.cls}-${n}`), { free }, { merge: true });
       // Topics left as they were keep their sections and sub-topics.
       if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
       await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[i] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
@@ -2163,6 +2175,14 @@ function classDialog(isNew) {
       <div class="field" data-type="uni"${isNew || uniNow ? "" : " hidden"}><label for="d-label">Course and year</label><input id="d-label" value="${esc(b.label || "")}" maxlength="40" placeholder="B.Sc 1st Year"><span class="hint">Shown where school books say "Class 11".</span></div>
       <div class="field lg"><label for="d-book">Book name</label><input id="d-book" value="${esc(b.name)}" placeholder="${uniNow ? "Inorganic Chemistry (B.Sc Sem 1)" : "Part 3 (for 10th Class)"}"></div>
     </div>
+    <div class="field"><label>Website colours for this class (from its cover pages)</label>
+      <div class="theme-row">
+        <label class="clr"><input type="color" id="d-bg" value="${themeOf(b.cls || 11).bg}"> Background</label>
+        <label class="clr"><input type="color" id="d-hi" value="${themeOf(b.cls || 11).hi}"> Highlight</label>
+        ${isNew ? "" : `<button class="btn btn-line btn-sm" type="button" id="d-take">📷 Take from the covers</button>`}
+      </div>
+      <div class="theme-pv" id="d-tpv"><b>Chemophile</b><span>${esc(b.name || "Class book")}</span><i>Order now</i></div>
+      <span class="hint">${b.theme && b.theme.manual ? "You chose these colours." : "Taken automatically from the first page of this class's PDFs when they are uploaded. Change them here if you like."} The website and the reader take on these colours for this class.</span></div>
     ${!isNew && count ? `<p class="cat-sub">It can be removed only when it has no chapters.</p>` : ""}`,
     async () => {
       const uni = isNew ? dlg.querySelector('input[name="d-type"]:checked').value === "uni" : uniNow;
@@ -2176,11 +2196,25 @@ function classDialog(isNew) {
       }
       if (uni && !label) throw new Error("Write the course and year, e.g. B.Sc 1st Year.");
       if (uni && cat.books.some(x => +x.cls !== cls && (x.label || "").toLowerCase() === label.toLowerCase())) throw new Error(`"${label}" is already there.`);
-      const item = { cls, name: val("d-book") || (uni ? label : `Class ${cls}`), ...(uni ? { label } : {}) };
+      const bg = val("d-bg"), hi = val("d-hi"), was = themeOf(b.cls || 11), picked = bg !== was.bg || hi !== was.hi;
+      const theme = picked ? { bg, hi, manual: true } : b.theme;
+      const item = { cls, name: val("d-book") || (uni ? label : `Class ${cls}`), ...(uni ? { label } : {}), ...(theme ? { theme } : {}) };
       await commit(next => { if (isNew) next.books.push(item); else next.books[next.books.findIndex(x => +x.cls === cls)] = item; }, `${uni ? label : "Class " + cls} saved.`);
       catCls = cls; renderCatalog();
     },
     !isNew && !count ? async () => { await commit(next => { next.books = next.books.filter(x => +x.cls !== +b.cls); }, `${clsName(b.cls)} removed.`); } : null);
+  const pv = () => { CLASS_THEME[0] = { bg: val("d-bg"), hi: val("d-hi") }; const w = themeVars(0); delete CLASS_THEME[0];
+    const box = dlg.querySelector("#d-tpv"); box.style.background = w["--night"]; box.style.color = w["--night-fg"]; box.querySelector("b").style.color = w["--sun"];
+    const i = box.querySelector("i"); i.style.background = w["--sun"]; i.style.color = w["--sun-ink"]; };
+  dlg.querySelectorAll("#d-bg, #d-hi").forEach(x => x.addEventListener("input", pv)); pv();
+  const take = dlg.querySelector("#d-take");
+  if (take) take.addEventListener("click", async () => {
+    take.textContent = "Reading the covers…";
+    const t = await classColours(b.cls).catch(() => null);
+    if (!t) { take.textContent = "No cover yet: upload a PDF first"; return; }
+    dlg.querySelector("#d-bg").value = t.bg; dlg.querySelector("#d-hi").value = t.hi; pv();
+    take.textContent = "✓ Taken from the covers";
+  });
   if (isNew) {
     const sync = () => { const uni = dlg.querySelector('input[name="d-type"]:checked').value === "uni"; dlg.querySelectorAll("[data-type]").forEach(e => { e.hidden = e.dataset.type !== (uni ? "uni" : "school"); }); };
     dlg.querySelectorAll('input[name="d-type"]').forEach(r => r.addEventListener("change", sync)); sync();
@@ -2315,7 +2349,27 @@ async function saveCovers(add) {
   const at = Date.now();
   await setDoc(doc(db, "catalog", "covers"), { data, at });
   Object.assign(COVERS, add);
-  await commit(next => { next.coversAt = at; }, "Book covers updated: the first page of each PDF.");
+  const themes = await autoThemes(map);
+  await commit(next => {
+    next.coversAt = at;
+    Object.keys(themes).forEach(c => { const b = next.books.find(x => +x.cls === +c); if (b) b.theme = themes[c]; });
+  }, "Book covers updated: the first page of each PDF." + (Object.keys(themes).length ? ` Website colours for ${Object.keys(themes).map(c => clsName(+c)).join(", ")} taken from the covers.` : ""));
+}
+// A class's website colours come from its covers, unless the admin chose them in the class's Edit.
+const loadPic = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+async function classColours(cls, map = COVERS) {
+  const chs = [...CHAPTERS, ...SOON_CHAPTERS].filter(c => +c.cls === +cls && !isBonus(c)).sort((a, b) => a.n - b.n);
+  const src = chs.map(c => map[ckey(c)] || coverOf(c)).find(Boolean);
+  return src ? coverColours(await loadPic(src)) : null;
+}
+async function autoThemes(map) {
+  const out = {};
+  for (const b of cat.books) {
+    if (b.theme && b.theme.manual) continue;
+    const t = await classColours(b.cls, map).catch(() => null);
+    if (t && (!b.theme || b.theme.bg !== t.bg || b.theme.hi !== t.hi)) out[b.cls] = { bg: t.bg, hi: t.hi, auto: true };
+  }
+  return out;
 }
 // Chapters uploaded before covers were made from the PDF get theirs from page 1 already in Firebase.
 async function backfillCovers() {

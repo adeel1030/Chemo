@@ -8,12 +8,13 @@
   --sun-ink: #2a2100;
   --rose: #ffb3c9;
 
-  --paper: #f6f6fb;
+  /* The --cls-* colours come from the student's class cover (paintClass in js/chapters.js). */
+  --paper: var(--cls-paper, #f6f6fb);
   --surface: #ffffff;
-  --fg: #1b1a45;
-  --muted: #5d5b80;
-  --line: #dddcee;
-  --accent: #3b2fb8;
+  --fg: var(--cls-fg, #1b1a45);
+  --muted: var(--cls-muted, #5d5b80);
+  --line: var(--cls-line, #dddcee);
+  --accent: var(--cls-accent, #3b2fb8);
   --good: #158a4e;
   --bad: #d6304f;
   --warn-bg: #fff4cf;
@@ -26,14 +27,14 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
-    --line: #2f2d63; --accent: #b7b0ff; --good: #4ade80; --bad: #ff7a93; --warn-bg: #3a3000;
+    --paper: var(--cls-paper-dark, #11102b); --surface: var(--cls-surface-dark, #1a1940); --fg: var(--cls-fg-dark, #ecebff); --muted: var(--cls-muted-dark, #a9a7d4);
+    --line: var(--cls-line-dark, #2f2d63); --accent: var(--cls-accent-dark, #b7b0ff); --good: #4ade80; --bad: #ff7a93; --warn-bg: #3a3000;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
-  --line: #2f2d63; --accent: #b7b0ff; --good: #4ade80; --bad: #ff7a93; --warn-bg: #3a3000;
+  --paper: var(--cls-paper-dark, #11102b); --surface: var(--cls-surface-dark, #1a1940); --fg: var(--cls-fg-dark, #ecebff); --muted: var(--cls-muted-dark, #a9a7d4);
+  --line: var(--cls-line-dark, #2f2d63); --accent: var(--cls-accent-dark, #b7b0ff); --good: #4ade80; --bad: #ff7a93; --warn-bg: #3a3000;
   color-scheme: dark;
 }
 

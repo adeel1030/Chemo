@@ -16,7 +16,8 @@ service cloud.firestore {
 
     // Can the signed-in student open this chapter now? Their ID is active and locked to a device, and either
     // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
-    // that is paid till a later date (subs is a map: chapter → paid-till time).
+    // that is paid till a later date (subs is a map: chapter → paid-till time), or free access from a promo
+    // code, or the admin made the chapter free for everyone who signs up (chapters/{chapter}.free).
     function canOpen(ch) {
       return signedIn()
         && student().active == true
@@ -26,6 +27,7 @@ service cloud.firestore {
             && (student().get('expiresAt', null) == null || request.time < student().expiresAt))
           || request.time < student().get('subs', {}).get(ch, timestamp.value(0))
           || (exists(grantPath(request.auth.uid, ch)) && request.time < get(grantPath(request.auth.uid, ch)).data.till)
+          || (exists(/databases/$(database)/documents/chapters/$(ch)) && get(/databases/$(database)/documents/chapters/$(ch)).data.get('free', false) == true)
         );
     }
     // "Free access" for one chapter (users/{uid}/grants/{chapter}), from a promo code a student with an ID

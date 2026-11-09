@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chemophile by Adeel Sir | Class 11 &amp; 12 Chemistry in Hinglish (NCERT, CBSE 2026-27)</title>
-<meta name="description" content="Chemistry ab ratni nahi, samajh aayegi! Adeel Sir's Hinglish booklets for Class 11 &amp; 12: NCERT section-wise, 800+ diagrams, 631 solved examples, board answers in English. Read online or paperback. Free sample.">
+<title>Chemophile by Adeel Sir | Class 9, 10, 11 &amp; 12 Chemistry in Hinglish (NCERT, CBSE 2026-27)</title>
+<meta name="description" content="Chemistry ab ratni nahi, samajh aayegi! Adeel Sir's Hinglish booklets for Class 9, 10, 11 &amp; 12: NCERT section-wise, 800+ diagrams, 631 solved examples, board answers in English. Read online or paperback. Free sample.">
 <link rel="canonical" href="https://chemophile.maproductsindia.com/">
 <meta name="author" content="Mohd Adeel Khan (Adeel Sir)">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -14,15 +14,16 @@
 <meta name="theme-color" content="#15134a">
 <script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <script src="js/theme.js" defer></script>
+<script>try { var p = JSON.parse(localStorage.getItem("chemophile-paint")); if (p && p.v) for (var k in p.v) document.documentElement.style.setProperty(k, p.v[k]); } catch (e) {}</script>
 <meta property="og:title" content="Chemophile by Adeel Sir: Chemistry samajh aayegi, ratni nahi padegi">
-<meta property="og:description" content="Class 11 &amp; 12 Chemistry in easy Hinglish: everyday examples, 800+ diagrams, 631 solved examples and English board answers. Free sample inside!">
+<meta property="og:description" content="Class 9 to 12 Chemistry in easy Hinglish: everyday examples, 800+ diagrams, 631 solved examples and English board answers. Free sample inside!">
 <meta property="og:image" content="https://chemophile.maproductsindia.com/assets/logo/og.png">
 <meta property="og:url" content="https://chemophile.maproductsindia.com/">
 <meta property="og:site_name" content="Chemophile">
 <meta property="og:locale" content="en_IN">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Chemophile by Adeel Sir: Class 11 &amp; 12 Chemistry in Hinglish">
+<meta name="twitter:title" content="Chemophile by Adeel Sir: Class 9 to 12 Chemistry in Hinglish">
 <meta name="twitter:description" content="Chemistry ab ratni nahi, samajh aayegi. Diagrams, solved examples, English board answers. Free sample inside!">
 <meta name="twitter:image" content="https://chemophile.maproductsindia.com/assets/logo/og.png">
 <script type="application/ld+json">
@@ -35,7 +36,7 @@
    "name": "Chemophile",
    "url": "https://chemophile.maproductsindia.com/",
    "logo": "https://chemophile.maproductsindia.com/assets/logo/icon-512.png",
-   "description": "Hinglish Chemistry booklets for Class 11 and 12 by Adeel Sir, supported by M A Products India.",
+   "description": "Hinglish Chemistry booklets for Class 9, 10, 11 and 12 by Adeel Sir, supported by M A Products India.",
    "founder": {
     "@id": "https://chemophile.maproductsindia.com/#adeel"
    },
@@ -64,7 +65,7 @@
    "name": "Mohd Adeel Khan",
    "alternateName": "Adeel Sir",
    "jobTitle": "Chemistry teacher and author",
-   "description": "MSc BEd (JMI). Author of the Chemophile Hinglish Chemistry series for Class 11 and 12."
+   "description": "MSc BEd (JMI). Author of the Chemophile Hinglish Chemistry series for Class 9 to 12."
   },
   {
    "@type": "WebSite",
@@ -238,7 +239,7 @@
      "name": "Can I see the book before buying?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "Yes. There is a free sample for both Class 11 and Class 12, with one complete topic from every chapter. Flip through it in \"Free sample\" above, or download the PDF."
+      "text": "Yes. Every class has free reading: a free sample with one complete topic from every chapter, and free chapters for some classes. Choose your class at the top, then open \"Free\" to read it."
      }
     }
    ]
@@ -261,20 +262,21 @@
   --sun-ink: #2a2100;
   --rose: #ffb3c9;
 
-  --paper: #f6f6fb;
+  /* The --cls-* colours come from the chosen class's cover (paintClass in js/chapters.js). */
+  --paper: var(--cls-paper, #f6f6fb);
   --surface: #ffffff;
-  --fg: #1b1a45;
-  --muted: #5d5b80;
-  --line: #dddcee;
-  --accent: #3b2fb8;
-  --mark: #fff1b8;
+  --fg: var(--cls-fg, #1b1a45);
+  --muted: var(--cls-muted, #5d5b80);
+  --line: var(--cls-line, #dddcee);
+  --accent: var(--cls-accent, #3b2fb8);
+  --mark: var(--cls-mark, #fff1b8);
   --good: #158a4e;
   --wa: #1f9d55;
 
   --t1: #0f9488; --t2: #e0a800; --t3: #7b3fe4; --t4: #1f9d55;
   --t5: #2f6bed; --t6: #ea6a1b; --t7: #c42dc4; --t8: #e03c3c;
   --t9: #0e8fb0; --t10: #5e8e1f;
-  --rev-bg: #1b1a45; --rev-fg: #ffffff;
+  --rev-bg: var(--cls-fg, #1b1a45); --rev-fg: #ffffff;
 
   --chip-yellow: #fff4cf; --chip-brown: #8a5a00;
   --chip-pink: #ffeef3; --chip-red: #d6304f;
@@ -296,16 +298,16 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
-    --line: #2f2d63; --accent: #b7b0ff; --mark: rgba(255,210,74,.3); --good: #4ade80;
-    --rev-bg: #ffd24a; --rev-fg: #1b1a45;
+    --paper: var(--cls-paper-dark, #11102b); --surface: var(--cls-surface-dark, #1a1940); --fg: var(--cls-fg-dark, #ecebff); --muted: var(--cls-muted-dark, #a9a7d4);
+    --line: var(--cls-line-dark, #2f2d63); --accent: var(--cls-accent-dark, #b7b0ff); --mark: rgba(255,210,74,.3); --good: #4ade80;
+    --rev-bg: var(--sun); --rev-fg: var(--sun-ink);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #11102b; --surface: #1a1940; --fg: #ecebff; --muted: #a9a7d4;
-  --line: #2f2d63; --accent: #b7b0ff; --mark: rgba(255,210,74,.3); --good: #4ade80;
-  --rev-bg: #ffd24a; --rev-fg: #1b1a45;
+  --paper: var(--cls-paper-dark, #11102b); --surface: var(--cls-surface-dark, #1a1940); --fg: var(--cls-fg-dark, #ecebff); --muted: var(--cls-muted-dark, #a9a7d4);
+  --line: var(--cls-line-dark, #2f2d63); --accent: var(--cls-accent-dark, #b7b0ff); --mark: rgba(255,210,74,.3); --good: #4ade80;
+  --rev-bg: var(--sun); --rev-fg: var(--sun-ink);
   color-scheme: dark;
 }
 
@@ -376,6 +378,19 @@ p { margin: 0; }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 32px; align-items: center; padding-block: 44px 56px; }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .pill { border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 2px 12px; font-size: var(--step--1); color: var(--night-muted); }
+/* Class picker: one big button per class, each in its own book's colours. */
+.cls-pick-wrap { display: grid; gap: 8px; margin-bottom: 18px; }
+.cls-q { font: 700 .95rem var(--font-body); color: var(--night-muted); }
+.cls-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.cls-pick button { --d: #2b276d; --h: #ffd24a; display: grid; grid-template-columns: auto auto; align-items: center; gap: 0 10px; text-align: left; border: 2px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: var(--night-fg); border-radius: 16px; padding: 8px 14px 8px 8px; cursor: pointer; font: inherit; transition: transform .15s ease, border-color .15s ease, background-color .15s ease; }
+.cls-pick button:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.5); }
+.cls-pick .sw { grid-row: span 2; width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--d) 55%, var(--h) 55%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); }
+.cls-pick b { font: 800 1.15rem/1 var(--font-display); }
+.cls-pick small { font-size: .72rem; color: var(--night-muted); line-height: 1.2; }
+.cls-pick button[aria-pressed="true"] { background: var(--sun); color: var(--sun-ink); border-color: var(--sun); box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+.cls-pick button[aria-pressed="true"] small { color: var(--sun-ink); opacity: .8; }
+@media (max-width: 520px) { .cls-pick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+html { transition: background-color .4s ease; }
 .pill.new { background: var(--sun); color: var(--sun-ink); border-color: var(--sun); font-weight: 700; }
 .hero h1 { isolation: isolate; font-size: var(--step-4); font-weight: 800; margin-top: 16px; letter-spacing: -.01em; }
 .hero h1 .y { color: var(--sun); position: relative; white-space: nowrap; }
@@ -421,8 +436,8 @@ p { margin: 0; }
 .tile p { font-size: .9rem; color: var(--muted); }
 .tile .big { font: 800 2.4rem/1 var(--font-display); }
 .tile.w2 { grid-column: span 2; } .tile.h2 { grid-row: span 2; }
-.tile.t1 { background: linear-gradient(135deg, #3b2fb8, #6c4fe0); color: #fff; border: 0; } .tile.t1 p { color: rgba(255,255,255,.8); }
-.tile.t2 { background: linear-gradient(135deg, #ffd24a, #ff9f43); color: #2a1300; border: 0; } .tile.t2 p { color: rgba(42,19,0,.75); }
+.tile.t1 { background: linear-gradient(135deg, var(--night), var(--night-2)); color: #fff; border: 0; } .tile.t1 p { color: rgba(255,255,255,.8); }
+.tile.t2 { background: linear-gradient(135deg, var(--sun), color-mix(in srgb, var(--sun) 70%, #ff7a00)); color: var(--sun-ink); border: 0; } .tile.t2 p { color: var(--sun-ink); opacity: .8; }
 .tile.t3 { background: linear-gradient(135deg, #12b886, #0ca678); color: #fff; border: 0; } .tile.t3 p { color: rgba(255,255,255,.85); }
 .tile.t4 { background: linear-gradient(135deg, #ff6b9d, #f06595); color: #fff; border: 0; } .tile.t4 p { color: rgba(255,255,255,.85); }
 .tile .glow { position: absolute; width: 160px; height: 160px; border-radius: 50%; right: -40px; bottom: -40px; background: rgba(255,255,255,.18); }
@@ -535,6 +550,15 @@ section.block { padding-block: 64px; }
 .cover-btn { padding: 0; border: 0; background: none; cursor: pointer; position: relative; border-radius: 8px; display: block; width: 100%; }
 .cover-btn img { border-radius: 6px; box-shadow: 0 10px 24px rgba(20,18,70,.22); transition: transform .2s ease; width: 100%; }
 .cover-btn:hover img, .cover-btn:hover .soon-cover { transform: translateY(-4px) rotate(-1deg); }
+.free-badge { display: inline-block; background: var(--good); color: #fff; font: 800 .7rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 2px 8px; margin-bottom: 6px; }
+.price.free-p { border-color: var(--good); color: var(--good); }
+.price.free-p b { color: var(--good); }
+.add-btn.free-btn { background: var(--good); border-color: var(--good); color: #fff; text-decoration: none; display: inline-flex; align-items: center; }
+.card.free .ch { color: var(--good); }
+.card.free .ch::after { content: " · Free"; }
+.sample-card.soon-free { grid-template-columns: minmax(0, 1fr); }
+.sample-card a.cv { display: block; }
+.sample-card .cv .soon-cover { transform: rotate(-2deg); }
 .shelf-head { grid-column: 1 / -1; border-top: 2px dashed var(--line); padding-top: 18px; margin-top: 6px; }
 .shelf-head h3 { margin: 0; font: 800 1.3rem/1.2 var(--font-display); }
 .shelf-head p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
@@ -676,9 +700,9 @@ section.block { padding-block: 64px; }
 .stat b { color: var(--sun); font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) { .ch-head { grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 16px; } }
 .sheet-buy { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
-.hl { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
-.hl li { padding-left: 26px; position: relative; line-height: 1.4; }
-.hl li::before { content: "★"; position: absolute; left: 4px; color: var(--sun); }
+.hl-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.hl-list li { padding-left: 26px; position: relative; line-height: 1.4; }
+.hl-list li::before { content: "★"; position: absolute; left: 4px; color: var(--sun); }
 .sheet h4.sub { font-size: 1.15rem; margin-top: 26px; }
 .sample-row { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0 8px; }
 .sample-row button { flex: 0 0 auto; width: 112px; background: none; border: 0; padding: 0; cursor: zoom-in; text-align: left; color: var(--muted); font: .76rem/1.3 var(--font-body); }
@@ -786,7 +810,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="#top"><img src="assets/logo/icon-96.png" alt="" width="40" height="40"><span>Chemophile<small>by Adeel Sir · Class 11 &amp; 12</small></span></a>
+    <a class="brand" href="#top"><img src="assets/logo/icon-96.png" alt="" width="40" height="40"><span>Chemophile<small>by Adeel Sir · Class 9 to 12</small></span></a>
     <nav class="site-nav" aria-label="Main">
       <a href="#andar">Look inside</a>
       <a href="#chapters">Chapters</a>
@@ -805,12 +829,14 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
     <div class="atoms" aria-hidden="true"><span style="left: 6%; top: 18%">⚛</span><span style="left: 44%; top: 8%">H₂O</span><span style="left: 88%; top: 14%">⬡</span><span style="left: 12%; top: 72%">CO₂</span><span style="left: 52%; top: 80%">⚗</span><span style="left: 80%; top: 64%">NaCl</span><span style="left: 30%; top: 40%">e⁻</span><span style="left: 68%; top: 34%">⬡</span></div>
     <div class="wrap">
       <div>
-        <div class="pills"><span class="pill new">Class 11 + 12: all 19 chapters ready</span><span class="pill">CBSE 2026-27</span></div>
+        <div class="cls-pick-wrap"><span class="cls-q">Aap kis class mein ho?</span>
+          <div class="cls-pick" id="cls-pick" role="group" aria-label="Choose your class"></div></div>
+        <div class="pills"><span class="pill new" id="hero-pill">Class 9 to 12</span><span class="pill">CBSE 2026-27</span></div>
         <h1>No more fear of <span class="y">Chemistry.</span></h1>
-        <p class="lede">Chemophile booklets by Adeel Sir: Class 11 and 12 Chemistry, explained in Hinglish. Every concept starts with an everyday example, then a diagram, then the exam-ready answer.</p>
+        <p class="lede" id="hero-lede">Chemophile booklets by Adeel Sir: Class 9 to 12 Chemistry, explained in Hinglish. Every concept starts with an everyday example, then a diagram, then the exam-ready answer.</p>
         <p class="hand">Stop memorising. Understand it, and it stays.</p>
         <div class="hero-actions">
-          <a class="btn btn-sun" href="#free-sample">Read the free sample</a>
+          <a class="btn btn-sun" href="#free-sample" id="hero-free">Read free</a>
           <a class="btn btn-ghost" href="#pack">Build your pack</a>
         </div>
         <ul class="trust">
@@ -818,7 +844,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
           <li>Board answers in English</li>
           <li>JEE/NEET extra boxes</li>
           <li>Read online or get the paperback</li>
-          <li>Free sample PDF</li>
+          <li>Free reading for every class</li>
         </ul>
       </div>
       <div class="cover-fan" id="cover-fan"><div class="fan3d">
@@ -835,9 +861,9 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 
   <section class="block" id="free-sample">
     <div class="wrap">
-      <div class="eyebrow">Free, no login needed</div>
-      <h2 class="sec-title">Read the <span class="hl">free sample</span> first</h2>
-      <p class="sec-intro">One complete topic from every chapter, with the real book pages. Flip through it right here like a book, or download the PDF and share it with friends.</p>
+      <div class="eyebrow" id="free-eyebrow">Free reading</div>
+      <h2 class="sec-title">Read <span class="hl">free</span> first</h2>
+      <p class="sec-intro" id="free-intro">Real book pages, free. Flip through them right here like a book.</p>
       <div class="samples-grid" id="samples-grid"></div>
       <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
     </div>
@@ -1036,7 +1062,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
         <details><summary>I am a teacher. Can I see the full book?</summary><p>Yes. Sign up as a teacher and send a photo of your school or college ID card from your library. Once Adeel Sir checks it, every chapter of your classes opens free for 30 days. For your students, ask for a promo code for your class.</p></details>
         <details><summary>I already have a login ID. Can I use a promo code?</summary><p>Yes. Open your library, enter the code under "Have a promo code?", and its chapters open on your same ID till the code's last date.</p></details>
         <details><summary>Can I sign up without buying?</summary><p>Yes, it's free. Tap "Sign up free", tick your class, and the free sample of your class stays in your own library. When you buy chapters, they open on the same login ID.</p></details>
-        <details><summary>Can I see the book before buying?</summary><p>Yes. There is a free sample for both Class 11 and Class 12, with one complete topic from every chapter. Flip through it in "Free sample" above, or download the PDF.</p></details>
+        <details><summary>Can I see the book before buying?</summary><p>Yes. Every class has free reading: choose your class at the top of the page. Class 11 and Class 12 have a free sample with one complete topic from every chapter. Flip through it in "Free sample" above, or download the PDF.</p></details>
       </div>
     </div>
   </section>
@@ -1083,7 +1109,7 @@ s.mrp { color: var(--muted); font-size: .85em; margin-right: 3px; }
 <footer class="site-foot">
   <div class="rainbow"></div>
   <div class="wrap">
-    <div><b>Chemophile</b> · Class 11 &amp; 12 Chemistry · Mohd Adeel Khan, MSc BEd (JMI)</div>
+    <div><b>Chemophile</b> · Class 9 to 12 Chemistry · Mohd Adeel Khan, MSc BEd (JMI)</div>
     <div>© 2026 Mohd Adeel Khan. All rights reserved. The text, figures, questions and examples in the booklets are the author's original work. Copying, scanning, printing, uploading or sharing them without permission is prohibited.</div>
     <div>Based on the NCERT and CBSE syllabus. Not an NCERT publication. QR codes open free simulations from PhET Interactive Simulations (University of Colorado Boulder).</div>
     <div>Book supported by M A Products India and Olife Gold Olive Oil · <a href="mailto:chemhabibs@gmail.com">chemhabibs@gmail.com</a></div>
@@ -1182,7 +1208,7 @@ const store = {
   const sum = f => CHAPTERS.reduce((a, c) => a + parseInt(c[f], 10), 0);
   const items = [
     [CHAPTERS.length, "chapters ready"], [sum("pages"), "pages"], [sum("fig"), "figures and diagrams"],
-    [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [2, "free sample books"]
+    [sum("solved"), "solved examples"], [sum("practice") + "+", "practice questions"], [Object.keys(SAMPLE_BOOKS).length + CHAPTERS.filter(c => c.free).length, "free books and chapters"]
   ];
   $("#numbers").innerHTML = items.map(([v, l]) => `<div><b data-to="${parseInt(v, 10)}" data-suffix="${String(v).replace(/^\d+/, "")}">${v}</b><span>${l}</span></div>`).join("");
   // Numbers count up from zero the first time they come into view.
@@ -1262,7 +1288,9 @@ const store = {
 })();
 
 // ---------- pack state ----------
-const pack = new Set((store.get("chemophile-pack") || []).filter(k => CHAPTERS.some(c => key(c) === k)));
+// Free chapters are read after a free sign-up, so they never go in the pack.
+const BUYABLE = CHAPTERS.filter(c => !c.free);
+const pack = new Set((store.get("chemophile-pack") || []).filter(k => BUYABLE.some(c => key(c) === k)));
 // Formats on sale, from the catalog, plus "Online + paperback" when both kinds are sold.
 // The online book is valid for onlineDays() (365), so its note says so.
 const validity = () => `valid for ${onlineDays() === 365 ? "1 year (365 days)" : onlineDays() + " days"}`;
@@ -1288,8 +1316,81 @@ document.querySelectorAll("#fmt-opts").forEach(box => {
 });
 
 // ---------- shelf ----------
-const CLASSES = classList().filter(k => CHAPTERS.some(c => c.cls === k) || UPCOMING.some(u => u.cls === k));
-let cls = CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
+// Every class that has a book. The visitor's class (from the link, ?class=10, or their last visit) colours the
+// whole page like that class's covers and fills the hero, the free section and the shelf.
+const CLASSES = classList();
+const linkCls = +(new URLSearchParams(location.search).get("class") || (location.hash.match(/^#class-(\d+)$/) || [])[1] || 0);
+let cls = [linkCls, +store.get("chemophile-class")].find(k => CLASSES.includes(k)) || CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
+const freeChip = `<div class="price-row"><span class="price free-p"><b>FREE</b> full chapter</span></div>`;
+const readFree = `<a class="add-btn free-btn" href="read.html#signup">Read free →</a>`;
+const ord = k => isUni(k) ? clsName(k) : k + (k % 10 === 1 && k !== 11 ? "st" : k % 10 === 2 && k !== 12 ? "nd" : k % 10 === 3 && k !== 13 ? "rd" : "th");
+function classCount(k) {
+  const main = CHAPTERS.filter(c => c.cls === k && !isBonus(c)), free = main.filter(c => c.free).length;
+  return { main: main.length, free, bonus: CHAPTERS.filter(c => c.cls === k && isBonus(c)).length, soon: UPCOMING.filter(u => u.cls === k).length };
+}
+function renderClassPick() {
+  $("#cls-pick").innerHTML = CLASSES.map(k => {
+    const t = themeOf(k), n = classCount(k);
+    const sub = n.main ? (n.free === n.main ? `${n.main} free chapter${n.main > 1 ? "s" : ""}` : `${n.main} chapters${n.free ? ` · ${n.free} free` : ""}`) : n.soon ? "Coming soon" : "Coming soon";
+    return `<button type="button" data-pick-class="${k}" aria-pressed="${k === cls}" style="--d: ${t.bg}; --h: ${t.hi}"><span class="sw" aria-hidden="true"></span><b>${esc(isUni(k) ? clsName(k) : `Class ${k}`)}</b><small>${sub}</small></button>`;
+  }).join("");
+}
+function renderHeroClass() {
+  const n = classCount(cls), name = clsName(cls);
+  $("#hero-pill").textContent = n.main ? `${name}: ${n.free === n.main ? `${n.main} free chapter${n.main > 1 ? "s" : ""}` : `${n.main} chapter${n.main > 1 ? "s" : ""} ready`}${n.bonus ? ` + ${n.bonus} bonus` : ""}` : `${name}: coming soon`;
+  $("#hero-lede").textContent = `Chemophile booklets by Adeel Sir: ${name} Chemistry, explained in Hinglish. Every concept starts with an everyday example, then a diagram, then the exam-ready answer.`;
+  // Three covers of this class's books (topped up from other classes if it has fewer).
+  const mine = CHAPTERS.filter(c => c.cls === cls && coverOf(c)), others = CHAPTERS.filter(c => c.cls !== cls && coverOf(c));
+  const pick = [mine[5] || mine[2], mine[mine.length - 1], mine[1] || mine[0]].filter(Boolean);
+  const three = [...new Set(pick)];
+  while (three.length < 3 && others.length) three.unshift(others.shift());
+  document.querySelectorAll("#cover-fan img").forEach((img, i) => {
+    const c = three[i]; if (!c) return;
+    img.src = coverOf(c); img.dataset.cover = key(c);
+    img.alt = i === 2 ? `Cover of Chemophile ${clsName(c.cls)} ${chNo(c)}: ${plain(c.title)}` : "";
+  });
+}
+function renderSamples() {
+  const b = SAMPLE_BOOKS[cls], free = CHAPTERS.filter(c => c.cls === cls && c.free), name = clsName(cls);
+  const n = CHAPTERS.filter(c => c.cls === cls && !c.custom).length, cards = [];
+  if (b) cards.push(`<div class="sample-card">
+    <button class="cv" type="button" data-sample="${cls}" aria-label="Read the ${esc(name)} free sample"><img src="${sampleImg(cls, 1, true)}" alt="" width="360" height="509" loading="lazy"></button>
+    <div style="min-width:0">
+      <span class="free-badge">Free · no login</span>
+      <h3>${esc(name)} free sample</h3>
+      <p>${esc(PART[cls] || name)} · ${b.pages} pages · one topic from each of the ${n} chapters</p>
+      <div class="acts">
+        <button class="btn btn-sun" type="button" data-sample="${cls}">Flip through it</button>
+        <a class="btn btn-line" href="${b.pdf}" download>PDF download (${b.sizeMB} MB)</a>
+      </div>
+    </div>
+  </div>`);
+  free.forEach(c => cards.push(`<div class="sample-card">
+    <a class="cv" href="read.html#signup" aria-label="Read ${esc(chNo(c))} free">${coverHtml(c)}</a>
+    <div style="min-width:0">
+      <span class="free-badge">Free · full chapter</span>
+      <h3>${chNo(c)}: ${esc(c.title)}</h3>
+      <p>${[c.pages && `${c.pages} pages`, c.topics.length && `${c.topics.length} topics`].filter(Boolean).join(" · ") || "The complete chapter"}. Sign up free, tick ${esc(name)}, and read it in the app.</p>
+      <div class="acts"><a class="btn btn-sun" href="read.html#signup">Sign up and read free</a><button class="btn btn-line" type="button" data-sheet="${key(c)}">See topics</button></div>
+    </div>
+  </div>`));
+  if (!cards.length) cards.push(`<div class="sample-card soon-free"><div style="min-width:0"><h3>${esc(name)}: free reading coming soon</h3>
+    <p>Adeel Sir is adding the free part for ${esc(name)}. Want a message when it's ready?</p>
+    <div class="acts"><a class="btn btn-wa" href="${wa(`Hello Adeel Sir, please tell me when the free ${clsName(cls)} Chemophile chapters are ready.`)}" target="_blank" rel="noopener">Tell me on WhatsApp</a></div></div></div>`);
+  $("#samples-grid").innerHTML = cards.join("");
+  $("#free-eyebrow").textContent = `${name} · free reading`;
+  $("#free-intro").textContent = b && free.length ? "A sample of every chapter with no login, and complete chapters free after a free sign-up."
+    : b ? "One complete topic from every chapter, with the real book pages. Flip through it right here like a book, or download the PDF and share it with friends."
+    : free.length ? "Complete chapters, free. Sign up free (it takes a minute), tick your class, and read them in the app: turns like a real book." : "";
+}
+function setClass(k, opts = {}) {
+  if (!CLASSES.includes(k)) return;
+  cls = k; store.set("chemophile-class", k); paintClass(k);
+  renderClassPick(); renderHeroClass(); renderShelf(); renderSamples();
+  try { const u = new URL(location.href); u.searchParams.set("class", k); if (/^#class-/.test(u.hash)) u.hash = ""; history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) {}
+  if (opts.scroll) $(opts.scroll).scrollIntoView({ behavior: "smooth", block: "start" });
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-pick-class]"); if (b) setClass(+b.dataset.pickClass); });
 // Chapters added in the admin panel have no cover picture yet, so draw one.
 function madeCover(c) {
   return `<div class="soon-cover made-cover night">
@@ -1321,15 +1422,15 @@ function renderShelf() {
     </div>` : "") + (() => {
     if (c) {
       const k = key(c), on = pack.has(k);
-      return `<div class="card${isBonus(c) ? " bonus" : ""}">
+      return `<div class="card${isBonus(c) ? " bonus" : ""}${c.free ? " free" : ""}">
         <button class="cover-btn" type="button" data-sheet="${k}" aria-label="See topics of ${chNo(c)}: ${esc(c.title)}">
           ${coverHtml(c)}
         </button>
         <div><div class="ch">${chNo(c)}</div><div class="nm">${esc(nameOf(c))}</div>
         <div class="meta">${[c.topics.length && `${c.topics.length} topics`, c.pages && `${c.pages} pages`, c.solved && `${c.solved} solved`].filter(Boolean).join(" · ")}</div></div>
-        ${priceChips(c)}
+        ${c.free ? freeChip : priceChips(c)}
         <div class="card-actions">
-          <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In pack" : "+ Add to pack"}</button>
+          ${c.free ? readFree : `<button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In pack" : "+ Add to pack"}</button>`}
           <button class="more-btn" type="button" data-sheet="${k}">See topics</button>
         </div>
       </div>`;
@@ -1341,7 +1442,7 @@ function renderShelf() {
       <div class="soon-tag">${u.tag}</div></div>
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Notify me →</a>
     </div>`;
-  })()).join("");
+  })()).join("") || `<div class="shelf-head"><h3>${esc(clsName(cls))}: books coming soon</h3><p>Adeel Sir is writing them now. <a href="${wa(`Hello Adeel Sir, please tell me when the Chemophile ${clsName(cls)} books are ready.`)}" target="_blank" rel="noopener">Get a WhatsApp message when they're ready →</a></p></div>`;
   const book = PART[cls] ? `Chemophile ${PART[cls]}` : clsName(cls);
   const mainReady = ready.filter(c => !isBonus(c)).length, mainSoon = soon.filter(u => !isBonus(u)).length;
   $("#shelf-note").textContent = (mainReady
@@ -1357,14 +1458,13 @@ $("#cls-tabs").innerHTML = CLASSES.map(k => {
 document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-cls]");
   if (!b) return;
-  cls = +b.dataset.cls;
-  renderShelf();
+  setClass(+b.dataset.cls);
 });
 
 // ---------- pack builder ----------
 function renderPick() {
   $("#pick-list").innerHTML = CLASSES.map(k => {
-    const list = CHAPTERS.filter(c => c.cls === k);
+    const list = BUYABLE.filter(c => c.cls === k);
     if (!list.length) return "";
     const all = list.every(c => pack.has(key(c)));
     return `<li class="pick-group"><b>${esc(clsName(k))}</b><button class="more-btn" type="button" data-pick-cls="${k}">${all ? "Remove " + esc(clsName(k)) : "All of " + esc(clsName(k))}</button></li>` +
@@ -1374,7 +1474,7 @@ function renderPick() {
       <span>${chShort(c)} · ${esc(nameOf(c))}</span><span class="pp">${v ? `${mrp ? `<s class="mrp">${rupee(mrp)}</s>` : ""}${rupee(v)}${per(fmt)}` : "Ask"}</span></label></li>`;
       }).join("");
   }).join("");
-  $("#pick-all").textContent = pack.size === CHAPTERS.length ? "Remove all" : "All chapters";
+  $("#pick-all").textContent = pack.size === BUYABLE.length ? "Remove all" : "All chapters";
 }
 function renderSummary() {
   const chosen = CHAPTERS.filter(c => pack.has(key(c)));
@@ -1531,14 +1631,14 @@ $("#pick-list").addEventListener("change", e => { if (e.target.dataset.pick) tog
 $("#pick-list").addEventListener("click", e => {
   const b = e.target.closest("[data-pick-cls]");
   if (!b) return;
-  const list = CHAPTERS.filter(c => c.cls === +b.dataset.pickCls);
+  const list = BUYABLE.filter(c => c.cls === +b.dataset.pickCls);
   const all = list.every(c => pack.has(key(c)));
   list.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
   renderShelf(); renderPick(); renderSummary();
 });
 $("#pick-all").addEventListener("click", () => {
-  const all = pack.size === CHAPTERS.length;
-  CHAPTERS.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
+  const all = pack.size === BUYABLE.length;
+  BUYABLE.forEach(c => all ? pack.delete(key(c)) : pack.add(key(c)));
   renderShelf(); renderPick(); renderSummary();
 });
 $("#order-btn").addEventListener("click", e => { if (!pack.size) { e.preventDefault(); location.hash = "pack"; } });
@@ -1580,11 +1680,11 @@ function openSheet(k, topicId) {
         </div>
       </div>
     </div>
-    <div class="sheet-buy">${priceChips(c)}
-      <button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In your pack" : "+ Add to pack"}</button>
+    <div class="sheet-buy">${c.free ? freeChip : priceChips(c)}
+      ${c.free ? readFree : `<button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In your pack" : "+ Add to pack"}</button>`}
     </div>
     ${(c.highlights || []).length ? `<h4 class="sub">Is chapter mein khaas</h4>
-    <ul class="hl">${c.highlights.map(h => `<li>${h}</li>`).join("")}</ul>` : ""}
+    <ul class="hl-list">${c.highlights.map(h => `<li>${h}</li>`).join("")}</ul>` : ""}
     ${samples ? `<h4 class="sub">Free sample pages</h4>
     <div class="sample-row">${samples}</div>` : ""}
     ${topics ? `<h4 class="sub">What's in this chapter</h4>
@@ -1637,7 +1737,7 @@ $("#topic-search").addEventListener("input", e => {
 results.addEventListener("click", e => {
   const b = e.target.closest("button");
   if (!b) return;
-  if (b.dataset.soon) { cls = +b.dataset.soon; renderShelf(); $("#chapters").scrollIntoView(); return; }
+  if (b.dataset.soon) { setClass(+b.dataset.soon, { scroll: "#chapters" }); return; }
   openSheet(b.dataset.k, b.dataset.t);
 });
 
@@ -1690,27 +1790,12 @@ viewer.addEventListener("touchend", e => {
 });
 
 // ---------- free samples ----------
-$("#samples-grid").innerHTML = [11, 12].map(k => {
-  const b = SAMPLE_BOOKS[k];
-  const n = CHAPTERS.filter(c => c.cls === k && !c.custom).length;
-  return `<div class="sample-card">
-    <button class="cv" type="button" data-sample="${k}" aria-label="Read the Class ${k} free sample"><img src="${sampleImg(k, 1, true)}" alt="" width="360" height="509" loading="lazy"></button>
-    <div style="min-width:0">
-      <h3>Class ${k} free sample</h3>
-      <p>${PART[k]} · ${b.pages} pages · one topic from each of the ${n} chapters</p>
-      <div class="acts">
-        <button class="btn btn-sun" type="button" data-sample="${k}">Flip through it</button>
-        <a class="btn btn-line" href="${b.pdf}" download>PDF download (${b.sizeMB} MB)</a>
-      </div>
-    </div>
-  </div>`;
-}).join("");
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
 function openSample(k) {
   const b = SAMPLE_BOOKS[k];
   const toc = CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(nameOf(c))}`, 2 * c.n + 2]);
   new Flipbook({
-    title: `Class ${k} free sample`, pageCount: b.pages, toc,
+    title: `${clsName(k)} free sample`, pageCount: b.pages, toc,
     download: { href: b.pdf, label: "PDF download" },
     loadPage: n => loadImg(sampleImg(k, n))
   }).open();
@@ -1735,7 +1820,7 @@ $("#copy-phone").addEventListener("click", () => {
 });
 
 // ---------- start ----------
-renderShelf(); renderPick(); renderSummary(); renderCombos(); renderOffer();
+setClass(cls); renderPick(); renderSummary(); renderCombos(); renderOffer();
 const m = location.hash.match(/^#ch(\d+)-(\d+)$/);
 if (m) openSheet(`${m[1]}-${m[2]}`);
 window.openSample = openSample;
