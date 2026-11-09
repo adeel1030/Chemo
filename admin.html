@@ -144,13 +144,6 @@ body { background: var(--paper); }
 .stu .actions .spacer { flex: 1; }
 .empty { text-align: center; padding: 28px 12px; color: var(--muted); }
 .chap-rows { display: grid; gap: 10px; }
-.theme-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.clr { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: .9rem; }
-.field .clr input[type="color"] { width: 48px; height: 38px; border: 2px solid var(--line); border-radius: 10px; padding: 2px; background: var(--surface); cursor: pointer; }
-.theme-pv { display: flex; align-items: center; gap: 10px; border-radius: 12px; padding: 12px 14px; margin-top: 8px; }
-.theme-pv b { font: 800 1.3rem/1 var(--font-display); }
-.theme-pv span { flex: 1; font-size: .85rem; opacity: .85; }
-.theme-pv i { font-style: normal; font-weight: 700; font-size: .8rem; border-radius: 999px; padding: 4px 10px; }
 .free-check { align-items: flex-start; border: 1px dashed var(--good); border-radius: 10px; padding: 8px 10px; }
 .d-body.has-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 340px); gap: 14px; align-items: start; }
 .d-body.has-page .d-page { order: 2; }
@@ -2257,14 +2250,6 @@ function classDialog(isNew) {
       <div class="field" data-type="uni"${isNew || uniNow ? "" : " hidden"}><label for="d-label">Course and year</label><input id="d-label" value="${esc(b.label || "")}" maxlength="40" placeholder="B.Sc 1st Year"><span class="hint">Shown where school books say "Class 11".</span></div>
       <div class="field lg"><label for="d-book">Book name</label><input id="d-book" value="${esc(b.name)}" placeholder="${uniNow ? "Inorganic Chemistry (B.Sc Sem 1)" : "Part 3 (for 10th Class)"}"></div>
     </div>
-    <div class="field"><label>Website colours for this class (from its cover pages)</label>
-      <div class="theme-row">
-        <label class="clr"><input type="color" id="d-bg" value="${themeOf(b.cls || 11).bg}"> Background</label>
-        <label class="clr"><input type="color" id="d-hi" value="${themeOf(b.cls || 11).hi}"> Highlight</label>
-        ${isNew ? "" : `<button class="btn btn-line btn-sm" type="button" id="d-take">📷 Take from the covers</button>`}
-      </div>
-      <div class="theme-pv" id="d-tpv"><b>Chemophile</b><span>${esc(b.name || "Class book")}</span><i>Order now</i></div>
-      <span class="hint">${b.theme && b.theme.manual ? "You chose these colours." : "Taken automatically from the first page of this class's PDFs when they are uploaded. Change them here if you like."} The website and the reader take on these colours for this class.</span></div>
     ${!isNew && count ? `<p class="cat-sub">It can be removed only when it has no chapters.</p>` : ""}`,
     async () => {
       const uni = isNew ? dlg.querySelector('input[name="d-type"]:checked').value === "uni" : uniNow;
@@ -2278,25 +2263,11 @@ function classDialog(isNew) {
       }
       if (uni && !label) throw new Error("Write the course and year, e.g. B.Sc 1st Year.");
       if (uni && cat.books.some(x => +x.cls !== cls && (x.label || "").toLowerCase() === label.toLowerCase())) throw new Error(`"${label}" is already there.`);
-      const bg = val("d-bg"), hi = val("d-hi"), was = themeOf(b.cls || 11), picked = bg !== was.bg || hi !== was.hi;
-      const theme = picked ? { bg, hi, manual: true } : b.theme;
-      const item = { cls, name: val("d-book") || (uni ? label : `Class ${cls}`), ...(uni ? { label } : {}), ...(theme ? { theme } : {}) };
+      const item = { cls, name: val("d-book") || (uni ? label : `Class ${cls}`), ...(uni ? { label } : {}) };
       await commit(next => { if (isNew) next.books.push(item); else next.books[next.books.findIndex(x => +x.cls === cls)] = item; }, `${uni ? label : "Class " + cls} saved.`);
       catCls = cls; renderCatalog();
     },
     !isNew && !count ? async () => { await commit(next => { next.books = next.books.filter(x => +x.cls !== +b.cls); }, `${clsName(b.cls)} removed.`); } : null);
-  const pv = () => { CLASS_THEME[0] = { bg: val("d-bg"), hi: val("d-hi") }; const w = themeVars(0); delete CLASS_THEME[0];
-    const box = dlg.querySelector("#d-tpv"); box.style.background = w["--night"]; box.style.color = w["--night-fg"]; box.querySelector("b").style.color = w["--sun"];
-    const i = box.querySelector("i"); i.style.background = w["--sun"]; i.style.color = w["--sun-ink"]; };
-  dlg.querySelectorAll("#d-bg, #d-hi").forEach(x => x.addEventListener("input", pv)); pv();
-  const take = dlg.querySelector("#d-take");
-  if (take) take.addEventListener("click", async () => {
-    take.textContent = "Reading the covers…";
-    const t = await classColours(b.cls).catch(() => null);
-    if (!t) { take.textContent = "No cover yet: upload a PDF first"; return; }
-    dlg.querySelector("#d-bg").value = t.bg; dlg.querySelector("#d-hi").value = t.hi; pv();
-    take.textContent = "✓ Taken from the covers";
-  });
   if (isNew) {
     const sync = () => { const uni = dlg.querySelector('input[name="d-type"]:checked').value === "uni"; dlg.querySelectorAll("[data-type]").forEach(e => { e.hidden = e.dataset.type !== (uni ? "uni" : "school"); }); };
     dlg.querySelectorAll('input[name="d-type"]').forEach(r => r.addEventListener("change", sync)); sync();
@@ -2431,27 +2402,7 @@ async function saveCovers(add) {
   const at = Date.now();
   await setDoc(doc(db, "catalog", "covers"), { data, at });
   Object.assign(COVERS, add);
-  const themes = await autoThemes(map);
-  await commit(next => {
-    next.coversAt = at;
-    Object.keys(themes).forEach(c => { const b = next.books.find(x => +x.cls === +c); if (b) b.theme = themes[c]; });
-  }, "Book covers updated: the first page of each PDF." + (Object.keys(themes).length ? ` Website colours for ${Object.keys(themes).map(c => clsName(+c)).join(", ")} taken from the covers.` : ""));
-}
-// A class's website colours come from its covers, unless the admin chose them in the class's Edit.
-const loadPic = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
-async function classColours(cls, map = COVERS) {
-  const chs = [...CHAPTERS, ...SOON_CHAPTERS].filter(c => +c.cls === +cls && !isBonus(c)).sort((a, b) => a.n - b.n);
-  const src = chs.map(c => map[ckey(c)] || coverOf(c)).find(Boolean);
-  return src ? coverColours(await loadPic(src)) : null;
-}
-async function autoThemes(map) {
-  const out = {};
-  for (const b of cat.books) {
-    if (b.theme && b.theme.manual) continue;
-    const t = await classColours(b.cls, map).catch(() => null);
-    if (t && (!b.theme || b.theme.bg !== t.bg || b.theme.hi !== t.hi)) out[b.cls] = { bg: t.bg, hi: t.hi, auto: true };
-  }
-  return out;
+  await commit(next => { next.coversAt = at; }, "Book covers updated: the first page of each PDF.");
 }
 // Chapters uploaded before covers were made from the PDF get theirs from page 1 already in Firebase.
 async function backfillCovers() {

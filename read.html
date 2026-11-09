@@ -14,7 +14,6 @@
 <meta name="theme-color" content="#15134a">
 <script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <script src="js/theme.js" defer></script>
-<script>try { var p = JSON.parse(localStorage.getItem("chemophile-paint")); if (p && p.v) for (var k in p.v) document.documentElement.style.setProperty(k, p.v[k]); } catch (e) {}</script>
 <link rel="manifest" href="read.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -871,8 +870,6 @@ const liveGrant = () => [...grants.keys()].some(k => grantTill(k) > new Date());
 const isFreeCh = k => { const c = findChapter(k); return !!(c && c.free); };
 const myClasses = () => ((me.classes || []).length ? me.classes : classList()).map(Number);
 const freeKeys = () => CHAPTERS.filter(c => c.free && (me.admin || myClasses().includes(c.cls))).map(chapterKey);
-// The reader takes the colours of the student's class (the class they are looking at, else their first class).
-function paintMine() { const list = myClasses().filter(c => PART[c]); const k = libCls !== "all" && PART[+libCls] ? +libCls : list[0]; if (k) paintClass(k); }
 // Can this chapter open now? Bought (and the ID not past its end date), on a paid monthly plan, or free access.
 function access(k) {
   const now = new Date(), exp = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
@@ -906,7 +903,6 @@ async function renderLibrary() {
   if (me.admin) note.textContent = "Admin preview: you see every chapter. Chapters that are not uploaded yet won't open.";
   // Signed up but nothing bought yet: the free sample and the chapters they can unlock.
   renderTeacher(); renderRedeem(); askAbout();
-  paintMine();
   const unpaid = !me.admin && !me.promo && !(me.chapters || []).length && !Object.keys(me.subs || {}).length && !liveGrant();
   if (unpaid && !freeKeys().length) return renderFree();
   $(".lib-tools h2").textContent = "My chapters";
@@ -1066,7 +1062,7 @@ function unlockCard() {
       <a class="btn btn-wa btn-sm" href="${wa(`Hello Adeel Sir, I signed up on Chemophile (ID ${me.loginId}, ${what}). I want to buy the online book.`)}" target="_blank" rel="noopener">Buy on WhatsApp</a></div></div>`;
 }
 function renderFree() {
-  renderTeacher(); renderRedeem(); askAbout(); paintMine();
+  renderTeacher(); renderRedeem(); askAbout();
   const classes = ((me.classes || []).length ? me.classes : classList()).map(Number);
   const samples = classes.filter(c => SAMPLE_BOOKS[c]);
   const chs = CHAPTERS.filter(c => classes.includes(c.cls));
@@ -1108,7 +1104,7 @@ function openSampleBook(k) {
   if (!b) return;
   new Flipbook({
     title: `${clsName(k)} free sample`, pageCount: b.pages,
-    toc: CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
+    toc: b.toc ? b.toc.map(([t, n]) => [esc(t), n]) : CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
     loadPage: n => loadImg(sampleImg(k, n))
   }).open();
 }
