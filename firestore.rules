@@ -156,14 +156,16 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
 
-      // Quiz score, one document per chapter: best, last, number of questions, tries. The admin can read it.
+      // Quiz score, one document per chapter ({chapter}-qb for question bank practice): best, last, number
+      // of questions, tries, and hist (the scores of the last few tries). The admin can read it.
       match /quiz/{ch} {
         allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
         allow write: if signedIn() && request.auth.uid == uid
-          && request.resource.data.keys().hasOnly(['best', 'last', 'total', 'tries', 'at'])
+          && request.resource.data.keys().hasOnly(['best', 'last', 'total', 'tries', 'at', 'hist'])
           && request.resource.data.best is number && request.resource.data.last is number
           && request.resource.data.total is number && request.resource.data.tries is number
           && request.resource.data.best <= request.resource.data.total
+          && (!('hist' in request.resource.data) || (request.resource.data.hist is list && request.resource.data.hist.size() <= 12))
           && request.resource.data.at == request.time;
         allow delete: if isAdmin();
       }
@@ -260,6 +262,10 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
     match /{path=**}/reading/{ch} {
+      allow read: if isAdmin();
+    }
+    // Every student's quiz scores at once, for the admin's "who scored what" list.
+    match /{path=**}/quiz/{ch} {
       allow read: if isAdmin();
     }
 

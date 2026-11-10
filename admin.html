@@ -159,14 +159,55 @@ body { background: var(--paper); }
 .pg-big.zoom { cursor: zoom-out; }
 .pg-big.zoom img { width: 200%; max-width: none; }
 dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
+.pv-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: center; font-size: .92rem; }
+.pv-bar label { display: inline-flex; align-items: center; gap: 6px; margin: 0; white-space: nowrap; }
+.pv-bar input { width: 70px; text-align: center; padding: 6px 8px; }
+#pv-box { min-height: 200px; max-height: 68vh; border: 1px solid var(--line); }
 .ch-cv { width: 44px; height: 62px; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,.18); background: var(--paper); align-self: start; }
-.chap-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
+/* Chapters tab: one row per chapter. The row is a button; tapping it opens the chapter's details under it. */
+.chap-row { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
 .chap-row.done { border-left: 4px solid var(--good); }
 .chap-row.todo-up { border-left: 4px solid var(--bad); }
-.chap-row h3 { font-size: 1.02rem; }
-.chap-row .sub { font-size: .85rem; color: var(--muted); }
-.chap-row .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
-.chap-row input[type=file] { max-width: 220px; font-size: .85rem; }
+.chap-row.part { margin-left: 22px; }
+.chap-row.open { box-shadow: 0 10px 28px rgba(20, 18, 70, .12); }
+.chap-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 12px 14px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.chap-head:hover, .chap-row.open .chap-head { background: var(--paper); }
+.chap-head .nm { display: grid; gap: 6px; min-width: 0; }
+.chap-head .nm b { font: 700 1.02rem var(--font-display); }
+.chap-head .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.chap-head .tags .pill { font-size: .72rem; padding: 1px 8px; color: var(--muted); }
+.chap-head .tags .pill.good { color: var(--good); }
+.chap-head .tags .pill.bad { color: var(--bad); font-weight: 700; }
+.chap-head .tags .pill.warn { color: var(--fg); }
+.chap-head .go { color: var(--accent); font-weight: 700; font-size: .85rem; white-space: nowrap; }
+.chap-body { display: grid; gap: 14px; padding: 14px; border-top: 1px solid var(--line); }
+.chap-row .sub { font-size: .88rem; color: var(--muted); }
+.chap-row .ctl, .upl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chap-row input[type=file] { max-width: 240px; font-size: .85rem; }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 10px 18px; margin: 0; }
+.facts dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
+.facts dd { margin: 2px 0 0; font-size: .92rem; overflow-wrap: anywhere; }
+.facts dd.pr { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.facts dd.pr s { margin-right: 3px; color: var(--muted); }
+.pdf-box { border: 1px dashed var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; background: var(--paper); }
+.pdf-box progress { width: 100%; }
+.next-step { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0; }
+.next-step:not(.bad):not(.warn) { background: var(--paper); color: var(--fg); }
+.linkish { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
+/* Quiz scores: who scored what. */
+.sc-sum { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .9rem; color: var(--muted); }
+.sc-sum b { color: var(--fg); }
+.sc-list { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 12px; border-top: 1px solid var(--line); align-items: center; background: var(--surface); text-align: left; font: inherit; color: inherit; width: 100%; border-inline: 0; border-bottom: 0; }
+.sc-row:first-child { border-top: 0; }
+button.sc-row { cursor: pointer; }
+button.sc-row:hover { background: var(--paper); }
+.sc-row .snm { font-weight: 700; min-width: 0; overflow-wrap: anywhere; color: var(--fg); }
+.sc-row .snm small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.sc-row .sc { font: 800 1.02rem var(--font-display); white-space: nowrap; }
+.sc-row .sc.hi { color: var(--good); } .sc-row .sc.lo { color: var(--bad); }
+.sc-row .m { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); }
+.sc-h { font: 700 1rem var(--font-display); margin: 6px 0 0; }
 .info-pv { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; display: grid; gap: 6px; }
 .info-pv .pills { display: flex; flex-wrap: wrap; gap: 4px; }
 .hl-pv, .t-pv { margin: 0; padding-left: 20px; font-size: .86rem; display: grid; gap: 2px; }
@@ -175,10 +216,9 @@ dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
 .chap-info { font-size: .8rem; color: var(--muted); margin-top: 2px; }
 .quiz-eg { background: var(--paper); border-radius: 10px; padding: 10px 12px; font-size: .84rem; white-space: pre-wrap; margin: 8px 0 0; }
 #d-quiz { min-height: 280px; font: .92rem/1.45 ui-monospace, Menlo, Consolas, monospace; }
-.chap-row .confirm { grid-column: 1 / -1; }
 .pill.locked { display: inline-flex; flex: none; white-space: nowrap; align-items: center; gap: 4px; padding: 4px 10px; background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; color: var(--good); font-weight: 600; }
 .cls-head { font: 700 1.05rem var(--font-display); margin: 10px 0 0; }
-@media (max-width: 640px) { .chap-row { grid-template-columns: 44px minmax(0, 1fr); } .chap-row .ctl { justify-content: flex-start; grid-column: 1 / -1; } }
+@media (max-width: 640px) { .chap-head { grid-template-columns: 44px minmax(0, 1fr); } .chap-head .go { grid-column: 2; font-size: .8rem; } .chap-row.part { margin-left: 12px; } }
 .confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; background: color-mix(in srgb, var(--bad) 8%, transparent); }
 .confirm p { margin: 0; font-size: .92rem; }
 .confirm label { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; cursor: pointer; }
@@ -304,7 +344,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 
   <div class="desk" id="v-admin" hidden>
     <nav class="side" aria-label="Admin sections">
-      <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview<span class="dot" id="dot-home" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="long">Overview</span><span class="short">Home</span><span class="dot" id="dot-home" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
       <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
@@ -328,7 +368,8 @@ textarea:focus { border-color: var(--accent); outline: none; }
             <button class="btn btn-sun" type="button" data-go="new-student">+ New student ID</button>
             <button class="btn btn-line" type="button" data-go="new-promo">+ New promo code</button>
             <button class="btn btn-line" type="button" data-go="new-news">+ New announcement</button>
-            <button class="btn btn-line" type="button" data-go="t-chapters">Upload a chapter</button>
+            <button class="btn btn-line" type="button" data-go="t-chapters">Add or upload a chapter</button>
+            <button class="btn btn-line" type="button" data-go="scores">📊 Quiz scores</button>
             <button class="btn btn-line" type="button" data-go="t-catalog">Change prices or offers</button>
           </div>
           <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
@@ -456,7 +497,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <a class="btn btn-line btn-sm" href="index.html#chapters" target="_blank" rel="noopener">See the website ↗</a></div>
       <div class="msg warn" id="cat-first" hidden>The website still uses the built-in list. Your first Save here makes this page the one the website follows.</div>
       <div class="seg" role="tablist" aria-label="Books and prices" id="cat-tabs">
-        <button type="button" role="tab" data-ctab="ch" aria-selected="true">Chapters &amp; prices</button>
+        <button type="button" role="tab" data-ctab="ch" aria-selected="true">Chapter prices</button>
         <button type="button" role="tab" data-ctab="combo" aria-selected="false">Combos</button>
         <button type="button" role="tab" data-ctab="fmt" aria-selected="false">Ways to buy</button>
         <button type="button" role="tab" data-ctab="offer" aria-selected="false">Offers &amp; referral</button>
@@ -470,10 +511,9 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <div class="cat-top">
           <div class="field"><label for="cat-cls">Class or book</label><select id="cat-cls"></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="cat-book-name"></span></div>
-          <div class="actions"><button class="btn btn-line btn-sm" type="button" data-cat="edit-class">Edit</button><button class="btn btn-line btn-sm" type="button" data-cat="new-class">+ Add class or university book</button></div>
         </div>
         <div class="ch-list" id="cat-list"></div>
-        <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-cat="new-ch">+ Add chapter to this class</button></div>
+        <p class="cat-sub">Tap a chapter to set its price. To add a chapter, or change its name and details, open <button class="linkish" type="button" data-cat="to-chapters">Chapters</button>.</p>
       </div>
 
       <div class="card stack" id="cat-combo" hidden>
@@ -547,18 +587,25 @@ textarea:focus { border-color: var(--accent); outline: none; }
     </dialog>
 
     <section id="t-chapters" class="stack" hidden>
-      <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Upload each chapter's PDF once. Students read it as a book.</p></div>
-        <div class="actions"><button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📄 Chapter info &amp; quizzes</button><button class="btn btn-line btn-sm" type="button" id="qb-bulk">📝 Question banks</button></div></div>
-      <div class="card">
-        <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
+      <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Pick a class, then tap a chapter to upload its PDF, edit it or see it.</p></div>
+        <div class="actions"><button class="btn btn-line btn-sm" type="button" id="scores-all">📊 Quiz scores</button><button class="btn btn-line btn-sm" type="button" id="quiz-bulk">📄 Chapter info &amp; quizzes</button><button class="btn btn-line btn-sm" type="button" id="qb-bulk">📝 Question banks</button></div></div>
+      <div class="msg" id="chap-msg" role="status" hidden></div>
+      <div class="card stack">
+        <div class="cat-top">
+          <div class="field"><label for="chap-cls">Class or book</label><select id="chap-cls"></select></div>
+          <div class="cat-bookname"><span class="cat-sub" id="chap-book-name"></span></div>
+          <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
+        </div>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
+        <div class="chips" id="chap-filters" role="group" aria-label="Show"></div>
       </div>
+      <div class="chap-rows" id="chap-rows"></div>
       <div class="card stack" id="lighter" hidden>
         <p></p>
         <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-lighter>Make them lighter</button></div>
         <div class="sub status" role="status"></div>
       </div>
-      <div class="chap-rows" id="chap-rows"></div>
+      <p class="hint">Each PDF page is turned into an image for the online reader. The PDF itself is not stored anywhere, and students get no download option. Upload in <b>Chrome</b> on a laptop or phone, and keep this page open until the upload finishes. Uploading again replaces the old pages.</p>
     </section>
     </div>
   </div>
@@ -719,7 +766,7 @@ function renderDash() {
     ...unpaid.map(s => `<div class="todo-item bad"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Chapters are locked till they pay.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...[...lately, ...ending].map(s => `<div class="todo-item ${isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : ""}"><i class="ic"></i><span><b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}.<small class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</small></span><a class="btn btn-wa btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
-    ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} not uploaded yet. Students can't read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters")] : []),
+    ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} Live on the website but not uploaded yet. A student who buys the online book cannot read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters", ` data-filter="noup" data-cls="${missing[0].cls}"`)] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
     ...(ids.filter(isInactive).length ? [item("", `${ids.filter(isInactive).length} student${ids.filter(isInactive).length > 1 ? "s haven't" : " hasn't"} opened the book for 7 days or more.`, "See", "t-students", ` data-filter="inactive"`)] : []),
@@ -732,7 +779,6 @@ function renderDash() {
   const alertDot = $("#dot-home"); alertDot.hidden = !alerts.length; alertDot.textContent = alerts.length;
   const chDot = $("#dot-ch"); chDot.hidden = !missing.length; chDot.textContent = missing.length;
   $("#chap-progress").textContent = `${CHAPTERS.length - missing.length} of ${CHAPTERS.length} chapters uploaded.${missing.length ? " Students can read a chapter only after it is uploaded." : " Everything is uploaded."}`;
-  $("#chap-meter").style.width = Math.round(((CHAPTERS.length - missing.length) / CHAPTERS.length) * 100) + "%";
 }
 
 // ---------- insights (graphs) ----------
@@ -782,6 +828,9 @@ document.addEventListener("click", e => {
   if (to === "new-news") { go("t-news"); $("#news-box").open = true; $("#n-title").focus(); return; }
   if (to === "new-promo") { go("t-promos"); $("#promo-box").open = true; $("#p-code").focus(); return; }
   if (to === "t-students") { stuFilter = b.dataset.filter || "all"; $("#stu-search").value = b.dataset.q || ""; renderStudents(); }
+  if (to === "scores") { go("t-chapters"); return scoresDialog(null); }
+  // "Upload" on the to-do list opens the class that has a chapter waiting, showing only those.
+  if (to === "t-chapters" && b.dataset.filter && cat) { chapFilter = b.dataset.filter; if (b.dataset.cls) catCls = +b.dataset.cls; openK = null; renderCatalog(); }
   go(to);
 });
 
@@ -1039,7 +1088,7 @@ function renderStudents() {
         ${subKeys(s).length ? `<button class="btn btn-sun btn-sm" type="button" data-act="renew">Renew +${monthDays()} days</button><a class="btn btn-line btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Payment reminder</a>` : ""}
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
         <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
-        <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading &amp; scores</button>
         ${s.phone ? `<a class="btn btn-line btn-sm" data-askrev="${s.uid}" href="${waLink(s.phone, reviewAsk(s))}" target="_blank" rel="noopener">⭐ Ask for review${s.reviewAskedAt ? " ✓" : ""}</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="details">Edit details</button>
         <button class="btn btn-line btn-sm" type="button" data-act="give">Free access</button>
@@ -1210,17 +1259,17 @@ $("#students").addEventListener("click", async e => {
       box.hidden = false; box.textContent = "Loading…";
       const docs = (await getDocs(collection(db, "users", s.uid, "reading"))).docs.map(d => [d.id, d.data()]);
       const quiz = new Map((await getDocs(collection(db, "users", s.uid, "quiz")).catch(() => ({ docs: [] }))).docs.map(d => [d.id, d.data()]));
-      // A quiz taken without opening the book still shows.
-      quiz.forEach((q, k) => { if (!docs.some(([d]) => d === k)) docs.push([k, { seen: [], minutes: 0, opens: 0, total: (uploaded.get(k) || {}).pageCount || 0 }]); });
-      if (!docs.length) { box.innerHTML = `<p class="hint">${esc(s.name)} hasn't opened a book yet${s.deviceId ? " (or read before reading records started)" : ""}.</p>`; return; }
+      if (!docs.length && !quiz.size) { box.innerHTML = `<p class="hint">${esc(s.name)} hasn't opened a book yet${s.deviceId ? " (or read before reading records started)" : ""}.</p>`; return; }
       const mins = docs.reduce((a, [, r]) => a + (r.minutes || 0), 0), pages = docs.reduce((a, [, r]) => a + (r.seen || []).length, 0);
       const done = docs.filter(([, r]) => r.total && r.max >= r.total).length;
       box.innerHTML = `<div class="sums"><span><b>${fmtMins(mins)}</b> reading</span><span><b>${pages}</b> pages read</span><span><b>${done}</b> finished</span>${lastRead(s) ? `<span>Last read <b>${agoText(lastRead(s))}</b></span>` : ""}</div>` +
         docs.sort((a, b) => ((b[1].updatedAt && b[1].updatedAt.toMillis()) || 0) - ((a[1].updatedAt && a[1].updatedAt.toMillis()) || 0)).map(([k, r]) => {
           const total = r.total || 0, seen = (r.seen || []).length, pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
           return `<div class="rrow"><div class="t"><span>${esc(chName(k))}</span><span>${pct}%</span></div><div class="meter"><i style="width: ${pct}%"></i></div>
-            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 0}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}${quiz.get(k) ? ` · <b>quiz best ${quiz.get(k).best}/${quiz.get(k).total}</b> (last ${quiz.get(k).last}, ${quiz.get(k).tries} tr${quiz.get(k).tries === 1 ? "y" : "ies"})` : ""}</div></div>`;
-        }).join("");
+            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 0}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}</div></div>`;
+        }).join("") + (quiz.size ? `<h4 class="sc-h">📊 Quiz scores</h4><div class="sc-list">${[...quiz].filter(([, q]) => q.total > 0).map(([id, q]) => {
+          const r = Object.assign({}, q, { ch: id.replace(/-qb$/, ""), qb: /-qb$/.test(id), pct: Math.round((q.best || 0) / q.total * 100) });
+          return `<div class="sc-row"><span class="snm">${esc(chName(r.ch))}<small>${scKind(r)}</small></span>${scScore(r)}<span class="m">${scMeta(r)}</span></div>`; }).join("")}</div>` : "");
     }
     if (b.dataset.act === "reset" && resetsThisYear(s) >= BUSINESS.freeResetsPerYear) { row.querySelector(".reset-confirm").hidden = false; return; }
     if (b.dataset.act === "reset-no") row.querySelector(".reset-confirm").hidden = true;
@@ -1696,7 +1745,7 @@ function bulkParse(text, only) {
     // "11-1" is Class 11 Chapter 1; 11-S1 a JEE/NEET special, 9-P1 Physics, 9-Bio1 Biology, 11-1X extra topics.
     const k = parseKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}. Change the ### line, or paste it in ${keyText(k)}.`); return; }
-    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
+    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${keyText(k)} yet. Add it first with + Add chapter.`); return; }
     const p = parseInfo(body), e = (p.errs || []).map(x => `${k}: ${x}`);
     let qs = null;
     if (p.quiz != null) {
@@ -1732,7 +1781,7 @@ async function saveInfo(list) {
   if (withInfo.length) await commit(next => {
     for (const { k, info } of withInfo) {
       const c = next.chapters.find(x => ckey(x) === k);
-      if (!c) return `No chapter ${k} in Books & prices.`;
+      if (!c) return `No chapter ${keyText(k)} yet. Add it first with + Add chapter.`;
       Object.assign(c, info);
     }
   }, `Chapter info saved: ${withInfo.map(x => x.k).join(", ")}. The website shows it now.`);
@@ -1743,7 +1792,7 @@ async function saveInfo(list) {
     chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
   }
   await loadChapters();
-  $("#chap-progress").textContent = `Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`;
+  catSay(`Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`);
 }
 // The prompt to give the AI chat with the PDF, with the chapter key filled in.
 async function copyPrompt(btn, k) {
@@ -1984,7 +2033,8 @@ const numVal = v => (v === "" || v == null ? "" : v);
 const ckey = c => `${c.cls}-${c.n}`;
 const classesOf = () => [...cat.books].map(b => +b.cls).sort((a, b) => a - b);
 const fmtShort = f => ({ online: "Online", monthly: "Monthly", colour: "Colour", bw: "B/W" })[f];
-function catSay(t, cls = "good") { const m = $("#cat-msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }
+// A saved / not saved message, in Books & prices and in Chapters (whichever is open shows it).
+function catSay(t, cls = "good") { ["#cat-msg", "#chap-msg"].forEach(id => { const m = $(id); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }); }
 // Save a change to the catalog. The change is made on the latest saved catalog, read inside a transaction,
 // so a save from this page never undoes one made meanwhile from another tab or phone (for example a review
 // shown on the website). Only if Firestore accepts it does the page switch to it.
@@ -2012,6 +2062,8 @@ function priceLine(price = {}, mrp = {}) {
   const parts = onFormats().filter(f => +price[f] > 0).map(f => `<span>${fmtShort(f)} ${+mrp[f] > +price[f] ? `<s>₹${mrp[f]}</s>` : ""}<b>₹${price[f]}</b>${f === "monthly" ? "/mo" : ""}</span>`);
   return parts.join("") || `<span>No price yet</span>`;
 }
+// What a student pays for a chapter, in one line: FREE, included with its chapter, or its prices.
+const accessLine = c => c.free ? `<span><b style="color: var(--good)">FREE</b></span>` : isPart(c) && c.included !== false ? `<span>Included with the chapter</span>` : priceLine(c.price, c.mrp);
 function renderCatalog() {
   const classes = classesOf();
   if (!classes.includes(catCls)) catCls = classes.includes(11) ? 11 : classes[0];
@@ -2025,9 +2077,10 @@ function renderCatalog() {
   $("#cat-list").innerHTML = list.length ? list.map(([c, i]) => `<button class="ch-item" type="button" data-edit-ch="${i}">
       <span class="no">${keyText(ckey(c)).split("-")[1]}</span>
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
-      <span class="go">Edit ›</span>
-      <span class="pr">${c.free ? `<span><b style="color: var(--good)">FREE</b></span>` : priceLine(c.price, c.mrp)}</span>
-    </button>`).join("") : `<div class="ch-empty">No chapters in ${esc(clsName(catCls))} yet. Add the first one below.</div>`;
+      <span class="go">Price ›</span>
+      <span class="pr">${accessLine(c)}</span>
+    </button>`).join("") : `<div class="ch-empty">No chapters in ${esc(clsName(catCls))} yet. Add the first one in the Chapters tab.</div>`;
+  renderChapRows();
   $("#cat-combos").innerHTML = cat.combos.length ? [...cat.combos.map((x, i) => [x, i])].sort((a, b) => (a[0].name || "").localeCompare(b[0].name || "")).map(([x, i]) => `<button class="ch-item" type="button" data-edit-combo="${i}">
       <span class="no">${x.chapters.length}</span>
       <span class="nm">${esc(x.name || "(no name)")}<small>${x.chapters.length} chapters · ${x.on === false ? "hidden from the website" : "on the website"}</small></span>
@@ -2210,7 +2263,7 @@ function chapterDialog(i, kindNew, parent) {
   const topicsText = (c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n");
   const myPart = !part && !isNew && cat.chapters.find(x => +x.cls === +c.cls && +x.n === +c.n + PART_FROM);
   openDialog(partNew ? `JEE/NEET extra topics · ${clsName(c.cls)} ${chNo(parent)}` : isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · ${chNo(c)}`, `
-    ${part ? `<p class="cat-sub">🎯 The JEE / NEET extra topics of <b>${esc(chNo({ cls: c.cls, n: baseN(c.n) }))}</b>, as their own PDF. Upload it in the Chapters tab like any chapter. Students find it right under the chapter.</p>` : ""}
+    ${part ? `<p class="cat-sub">🎯 The JEE / NEET extra topics of <b>${esc(chNo({ cls: c.cls, n: baseN(c.n) }))}</b>, as their own PDF. Upload it like any chapter. Students find it right under the chapter.</p>` : ""}
     ${isNew && !part ? `<div class="field"><label for="d-kind">What is it?</label><select id="d-kind">${kindOpts(c.cls).map(([k, l]) => `<option value="${k}"${k === kindOf(c) ? " selected" : ""}>${l}</option>`).join("")}</select>
       <span class="hint">${isJeeCls(c.cls) ? "JEE/NEET special chapters" : "Bonus booklets"}, and Physics and Biology chapters, show in their own section of the class on the website.</span></div>` : ""}
     <div class="cat-row">
@@ -2223,10 +2276,9 @@ function chapterDialog(i, kindNew, parent) {
       <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
       <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
-    ${part ? `<label class="cat-check free-check"><input type="checkbox" id="d-incl"${c.included !== false ? " checked" : ""}> <span><b>Included with the chapter</b>: everyone who has ${esc(chNo({ cls: c.cls, n: baseN(c.n) }))} reads these too, at no extra cost. Untick to sell them on their own, with the prices below.</span></label>`
-      : `<label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>`}
-    <div id="d-prices">${priceFields(c.price, c.mrp)}</div>
-    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}
+    ${isNew ? `<p class="cat-sub">${part ? "It is included with its chapter, at no extra cost. To sell it on its own, set its price after saving."
+      : "After saving: upload its PDF, set its price (₹ Price), then switch it to Live."}</p>` : ""}
+    ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info on the chapter fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}
     ${!part && !isNew ? `<div class="field"><label>JEE / NEET extra topics of this chapter</label><div class="actions">${myPart
       ? `<button class="btn btn-line btn-sm" type="button" data-part-edit>🎯 Edit its JEE/NEET extra topics</button>`
       : `<button class="btn btn-line btn-sm" type="button" data-part-new>🎯 + Add JEE/NEET extra topics (own PDF)</button>`}</div></div>` : ""}`,
@@ -2236,26 +2288,47 @@ function chapterDialog(i, kindNew, parent) {
       if (isNew && !part && !(n - from >= 1 && n - from <= 99)) throw new Error("Number: 1 to 99.");
       if (!title) throw new Error("Write the name.");
       if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ cls: c.cls, n })}.`);
-      const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
-      const free = !part && !!(dlg.querySelector("#d-free") || {}).checked, included = part && dlg.querySelector("#d-incl").checked;
-      if (!soon && !free && !included && !onFormats().some(f => price[f] > 0)) throw new Error(part ? "Give a price, or tick Included with the chapter." : "Give at least one price, tick Free, or set it to Coming soon.");
-      const item = Object.assign({}, c, { n, title, short: val("d-short"), pages: num("d-pages"), soon, price, mrp }, part ? { included } : { free }, custom ? { tag: val("d-tag") } : {});
-      // The reader's security rules read chapters/{key}.free and .included.
-      const k = `${c.cls}-${n}`;
-      if (part) await setDoc(doc(db, "chapters", k), { included }, { merge: true });
-      else if (!!c.free !== free || free) await setDoc(doc(db, "chapters", k), { free }, { merge: true });
+      const soon = !!val("d-soon");
+      if (!soon && !canSell(c)) throw new Error("It has no price yet. Keep it Coming soon, save, then set its price (₹ Price) or mark it Free.");
+      const mine = Object.assign({ n, title, short: val("d-short"), pages: num("d-pages"), soon }, custom ? { tag: val("d-tag") } : {});
       // Topics left as they were keep their sections and sub-topics.
-      if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[at(next.chapters, c, ckey)] = item; }, `${clsName(c.cls)} ${chNo({ cls: c.cls, n })} saved.`);
+      if (custom && val("d-topics") !== topicsText.trim()) mine.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
+      // The reader's security rules read chapters/{key}.included.
+      if (isNew && part) await setDoc(doc(db, "chapters", `${c.cls}-${n}`), { included: true }, { merge: true });
+      // Only the details change here: a price saved meanwhile from another page stays.
+      openK = `${c.cls}-${n}`;
+      await commit(next => { if (isNew) next.chapters.push(Object.assign({}, c, mine)); else { const j = at(next.chapters, c, ckey); next.chapters[j] = Object.assign({}, next.chapters[j], mine); } }, `${clsName(c.cls)} ${chNo({ cls: c.cls, n })} saved.`);
     },
     custom && !isNew ? async () => { await commit(next => { next.chapters.splice(at(next.chapters, c, ckey), 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
   const kindSel = dlg.querySelector("#d-kind");
   if (kindSel) kindSel.addEventListener("change", () => { const k = kindSel.value; dlg.querySelector("#d-n").value = nextN(catCls, k) - KINDS[k].from; dlg.querySelector("#d-n-l").textContent = kindNoLabel(catCls, k); });
-  const incl = dlg.querySelector("#d-incl"), prices = dlg.querySelector("#d-prices");
-  if (incl) { const sync = () => { prices.hidden = incl.checked; }; incl.addEventListener("change", sync); sync(); }
   const pn = dlg.querySelector("[data-part-new]"), pe = dlg.querySelector("[data-part-edit]");
   if (pn) pn.addEventListener("click", () => chapterDialog(null, null, c));
   if (pe) pe.addEventListener("click", () => chapterDialog(cat.chapters.indexOf(myPart)));
+}
+// Can it be shown as Live? It needs a price, or to be free, or (extra topics) to come with its chapter.
+const canSell = c => !!c.free || (isPart(c) && c.included !== false) || onFormats().some(f => +(c.price || {})[f] > 0);
+// The price of one chapter: its prices and MRPs, Free, or (extra topics) included with the chapter.
+function priceDialog(i) {
+  const c = cat.chapters[i], part = isPart(c);
+  openDialog(`Price · ${clsName(c.cls)} ${chNo(c)}`, `
+    <p class="cat-sub"><b>${esc(c.title)}</b> · ${c.soon ? "Coming soon on the website" : "Live on the website"}</p>
+    ${part ? `<label class="cat-check free-check"><input type="checkbox" id="d-incl"${c.included !== false ? " checked" : ""}> <span><b>Included with the chapter</b>: everyone who has ${esc(chNo({ cls: c.cls, n: baseN(c.n) }))} reads these too, at no extra cost. Untick to sell them on their own, with the prices below.</span></label>`
+      : `<label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>`}
+    <div id="d-prices">${priceFields(c.price, c.mrp)}</div>`,
+    async () => {
+      const { price, mrp } = readPrices(c.price, c.mrp);
+      const free = !part && dlg.querySelector("#d-free").checked, included = part && dlg.querySelector("#d-incl").checked;
+      if (!c.soon && !free && !included && !onFormats().some(f => price[f] > 0)) throw new Error(part ? "Give a price, or tick Included with the chapter." : "It is Live on the website: give at least one price, or tick Free.");
+      // The reader's security rules read chapters/{key}.free and .included.
+      const k = ckey(c);
+      if (part) await setDoc(doc(db, "chapters", k), { included }, { merge: true });
+      else if (!!c.free !== free || free) await setDoc(doc(db, "chapters", k), { free }, { merge: true });
+      // Only the price changes here: a name or detail saved meanwhile from another page stays.
+      await commit(next => { const j = at(next.chapters, c, ckey); next.chapters[j] = Object.assign({}, next.chapters[j], { price, mrp }, part ? { included } : { free }); }, `Price of ${clsName(c.cls)} ${chNo(c)} saved.`);
+    });
+  const off = dlg.querySelector("#d-incl") || dlg.querySelector("#d-free"), prices = dlg.querySelector("#d-prices");
+  const sync = () => { prices.hidden = off.checked; }; off.addEventListener("change", sync); sync();
 }
 // A school class (1 to 12) or a university / college book. University books get numbers from 101 up,
 // and their own label ("B.Sc 1st Year") is shown wherever a school book says "Class 11".
@@ -2333,13 +2406,11 @@ $("#t-catalog").addEventListener("click", async e => {
   if (ev) return videoDialog(+ev.dataset.editVid);
   if (er) return reviewDialog(+er.dataset.editRev);
   if (ra) return reviewAction(ra);
-  if (ch) return chapterDialog(+ch.dataset.editCh);
+  if (ch) return priceDialog(+ch.dataset.editCh);
   if (cb) return comboDialog(+cb.dataset.editCombo);
   if (!b) return;
   const act = b.dataset.cat;
-  if (act === "new-ch") return chapterDialog(null);
-  if (act === "edit-class") return classDialog(false);
-  if (act === "new-class") return classDialog(true);
+  if (act === "to-chapters") return go("t-chapters");
   if (act === "new-combo") return comboDialog(null);
   if (act === "new-vid") return videoDialog(null);
   if (act === "new-rev") return reviewDialog(null);
@@ -2394,14 +2465,53 @@ async function loadChapters() {
   snap.docs.forEach(d => { chInfo.set(d.id, d.data()); if (d.data().pageCount) uploaded.set(d.id, d.data()); });
   chaptersLoaded = true;
   renderLighter();
-  const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || orderN(a) - orderN(b));
-  $("#chap-rows").innerHTML = all.map((c, i) => {
-    const k = chapterKey(c), u = uploaded.get(k);
-    return `${!i || all[i - 1].cls !== c.cls ? `<h2 class="cls-head">${esc(clsName(c.cls))}${PART[c.cls] ? ` · ${esc(PART[c.cls])}` : ""}</h2>` : ""}${chapRow(c, k, u)}`;
-  }).join("");
+  renderChapRows();
   renderDash();
   if (cat && !coversTried) { coversTried = true; backfillCovers().catch(ex => console.warn("covers", ex)); }
 }
+
+// ---------- the Chapters tab: one class at a time ----------
+// Pick a class, see its chapters with what each one still needs, tap a chapter to open it: upload or
+// replace its PDF, view it as a student does, edit its details, price, info, quiz and question bank.
+let chapFilter = "all", openK = null;
+// An upload in progress, by chapter key: { text, pct }. The list can be drawn again while it runs.
+const upState = new Map();
+const CHAP_FILTERS = [["all", "All"], ["noup", "PDF not uploaded"], ["noinfo", "No chapter info"], ["noquiz", "No quiz"], ["soon", "Coming soon"]];
+const chapsOf = cls => [...CHAPTERS, ...SOON_CHAPTERS].filter(c => +c.cls === +cls).sort((a, b) => orderN(a) - orderN(b));
+const isSoon = c => SOON_CHAPTERS.includes(c);
+const chapHas = { noup: c => !uploaded.get(chapterKey(c)), noinfo: c => !chapSummary(c), noquiz: c => !(chInfo.get(chapterKey(c)) || {}).quiz, soon: isSoon, all: () => true };
+// What the admin should do next for a chapter, so nothing is forgotten before students see it.
+function nextStep(c, k) {
+  const u = uploaded.get(k), x = cat && cat.chapters.find(y => ckey(y) === k);
+  if (!u) return isSoon(c) ? ["", "Next: upload its PDF below."] : ["bad", "It is Live on the website, but its PDF is not uploaded: a student who buys the online book cannot read it. Upload the PDF now."];
+  if (x && !canSell(x)) return ["warn", "Next: set its price (₹ Price), or mark it Free."];
+  if (isSoon(c)) return ["warn", "Ready: PDF uploaded and price set. Switch it to Live so students can buy it.", `<button class="btn btn-sun btn-sm" type="button" data-live>Make it Live</button>`];
+  if (!chapSummary(c)) return ["", "Tip: add its chapter info (📄 Info), so the website shows its topics, figures and counts."];
+  if (!(chInfo.get(k) || {}).quiz) return ["", "Tip: add a quiz, so students can test themselves and earn the certificate."];
+  return null;
+}
+function renderChapRows() {
+  if (!chaptersLoaded || !cat) return;
+  const classes = classesOf();
+  if (!classes.includes(catCls)) catCls = classes.includes(11) ? 11 : classes[0];
+  $("#chap-cls").innerHTML = classes.map(c => {
+    const list = chapsOf(c), up = list.filter(x => uploaded.get(chapterKey(x))).length;
+    return `<option value="${c}"${c === catCls ? " selected" : ""}>${esc(clsName(c))}${isUni(c) ? " · university" : ""} (${up} of ${list.length} uploaded)</option>`;
+  }).join("");
+  const book = cat.books.find(b => +b.cls === catCls), all = chapsOf(catCls);
+  $("#chap-book-name").textContent = book ? `Book: ${book.name}` : "";
+  if (!all.some(chapHas[chapFilter])) chapFilter = "all";
+  $("#chap-filters").innerHTML = CHAP_FILTERS.map(([v, l]) => [v, l, all.filter(chapHas[v]).length]).filter(([v, , n]) => v === "all" || n)
+    .map(([v, l, n]) => `<button class="chip" type="button" data-f="${v}" aria-pressed="${chapFilter === v}">${l} <b>${n}</b></button>`).join("");
+  const up = all.filter(c => uploaded.get(chapterKey(c))).length;
+  $("#chap-meter").style.width = (all.length ? Math.round(up / all.length * 100) : 0) + "%";
+  const list = all.filter(chapHas[chapFilter]), kinds = new Set(all.map(kindOf));
+  const head = c => kinds.size > 1 ? `<h2 class="cls-head">${({ chem: "🧪 Chemistry", special: isJeeCls(catCls) ? "🏆 JEE / NEET special chapters" : "🎁 Bonus booklets", phy: "⚡ Physics", bio: "🧬 Biology" })[kindOf(c)]}</h2>` : "";
+  $("#chap-rows").innerHTML = list.length ? list.map((c, i) => `${!i || kindOf(list[i - 1]) !== kindOf(c) ? head(c) : ""}${chapRow(c, chapterKey(c), uploaded.get(chapterKey(c)))}`).join("")
+    : `<div class="card"><p class="hint">${all.length ? "No chapter like that in this class." : `No chapters in ${esc(clsName(catCls))} yet. Tap <b>+ Add chapter</b> above.`}</p></div>`;
+}
+$("#chap-cls").addEventListener("change", () => { catCls = +$("#chap-cls").value; openK = null; chapFilter = "all"; renderCatalog(); });
+$("#chap-filters").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (b) { chapFilter = b.dataset.f; renderChapRows(); } });
 
 // ---------- book covers ----------
 // Each chapter's cover on the website and in the reader is the first page of its PDF: a small picture
@@ -2440,7 +2550,7 @@ async function backfillCovers() {
   }
   if (!Object.keys(add).length) return;
   await saveCovers(add);
-  $("#chap-progress").textContent = `Covers made from page 1 for ${Object.keys(add).length} chapter${Object.keys(add).length > 1 ? "s" : ""}. The website and the reader show them now.`;
+  catSay(`Covers made from page 1 for ${Object.keys(add).length} chapter${Object.keys(add).length > 1 ? "s" : ""}. The website and the reader show them now.`);
 }
 
 // An uploaded chapter is locked: its file picker stays hidden until the admin unlocks it, after a warning.
@@ -2448,22 +2558,53 @@ const LOCK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 // Topics, counts and highlights the website shows for a chapter (from the booklet, or built in).
 const chapSummary = c => [[(c.topics || []).length, "topics"], [c.fig, "figures"], [c.solved, "solved"], [c.practice, "practice Qs"], [c.qr && String(c.qr).replace(/ simulations?/, ""), ""], [(c.highlights || []).length, "highlights"]]
   .filter(([v]) => v && v !== "0").map(([v, l]) => `${esc(v)}${l ? " " + l : ""}`).join(" · ");
+const chapPills = (c, k, u) => {
+  const i = chInfo.get(k) || {}, soon = isSoon(c);
+  return [u ? ["good", `✓ PDF · ${u.pageCount} pages`] : [soon ? "warn" : "bad", soon ? "PDF not uploaded" : "⚠ Live, but no PDF"],
+    chapSummary(c) ? ["good", "✓ Info"] : ["", "No info"], i.quiz ? ["good", `✓ Quiz · ${i.quiz}`] : ["", "No quiz"], i.qbank ? ["good", `✓ QB · ${i.qbank}`] : null,
+    c.free ? ["good", "Free"] : null, soon ? ["warn", "Coming soon"] : ["good", "Live"]].filter(Boolean).map(([cls, t]) => `<span class="pill ${cls}">${t}</span>`).join("");
+};
 function chapRow(c, k, u) {
-  return `<div class="chap-row ${u ? "done" : "todo-up"}" data-k="${k}">
-    ${coverOf(c) ? `<img class="ch-cv" src="${coverOf(c)}" alt="" width="44" height="62" loading="lazy">` : `<span class="ch-cv"></span>`}
-    <div style="min-width:0"><h3>${chNo(c)}: ${esc(c.short || c.title)}${SOON_CHAPTERS.includes(c) ? ` <span class="pill warn">Coming soon on the website</span>` : ""}</h3>
-      <div class="sub status">${u ? `Uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "Not uploaded yet"}</div>
-      <div class="chap-info">${chapSummary(c) || "No chapter info yet: tap 📄 Info"}</div>
-      <progress max="100" value="0" hidden></progress></div>
-    <div class="ctl"><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-qb>${(chInfo.get(k) || {}).qbank ? `📝 QB · ${chInfo.get(k).qbank}` : "📝 + QB"}</button><button class="btn btn-line btn-sm" type="button" data-quiz>${(chInfo.get(k) || {}).quiz ? `Quiz · ${chInfo.get(k).quiz} Qs` : "+ Quiz"}</button>${u
-      ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
-      : `<input type="file" accept="application/pdf" aria-label="PDF for ${chNo(c)}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
-    ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace ${chNo(c)}" hidden>
-      <p><b>Replace ${chNo(c)}: ${esc(c.short || c.title)}?</b></p>
-      <p>The new PDF will replace all ${u.pageCount} pages that students are reading now. While it uploads, students may see some old and some new pages. Use only the final, checked PDF.</p>
-      <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-unlock-yes>Yes, unlock</button><button class="btn btn-line btn-sm" type="button" data-unlock-no>Cancel</button></div>
+  const open = openK === k || upState.has(k), st = upState.get(k), x = cat && cat.chapters.find(y => ckey(y) === k), i = chInfo.get(k) || {};
+  const step = open ? nextStep(c, k) : null, part = isPart(c), myPart = !part && cat && cat.chapters.find(y => +y.cls === +c.cls && +y.n === +c.n + PART_FROM);
+  return `<div class="chap-row ${u ? "done" : "todo-up"}${part ? " part" : ""}${open ? " open" : ""}" data-k="${k}">
+    <button class="chap-head" type="button" data-toggle aria-expanded="${open}">
+      ${coverOf(c) ? `<img class="ch-cv" src="${coverOf(c)}" alt="" width="44" height="62" loading="lazy">` : `<span class="ch-cv"></span>`}
+      <span class="nm"><b>${chNo(c)}: ${esc(c.short || c.title)}</b><span class="tags">${chapPills(c, k, u)}</span></span>
+      <span class="go" aria-hidden="true">${open ? "Close ▴" : "Open ▾"}</span>
+    </button>
+    ${open ? `<div class="chap-body">
+      ${step ? `<div class="msg ${step[0]} next-step"><span>${step[1]}</span>${step[2] || ""}</div>` : ""}
+      <dl class="facts">
+        <div><dt>Name</dt><dd>${esc(c.title)}</dd></div>
+        <div><dt>On the website</dt><dd>${isSoon(c) ? "Coming soon" : "Live"}${c.free ? " · Free chapter" : ""}</dd></div>
+        <div><dt>Price</dt><dd class="pr">${x ? accessLine(x) : "-"}</dd></div>
+        <div><dt>Chapter info</dt><dd>${chapSummary(c) || "Not added yet"}</dd></div>
+        <div><dt>Key for prompts</dt><dd>${keyText(k)}</dd></div>
+      </dl>
+      <div class="ctl">${u ? `<button class="btn btn-sun btn-sm" type="button" data-view>👁 View chapter</button>` : ""}<button class="btn btn-line btn-sm" type="button" data-edit>✏️ Edit details</button><button class="btn btn-line btn-sm" type="button" data-price>₹ Price</button><button class="btn btn-line btn-sm" type="button" data-info>📄 Info</button><button class="btn btn-line btn-sm" type="button" data-quiz>${i.quiz ? `Quiz · ${i.quiz} Qs` : "+ Quiz"}</button><button class="btn btn-line btn-sm" type="button" data-qb>${i.qbank ? `📝 QB · ${i.qbank}` : "📝 + QB"}</button>${i.quiz || i.qbank ? `<button class="btn btn-line btn-sm" type="button" data-scores>📊 Scores</button>` : ""}${part ? "" : `<button class="btn btn-line btn-sm" type="button" data-part>${myPart ? "🎯 Its JEE/NEET extra topics" : "🎯 + JEE/NEET extra topics"}</button>`}</div>
+      <div class="pdf-box">
+        <div class="sub status" role="status">${st ? esc(st.text) : u ? `PDF uploaded: ${u.pageCount} pages${u.updatedAt ? " · " + fmtDate(u.updatedAt) : ""}` : "PDF not uploaded yet. Choose the chapter's PDF, then tap Upload."}</div>
+        <progress max="100" value="${st ? st.pct : 0}"${st ? "" : " hidden"}></progress>
+        <div class="upl">${st ? "" : u
+          ? `<span class="pill locked">${LOCK_ICON} Uploaded and locked</span><button class="btn btn-line btn-sm" type="button" data-unlock>Unlock to replace</button>`
+          : `<input type="file" accept="application/pdf" aria-label="PDF for ${chNo(c)}"><button class="btn btn-sun btn-sm" type="button" data-up>Upload</button>`}</div>
+        ${u ? `<div class="confirm" role="alertdialog" aria-label="Replace ${chNo(c)}" hidden>
+          <p><b>Replace ${chNo(c)}: ${esc(c.short || c.title)}?</b></p>
+          <p>The new PDF will replace all ${u.pageCount} pages that students are reading now. While it uploads, students may see some old and some new pages. Use only the final, checked PDF.</p>
+          <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-unlock-yes>Yes, unlock</button><button class="btn btn-line btn-sm" type="button" data-unlock-no>Cancel</button></div>
+        </div>` : ""}
+      </div>
     </div>` : ""}
   </div>`;
+}
+// Draw one chapter's row again, if it is on the screen.
+function redrawRow(k) { const row = $(`.chap-row[data-k="${k}"]`), c = findChapter(k); if (row && c) row.outerHTML = chapRow(c, k, uploaded.get(k)); }
+function upSay(k, text, pct) {
+  upState.set(k, { text, pct });
+  const row = $(`.chap-row[data-k="${k}"]`);
+  if (!row || !row.querySelector(".chap-body")) return redrawRow(k);
+  row.querySelector(".status").textContent = text; const bar = row.querySelector("progress"); bar.hidden = false; bar.value = pct;
 }
 
 // Pages are 960 pixels wide at 70% quality: sharp on a phone (and when zoomed), and about 30% less to
@@ -2480,6 +2621,36 @@ function pageImage(canvas) {
   return url;
 }
 
+$("#t-chapters").addEventListener("click", async e => {
+  const b = e.target.closest("[data-chap]");
+  if (!b) return;
+  if (b.dataset.chap === "new-ch") chapterDialog(null);
+  if (b.dataset.chap === "edit-class") classDialog(false);
+  if (b.dataset.chap === "new-class") classDialog(true);
+});
+$("#chap-rows").addEventListener("click", async e => {
+  const row = e.target.closest(".chap-row");
+  if (!row) return;
+  const k = row.dataset.k, idx = cat.chapters.findIndex(y => ckey(y) === k);
+  if (e.target.closest("[data-toggle]")) {
+    const was = openK; openK = was === k ? null : k;
+    if (was && was !== k) redrawRow(was);
+    redrawRow(k);
+    if (openK) $(`.chap-row[data-k="${k}"]`).scrollIntoView({ block: "nearest" });
+    return;
+  }
+  if (e.target.closest("[data-view]")) return viewDialog(k);
+  if (e.target.closest("[data-edit]")) return chapterDialog(idx);
+  if (e.target.closest("[data-price]")) return priceDialog(idx);
+  if (e.target.closest("[data-scores]")) return scoresDialog(k);
+  if (e.target.closest("[data-part]")) { const me = cat.chapters[idx], j = cat.chapters.findIndex(y => +y.cls === +me.cls && +y.n === +me.n + PART_FROM); return j >= 0 ? chapterDialog(j) : chapterDialog(null, null, me); }
+  const live = e.target.closest("[data-live]");
+  if (live) {
+    live.disabled = true;
+    try { await commit(next => { const x = next.chapters.find(y => ckey(y) === k); if (!x) return "This chapter was removed meanwhile."; if (!canSell(x)) return "Set its price first."; x.soon = false; }, `${chName(k)} is Live on the website now.`); }
+    catch (ex) { catSay(saveError(ex), "bad"); live.disabled = false; }
+  }
+});
 $("#chap-rows").addEventListener("click", e => {
   const b = e.target.closest("[data-unlock], [data-unlock-yes], [data-unlock-no], [data-lock]");
   if (!b) return;
@@ -2488,11 +2659,11 @@ $("#chap-rows").addEventListener("click", e => {
   if (b.matches("[data-unlock-no]")) box.hidden = true;
   if (b.matches("[data-unlock-yes]")) {
     box.hidden = true;
-    row.querySelector(".ctl").innerHTML = `<input type="file" accept="application/pdf" aria-label="Replacement PDF"><button class="btn btn-sun btn-sm" type="button" data-up>Upload replacement</button><button class="btn btn-line btn-sm" type="button" data-lock>Cancel</button>`;
+    row.querySelector(".upl").innerHTML = `<input type="file" accept="application/pdf" aria-label="Replacement PDF"><button class="btn btn-sun btn-sm" type="button" data-up>Upload replacement</button><button class="btn btn-line btn-sm" type="button" data-lock>Cancel</button>`;
     row.querySelector(".status").textContent = "Unlocked. Choose the new PDF, then tap Upload replacement.";
     row.querySelector("input[type=file]").focus();
   }
-  if (b.matches("[data-lock]")) row.outerHTML = chapRow(findChapter(k), k, uploaded.get(k));
+  if (b.matches("[data-lock]")) redrawRow(k);
 });
 $("#chap-rows").addEventListener("click", async e => {
   const b = e.target.closest("[data-up]");
@@ -2500,17 +2671,18 @@ $("#chap-rows").addEventListener("click", async e => {
   const row = b.closest(".chap-row"), k = row.dataset.k, c = findChapter(k);
   const before = uploaded.get(k);
   const file = row.querySelector("input[type=file]").files[0];
-  const status = row.querySelector(".status"), bar = row.querySelector("progress");
-  if (!file) { status.textContent = "Choose a PDF file first."; return; }
-  b.disabled = true; bar.hidden = false;
-  let lock = null;
+  if (!file) { row.querySelector(".status").textContent = "Choose a PDF file first."; return; }
+  if (upState.has(k)) return;
+  upSay(k, "Reading the PDF…", 0);
+  row.querySelector(".upl").innerHTML = "";
+  let lock = null, done = "";
   try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
   try {
     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
     const total = pdf.numPages;
     let cover = null;
     for (let n = 1; n <= total; n++) {
-      status.textContent = `Uploading page ${n} / ${total}…`;
+      upSay(k, `Uploading page ${n} / ${total}… keep this page open.`, Math.round(((n - 1) / total) * 100));
       const page = await pdf.getPage(n);
       const scale = PAGE_PX / page.getViewport({ scale: 1 }).width;
       const vp = page.getViewport({ scale });
@@ -2520,7 +2692,6 @@ $("#chap-rows").addEventListener("click", async e => {
       await setDoc(doc(db, "pages", pageId(k, n)), { ch: k, n, img: pageImage(canvas) });
       if (n === 1) cover = coverFrom(canvas);
       page.cleanup();
-      bar.value = Math.round((n / total) * 100);
     }
     const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, px: PAGE_PX, updatedAt: serverTimestamp() };
     await setDoc(doc(db, "chapters", k), info, { merge: true });
@@ -2532,18 +2703,22 @@ $("#chap-rows").addEventListener("click", async e => {
     }
     uploaded.set(k, { ...(chInfo.get(k) || {}), ...info, updatedAt: Timestamp.now() });
     chInfo.set(k, uploaded.get(k));
+    [...pageCache.keys()].filter(x => x.startsWith(k + "|")).forEach(x => pageCache.delete(x));
     renderLighter();
-    if (cover) { status.textContent = "Saving the cover (page 1)…"; await saveCovers({ [k]: cover }).catch(ex => console.warn("cover", ex)); }
-    $(`.chap-row[data-k="${k}"]`).outerHTML = chapRow(c, k, uploaded.get(k));
-    $(`.chap-row[data-k="${k}"] .status`).textContent = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now. Its cover is page 1.`;
-    renderDash();
-    return;
+    if (cover) { upSay(k, "Saving the cover (page 1)…", 100); await saveCovers({ [k]: cover }).catch(ex => console.warn("cover", ex)); }
+    // The website shows the number of pages: keep it the same as the PDF.
+    const mine = cat.chapters.find(y => ckey(y) === k);
+    if (mine && +mine.pages !== total) await commit(next => { const x = next.chapters.find(y => ckey(y) === k); if (x) x.pages = total; }, `${chName(k)}: ${total} pages uploaded.`).catch(ex => console.warn("pages", ex));
+    done = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now. Its cover is page 1.`;
   } catch (ex) {
-    status.textContent = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
+    done = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
   } finally {
-    b.disabled = false;
+    upState.delete(k);
     if (lock) lock.release().catch(() => {});
   }
+  renderChapRows();
+  const st = $(`.chap-row[data-k="${k}"] .status`); if (st) st.textContent = done; else catSay(`${chName(k)}: ${done}`, done.startsWith("Upload stopped") ? "bad" : "good");
+  renderDash();
 });
 
 // ---------- chapter quizzes ----------
@@ -2664,7 +2839,7 @@ function qbParse(text, only) {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
     const k = parseKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}.`); return; }
-    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${k} in Books & prices.`); return; }
+    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${keyText(k)} yet. Add it first with + Add chapter.`); return; }
     const r = parseQB(body);
     if (r.errs.length) r.errs.slice(0, 5).forEach(x => errs.push(`${keyText(k)}: ${x}`));
     else if (!r.qs.length) errs.push(`${keyText(k)}: no questions.`);
@@ -2685,7 +2860,7 @@ async function saveQB(list) {
   // The website shows "📝 N-question bank" on the chapter, from the catalog.
   await commit(next => { list.forEach(({ k, qs }) => { const c = next.chapters.find(x => ckey(x) === k); if (c) c.qbank = qs.length; }); },
     `Question bank saved: ${list.map(x => `${keyText(x.k)} (${x.qs.length})`).join(", ")}.`);
-  $("#chap-progress").textContent = `Question bank saved: ${list.map(x => `${keyText(x.k)} (${x.qs.length} Qs)`).join(", ")}.`;
+  catSay(`Question bank saved: ${list.map(x => `${keyText(x.k)} (${x.qs.length} Qs)`).join(", ")}.`);
 }
 async function qbDialog(k) {
   const c = k && findChapter(k);
@@ -2725,6 +2900,143 @@ async function qbDialog(k) {
 }
 $("#qb-bulk").addEventListener("click", () => qbDialog(null));
 $("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-qb]"); if (b) qbDialog(b.closest(".chap-row").dataset.k); });
+
+// ---------- view a chapter, page by page ----------
+// The uploaded pages, as the student gets them: to check a chapter without leaving the admin panel.
+let pv = null;
+function viewDialog(k) {
+  pv = { k, n: 1, total: (uploaded.get(k) || {}).pageCount || 0 };
+  openDialog(chName(k), `<div class="pv-bar"><button class="btn btn-line btn-sm" type="button" data-pv="-1" aria-label="Previous page">‹ Previous</button>
+      <label>Page <input id="pv-n" type="number" min="1" max="${pv.total}" value="1" inputmode="numeric" aria-label="Page number"> of ${pv.total}</label>
+      <button class="btn btn-line btn-sm" type="button" data-pv="1" aria-label="Next page">Next ›</button></div>
+    <div class="pg-big" id="pv-box"></div>
+    <p class="hint">Tap the page to zoom in or out. The ← and → keys turn the page. To try it exactly as a student does, <a href="read.html#open=${k}" target="_blank" rel="noopener">open it in the reader ↗</a> and log in there with your admin email.</p>`, null);
+  dlg.classList.add("wide-dlg"); dlg.addEventListener("close", () => { dlg.classList.remove("wide-dlg"); pv = null; }, { once: true });
+  drawView();
+}
+async function drawView() {
+  const box = $("#pv-box"), at = pv, n = pv.n;
+  $("#pv-n").value = n;
+  dlg.querySelector('[data-pv="-1"]').disabled = n <= 1; dlg.querySelector('[data-pv="1"]').disabled = n >= pv.total;
+  box.classList.remove("zoom");
+  if (!box.firstChild) box.innerHTML = `<div class="spinner" role="status" aria-label="Loading" style="margin: 60px auto"></div>`;
+  const img = await pageImg(pv.k, n);
+  if (pv !== at || pv.n !== n) return;
+  box.innerHTML = img ? `<img src="${img}" alt="Page ${n}">` : `<p class="hint" style="padding: 30px">Page ${n} is not uploaded.</p>`;
+  box.scrollTo(0, 0);
+  if (n < pv.total) pageImg(pv.k, n + 1);
+}
+const viewTo = n => { if (!pv) return; const m = Math.max(1, Math.min(pv.total, Math.round(n) || 1)); if (m !== pv.n) { pv.n = m; drawView(); } else $("#pv-n").value = m; };
+dlg.addEventListener("click", e => {
+  if (!pv) return;
+  const b = e.target.closest("[data-pv]");
+  if (b) return viewTo(pv.n + +b.dataset.pv);
+  const box = e.target.closest("#pv-box"); if (box) box.classList.toggle("zoom");
+});
+dlg.addEventListener("change", e => { if (pv && e.target.id === "pv-n") viewTo(+e.target.value); });
+dlg.addEventListener("keydown", e => {
+  if (!pv || e.target.id === "pv-n" && e.key !== "Enter") return;
+  if (e.key === "ArrowRight") viewTo(pv.n + 1); if (e.key === "ArrowLeft") viewTo(pv.n - 1);
+  if (e.key === "Enter" && e.target.id === "pv-n") { e.preventDefault(); viewTo(+e.target.value); }
+});
+
+// ---------- quiz scores: who scored what ----------
+// users/{uid}/quiz/{chapter} is a chapter quiz, {chapter}-qb is question bank practice: best, last, total,
+// tries, at, and hist (the last tries, { s: score, n: out of, t: time }).
+let quizAll = null, quizAt = 0, scView = { by: "ch" };
+async function loadQuizAll(force) {
+  if (quizAll && !force && Date.now() - quizAt < 120000) return quizAll;
+  let rows;
+  try { rows = (await getDocs(collectionGroup(db, "quiz"))).docs.map(d => ({ uid: d.ref.parent.parent.id, id: d.id, ...d.data() })); }
+  catch (e) {
+    // With older Firestore rules: read each student's scores one by one.
+    rows = [];
+    for (let i = 0; i < students.length; i += 10) await Promise.all(students.slice(i, i + 10).map(async s => {
+      const q = await getDocs(collection(db, "users", s.uid, "quiz")).catch(() => ({ docs: [] }));
+      q.docs.forEach(d => rows.push({ uid: s.uid, id: d.id, ...d.data() }));
+    }));
+  }
+  quizAll = rows.filter(r => r.total > 0).map(r => Object.assign(r, { ch: r.id.replace(/-qb$/, ""), qb: /-qb$/.test(r.id), pct: Math.round((r.best || 0) / r.total * 100) }));
+  quizAt = Date.now();
+  return quizAll;
+}
+const scAvg = rows => rows.length ? Math.round(rows.reduce((a, r) => a + r.pct, 0) / rows.length) : 0;
+const scWho = uid => { const s = students.find(x => x.uid === uid); return s ? { name: s.name || "Student", id: s.promo ? `promo ${s.promo}` : s.loginId || "", phone: s.phone || "", cls: classesText(s) } : { name: "Deleted student", id: "", phone: "", cls: "" }; };
+const scKind = r => r.qb ? "Question bank" : "Quiz";
+const scTries = r => (r.hist || []).length > 1 ? ` · tries: ${r.hist.map(h => `${h.s}/${h.n}`).join(", ")}` : "";
+const scMeta = r => `${r.pct}% best · last ${r.last}/${r.total} · ${r.tries || 1} tr${(r.tries || 1) === 1 ? "y" : "ies"}${r.at ? " · " + fmtDate(r.at) : ""}${scTries(r)}`;
+const scScore = r => `<span class="sc ${r.pct >= 80 ? "hi" : r.pct < 50 ? "lo" : ""}">${r.best}/${r.total}</span>`;
+const scSort = (a, b) => b.pct - a.pct || ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0);
+const scChKey = r => { const [c, n] = r.ch.split("-"); return +c * 10000 + orderN({ n: +n }); };
+function drawScores() {
+  const box = $("#sc-box"), rows = quizAll || [], v = scView;
+  if (!box) return;
+  const tools = `<div class="actions"><button class="btn btn-line btn-sm" type="button" data-sc="csv"${rows.length ? "" : " disabled"}>⬇ Download all scores (Excel)</button><button class="btn btn-line btn-sm" type="button" data-sc="refresh">↻ Refresh</button></div>`;
+  if (v.k) {
+    const mine = rows.filter(r => r.ch === v.k), info = chInfo.get(v.k) || {};
+    box.innerHTML = `${v.only ? "" : `<div><button class="linkish" type="button" data-sc="back">‹ All quizzes</button></div>`}
+      ${[false, true].filter(qb => qb ? info.qbank || mine.some(r => r.qb) : info.quiz || mine.some(r => !r.qb)).map(qb => {
+        const list = mine.filter(r => r.qb === qb).sort(scSort);
+        return `<h3 class="sc-h">${qb ? "📝 Question bank practice" : "Chapter quiz"}</h3>
+          ${list.length ? `<div class="sc-sum"><span><b>${list.length}</b> student${list.length === 1 ? "" : "s"}</span><span>average best <b>${scAvg(list)}%</b></span><span><b>${list.filter(r => r.pct >= 80).length}</b> scored 80% or more</span><span><b>${list.filter(r => r.pct < 50).length}</b> below 50%</span></div>
+          <div class="sc-list">${list.map(r => { const w = scWho(r.uid); return `<button class="sc-row" type="button" data-sc-uid="${r.uid}"><span class="snm">${esc(w.name)}<small>${esc([w.id, w.cls].filter(Boolean).join(" · "))}</small></span>${scScore(r)}<span class="m">${scMeta(r)}</span></button>`; }).join("")}</div>`
+          : `<p class="hint">No student has taken it yet.</p>`}`;
+      }).join("") || `<p class="hint">This chapter has no quiz or question bank yet.</p>`}${tools}`;
+    return;
+  }
+  if (v.uid) {
+    const mine = rows.filter(r => r.uid === v.uid).sort((a, b) => scChKey(a) - scChKey(b) || a.qb - b.qb), w = scWho(v.uid);
+    box.innerHTML = `<div><button class="linkish" type="button" data-sc="back">‹ All students</button></div>
+      <h3 class="sc-h">${esc(w.name)} <span class="hint">${esc([w.id, w.cls].filter(Boolean).join(" · "))}</span></h3>
+      <div class="sc-sum"><span><b>${mine.length}</b> quiz${mine.length === 1 ? "" : "zes"} taken</span><span>average best <b>${scAvg(mine)}%</b></span></div>
+      <div class="sc-list">${mine.map(r => `<button class="sc-row" type="button" data-sc-k="${r.ch}"><span class="snm">${esc(chName(r.ch))}<small>${scKind(r)}</small></span>${scScore(r)}<span class="m">${scMeta(r)}</span></button>`).join("")}</div>${tools}`;
+    return;
+  }
+  const seg = `<div class="chips" role="group" aria-label="Show"><button class="chip" type="button" data-sc="by-ch" aria-pressed="${v.by === "ch"}">By chapter</button><button class="chip" type="button" data-sc="by-stu" aria-pressed="${v.by === "stu"}">By student</button></div>`;
+  if (!rows.length) { box.innerHTML = `<p class="hint">No student has taken a quiz yet. A chapter's score shows here as soon as a student finishes its quiz or a question bank practice.</p>${tools}`; return; }
+  const sum = `<div class="sc-sum"><span><b>${new Set(rows.map(r => r.uid)).size}</b> student${new Set(rows.map(r => r.uid)).size === 1 ? "" : "s"} took a quiz</span><span><b>${rows.reduce((a, r) => a + (r.tries || 1), 0)}</b> tries in all</span><span>average best <b>${scAvg(rows)}%</b></span></div>`;
+  if (v.by === "stu") {
+    const by = new Map(); rows.forEach(r => by.set(r.uid, [...(by.get(r.uid) || []), r]));
+    box.innerHTML = sum + seg + `<div class="sc-list">${[...by].map(([uid, l]) => [uid, l, scAvg(l)]).sort((a, b) => b[2] - a[2]).map(([uid, l, avg]) => { const w = scWho(uid);
+      return `<button class="sc-row" type="button" data-sc-uid="${uid}"><span class="snm">${esc(w.name)}<small>${esc([w.id, w.cls].filter(Boolean).join(" · "))}</small></span><span class="sc ${avg >= 80 ? "hi" : avg < 50 ? "lo" : ""}">${avg}%</span><span class="m">${l.length} quiz${l.length === 1 ? "" : "zes"} · ${l.reduce((a, r) => a + (r.tries || 1), 0)} tries · tap to see each score</span></button>`; }).join("")}</div>` + tools;
+    return;
+  }
+  const by = new Map(); rows.forEach(r => by.set(r.ch, [...(by.get(r.ch) || []), r]));
+  const keys = [...by.keys()].sort((a, b) => scChKey({ ch: a }) - scChKey({ ch: b }));
+  box.innerHTML = sum + seg + keys.map((k, i) => { const cls = k.split("-")[0], l = by.get(k), avg = scAvg(l), n = new Set(l.map(r => r.uid)).size;
+    return `${!i || keys[i - 1].split("-")[0] !== cls ? `${i ? "</div>" : ""}<h3 class="sc-h">${esc(clsName(cls))}</h3><div class="sc-list">` : ""}<button class="sc-row" type="button" data-sc-k="${k}"><span class="snm">${esc(chName(k))}</span><span class="sc ${avg >= 80 ? "hi" : avg < 50 ? "lo" : ""}">${avg}%</span><span class="m">${n} student${n === 1 ? "" : "s"}${l.some(r => !r.qb) ? ` · quiz: ${l.filter(r => !r.qb).length}` : ""}${l.some(r => r.qb) ? ` · question bank: ${l.filter(r => r.qb).length}` : ""} · average best ${avg}% · tap to see who scored what</span></button>`; }).join("") + "</div>" + tools;
+}
+async function scoresDialog(k) {
+  scView = k ? { k, only: true } : { by: "ch" };
+  openDialog(k ? `Scores · ${chName(k)}` : "Quiz scores", `<div class="stack" id="sc-box"><div class="spinner" role="status" aria-label="Loading" style="margin: 30px auto"></div></div>`, null);
+  try { await loadQuizAll(); drawScores(); }
+  catch (ex) { const box = $("#sc-box"); if (box) box.innerHTML = `<p class="msg bad">Couldn't load the scores. ${esc(why(ex))}</p>`; }
+}
+function scoresCsv() {
+  const head = ["Student", "Login ID", "WhatsApp", "Student's class", "Chapter's class", "Chapter", "Type", "Best", "Out of", "Best %", "Last score", "Tries", "Last taken", "Scores of the last tries"];
+  const cell = v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+  const rows = [...quizAll].sort((a, b) => scChKey(a) - scChKey(b) || a.qb - b.qb || scSort(a, b)).map(r => { const w = scWho(r.uid);
+    return [w.name, w.id, w.phone, w.cls, clsName(r.ch.split("-")[0]), chName(r.ch), scKind(r), r.best, r.total, r.pct, r.last, r.tries || 1, dmy(r.at), (r.hist || []).map(h => `${h.s}/${h.n}`).join("; ")]; });
+  return "﻿" + [head, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+}
+dlg.addEventListener("click", async e => {
+  const b = e.target.closest("[data-sc], [data-sc-k], [data-sc-uid]");
+  if (!b || !$("#sc-box")) return;
+  if (b.dataset.scK) scView = { k: b.dataset.scK, from: scView };
+  else if (b.dataset.scUid) scView = { uid: b.dataset.scUid, from: scView };
+  else if (b.dataset.sc === "back") scView = scView.from && !scView.from.only ? scView.from : { by: scView.uid ? "stu" : "ch" };
+  else if (b.dataset.sc === "by-ch") scView = { by: "ch" };
+  else if (b.dataset.sc === "by-stu") scView = { by: "stu" };
+  else if (b.dataset.sc === "refresh") { b.disabled = true; b.textContent = "Loading…"; try { await loadQuizAll(true); } catch (ex) {} }
+  else if (b.dataset.sc === "csv") {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([scoresCsv()], { type: "text/csv;charset=utf-8" })); a.download = `chemophile-quiz-scores-${dmy(new Date())}.csv`;
+    document.body.append(a); a.click(); a.remove(); return;
+  }
+  if (scView.k && !scView.only) $("#dlg-title").textContent = `Scores · ${chName(scView.k)}`; else if (!scView.only) $("#dlg-title").textContent = "Quiz scores";
+  drawScores(); $("#dlg-body").scrollTo(0, 0);
+});
+$("#scores-all").addEventListener("click", () => scoresDialog(null));
 
 // ---------- make old uploads lighter ----------
 // Chapters uploaded before pages were made 960 pixels wide are made smaller here, page by page,

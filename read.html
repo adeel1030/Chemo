@@ -100,6 +100,19 @@
 .rrow .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-size: .95rem; }
 .rrow .t span:last-child { color: var(--muted); font-weight: 500; font-size: .84rem; white-space: nowrap; }
 .rrow .m { font-size: .82rem; color: var(--muted); }
+/* My quiz scores: one row per quiz, with the best score, the last tries as small bars, and a button to try again. */
+.qrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 0; border-top: 1px dashed var(--line); align-items: center; }
+.qrow:first-of-type { border-top: 0; }
+.qrow .t { font-weight: 600; font-size: .95rem; min-width: 0; }
+.qrow .t small { display: inline-block; margin-left: 6px; font-weight: 600; font-size: .7rem; color: var(--accent); background: var(--paper); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+.qrow .best { font: 800 1.1rem/1 var(--font-display); text-align: right; white-space: nowrap; }
+.qrow .best small { display: block; font: 500 .72rem var(--font-body); color: var(--muted); margin-top: 3px; }
+.qrow .best.hi { color: var(--good); } .qrow .best.lo { color: var(--bad); }
+.qrow .m { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.qrow .hist { display: inline-flex; align-items: flex-end; gap: 3px; height: 22px; }
+.qrow .hist i { width: 7px; min-height: 3px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: .55; }
+.qrow .hist i:last-child { opacity: 1; }
+.qrow .btn { margin-left: auto; }
 .plan-tag { display: inline-block; margin-top: 4px; font: 700 .72rem var(--font-body); border-radius: 6px; padding: 2px 8px; background: var(--warn-bg); color: var(--fg); }
 .plan-tag.off { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
 .plan-tag.free { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
@@ -434,6 +447,7 @@
       <div class="tsearch"><input id="tsearch" type="search" autocomplete="off" placeholder="🔎 Search a topic: molarity, Hund's rule, pH…" aria-label="Search a topic in your chapters"><div class="tresults" id="tresults" hidden></div></div>
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
+      <div class="card myread myquiz" id="myquiz" hidden></div>
       <div class="card doubts" id="doubts-card" hidden></div>
       <div class="card badges" id="badges" hidden></div>
       <div class="card refer" id="refer" hidden></div>
@@ -1031,7 +1045,10 @@ async function renderLibrary() {
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
   $("#acct-tip").textContent = me.admin ? "" : me.promo ? "The book stays on this phone and browser. Don't clear this browser's data, or you will need the code again."
     : "Your ID works on this device only. If you change your phone, ask Adeel Sir to reset your device.";
-  renderMyReading(keys);
+  renderMyReading(keys); renderMyQuiz(keys);
+  // "View chapter" in the admin panel (or a shared link) opens one chapter directly: read.html#open=11-1
+  const link = /^#open=(\d+-\d+)$/.exec(location.hash);
+  if (link) { history.replaceState(null, "", location.pathname + location.search); if (keys.includes(link[1]) && access(link[1]).open && progress(link[1]).ready) openBook(link[1]); }
   searchKeys = keys; renderStreak(); renderDoubts(); showTour(); renderRate(keys); renderBadges(keys);
   renderRefer();
   if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
@@ -1649,6 +1666,37 @@ $("#refer").addEventListener("click", async e => {
 // The best score is kept in users/{uid}/quiz/{chapter} and shown to the student and Adeel Sir.
 const quizRes = new Map();
 let qz = null;
+// Keep the score, with the scores of the last 10 tries, for the student ("My quiz scores") and for Adeel Sir.
+function saveScore(key, res, old) {
+  const hist = [...((old && old.hist) || []), { s: res.last, n: res.total, t: Date.now() }].slice(-10);
+  quizRes.set(key, Object.assign({}, res, { hist, at: Timestamp.now() }));
+  const ref = doc(db, "users", auth.currentUser.uid, "quiz", key);
+  // Older Firestore rules refuse the history: then save the score without it.
+  setDoc(ref, Object.assign({}, res, { hist, at: serverTimestamp() }))
+    .catch(e => e.code === "permission-denied" ? setDoc(ref, Object.assign({}, res, { at: serverTimestamp() })) : Promise.reject(e))
+    .catch(e => console.warn("quiz", e));
+}
+// "My quiz scores" in the library: every quiz and question bank of the student's chapters, taken or not.
+function renderMyQuiz(keys) {
+  const box = $("#myquiz");
+  if (me.admin) { box.hidden = true; return; }
+  const rows = [];
+  keys.forEach(k => { const info = chapterInfo.get(k) || {};
+    [[k, info.quiz, false], [k + "-qb", info.qbank, true]].forEach(([id, has, qb]) => { const r = quizRes.get(id); if (r && r.total > 0 || has) rows.push({ k, qb, r: r && r.total > 0 ? r : null, can: !!has && access(k).open && progress(k).ready }); }); });
+  if (!rows.length) { box.hidden = true; return; }
+  box.hidden = false;
+  const taken = rows.filter(x => x.r), pct = x => Math.round((x.r.best || 0) / x.r.total * 100);
+  const name = k => { const c = findChapter(k) || {}; return `${chShort({ cls: +k.split("-")[0], n: +(c.n || k.split("-")[1]) })} · ${esc(c.short || c.title || k)}`; };
+  box.innerHTML = `<h2>My quiz scores</h2>
+    ${taken.length ? `<div class="sums"><div><b>${taken.length}</b><span>quiz${taken.length === 1 ? "" : "zes"} taken</span></div><div><b>${Math.round(taken.reduce((a, x) => a + pct(x), 0) / taken.length)}%</b><span>average best score</span></div>
+      <div><b>${taken.filter(x => pct(x) >= 80).length}</b><span>with 80% or more</span></div><div><b>${taken.reduce((a, x) => a + (x.r.tries || 1), 0)}</b><span>tries in all</span></div></div>`
+      : `<p class="hint">Take a quiz after reading a chapter. Your score, and every try, shows here.</p>`}
+    <div>${[...taken, ...rows.filter(x => !x.r)].map(x => { const r = x.r, p = r && pct(x), h = (r && r.hist) || [];
+      return `<div class="qrow"><div class="t">${name(x.k)}<small>${x.qb ? "Question bank" : "Quiz"}</small></div>
+        ${r ? `<div class="best ${p >= 80 ? "hi" : p < 50 ? "lo" : ""}">${r.best}/${r.total}<small>best · ${p}%</small></div>` : `<div class="best"><small>Not taken yet</small></div>`}
+        <div class="m">${r ? `<span>Last ${r.last}/${r.total} · ${r.tries || 1} tr${(r.tries || 1) === 1 ? "y" : "ies"}${r.at && r.at.toDate ? " · " + ago(r.at.toDate()) : ""}</span>${h.length > 1 ? `<span class="hist" role="img" aria-label="Your last tries: ${h.map(y => `${y.s} of ${y.n}`).join(", ")}">${h.map(y => `<i style="height: ${Math.max(12, Math.round(y.s / (y.n || 1) * 100))}%" title="${y.s}/${y.n}"></i>`).join("")}</span>` : ""}` : `<span>${x.qb ? "Practise by level and topic, with the solution of every question." : "Test yourself on this chapter."}</span>`}
+          ${x.can ? `<button class="btn btn-line btn-sm quiz-btn" type="button" ${x.qb ? "data-qbank" : "data-quiz"}="${x.k}">${r ? (x.qb ? "Practise more" : "Try again") : (x.qb ? "Start practice" : "Take the quiz")}</button>` : ""}</div></div>`; }).join("")}</div>`;
+}
 const LETTERS = "ABCDEF";
 // "H_2O" → H₂O, "Cu^2+" → Cu²⁺, "x^{-1}" → x⁻¹ (subscript and superscript in questions).
 const chem = t => esc(t).replace(/\^\{([^}]*)\}/g, "<sup>$1</sup>").replace(/_\{([^}]*)\}/g, "<sub>$1</sub>")
@@ -1681,10 +1729,7 @@ function drawEnd() {
   const n = qz.qs.length, score = qz.picks.filter((p, i) => p === qz.qs[i].a).length, pct = Math.round((score / n) * 100);
   const old = quizRes.get(qz.k) || {}, same = old.total === n;
   const res = { best: Math.max(same ? old.best || 0 : 0, score), last: score, total: n, tries: (old.tries || 0) + 1 };
-  if (!me.admin) {
-    quizRes.set(qz.k, Object.assign({}, res, { at: Timestamp.now() }));
-    setDoc(doc(db, "users", auth.currentUser.uid, "quiz", qz.k), Object.assign({}, res, { at: serverTimestamp() })).catch(e => console.warn("quiz", e));
-  }
+  if (!me.admin) saveScore(qz.k, res, old);
   const note = pct >= 80 ? "Excellent! 🎉 You know this chapter well." : pct >= 50 ? "Good effort! Revise the ones you missed." : "Read the chapter once more, then try again. You'll do better!";
   const color = pct >= 80 ? "var(--good)" : pct >= 50 ? "#e0a800" : "var(--bad)";
   $("#quiz-in").innerHTML = quizTop() + `<div class="end">
@@ -1769,10 +1814,7 @@ function drawQBEnd() {
   const n = qz.qs.length, done = qz.picks.filter(p => p != null && p >= 0).length, score = qz.picks.filter((p, i) => p === qz.qs[i].a).length, pct = n ? Math.round((score / n) * 100) : 0;
   const key = qz.k + "-qb", old = quizRes.get(key) || {};
   const res = { best: Math.max(old.total === n ? old.best || 0 : 0, score), last: score, total: n, tries: (old.tries || 0) + 1 };
-  if (!me.admin) {
-    quizRes.set(key, Object.assign({}, res, { at: Timestamp.now() }));
-    setDoc(doc(db, "users", auth.currentUser.uid, "quiz", key), Object.assign({}, res, { at: serverTimestamp() })).catch(e => console.warn("qbank", e));
-  }
+  if (!me.admin) saveScore(key, res, old);
   const color = pct >= 80 ? "var(--good)" : pct >= 50 ? "#e0a800" : "var(--bad)";
   $("#quiz-in").innerHTML = qbTop() + `<div class="end">
     <div class="ring" style="--p: ${pct}; --c: ${color}"><span>${score}/${n}<small>${pct}%</small></span></div>
@@ -1826,7 +1868,7 @@ function renderMyReading(keys) {
       const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
       return `<div class="rrow"><div class="t"><span>${chShort({ cls: +k.split("-")[0], n: +(c.n || k.split("-")[1]) })} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
         <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
-        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div>
+        <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}</div>
         ${certReady(k) ? `<div class="cert-hint">🏅 Certificate ready: open it from the chapter card.</div>` : `<div class="cert-hint">🏅 Certificate: read ${CERT_READ * 100}% of the pages${(chapterInfo.get(k) || {}).quiz ? ` and score ${CERT_QUIZ * 100}% in the quiz` : ""}.</div>`}</div>`;
     }).join("")}</div>`;
 }
