@@ -38,6 +38,16 @@
 .updated { color: var(--muted); font-size: .88rem; }
 .theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
 .theme-btn:hover { background: rgba(255,255,255,.12); }
+/* On a phone the three header buttons must fit beside the logo. */
+@media (max-width: 480px) {
+  .app-head .wrap { gap: 8px; }
+  .head-actions { gap: 5px; }
+  .head-actions .btn { padding-inline: 10px; font-size: .84rem; }
+  .theme-btn { width: 32px; height: 32px; }
+  .app-head .brand small { display: none; }
+}
+/* Very small phones: the logo already opens the website. */
+@media (max-width: 400px) { .head-actions a[href="index.html"] { display: none; } }
 </style>
 </head>
 <body>

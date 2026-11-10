@@ -492,6 +492,14 @@ section.block { padding-block: 64px; }
 .compare td:nth-child(2) { color: var(--night-muted); }
 .compare td:last-child { color: var(--night-fg); background: rgba(255,210,74,.08); }
 .compare td:last-child::before { content: "✓ "; color: var(--sun); font-weight: 800; }
+/* On a phone all three columns stay on screen: the Chemophile column is the point of the table. */
+@media (max-width: 600px) {
+  .compare { min-width: 0; font-size: .84rem; table-layout: fixed; }
+  .compare th, .compare td { padding: 10px 7px; }
+  .compare thead th { font-size: .95rem; }
+  .compare th:first-child, .compare td:first-child { width: 25%; font-size: .78rem; padding-left: 4px; }
+  .compare th:nth-child(2), .compare td:nth-child(2) { width: 31%; }
+}
 
 /* box legend */
 .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px 24px; margin-top: 26px; }
@@ -512,8 +520,9 @@ section.block { padding-block: 64px; }
 .end-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 500; }
 
 /* chapters shelf */
-.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); margin-top: 24px; }
-.tabs button { font: 700 1rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 20px; border-radius: 999px; cursor: pointer; }
+.tabs { display: inline-flex; flex-wrap: wrap; justify-content: center; max-width: 100%; gap: 4px; padding: 4px; border-radius: 28px; background: var(--surface); border: 1px solid var(--line); margin-top: 24px; }
+.tabs button { font: 700 1rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 20px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+@media (max-width: 600px) { .tabs button { padding: 9px 14px; font-size: .95rem; } }
 .tabs button[aria-selected="true"] { background: var(--night); color: var(--sun); }
 .tabs small { font-weight: 500; font-size: .78rem; margin-left: 4px; opacity: .8; }
 .shelf-note { margin-top: 14px; font-size: .92rem; color: var(--muted); }
@@ -541,7 +550,6 @@ section.block { padding-block: 64px; }
 .shelf-head h3 { margin: 0; font: 800 1.3rem/1.2 var(--font-display); }
 .shelf-head p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
 .card.bonus .ch { color: var(--accent); }
-.card.bonus .ch::after { content: " · JEE / NEET"; }
 .card .ch { font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .card .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.06rem; line-height: 1.2; }
 .card .meta { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -1450,9 +1458,9 @@ function setClass(k, opts = {}) {
 // Chapters added in the admin panel have no cover picture yet, so draw one.
 function madeCover(c) {
   return `<div class="soon-cover made-cover night">
-      <span class="w">Chemophile</span><span class="p">${esc(PART[c.cls] || clsName(c.cls))}</span>
+      <span class="w">Chemophile</span><span class="p">${esc(bookPart(c.cls))}</span>
       <span class="f"><span>${isPart(c) ? "🎯" : ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(c)] || numIn(c)}</span></span>
-      <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isBonus(c) || isPart(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
+      <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isExtraBook(c) ? `<span class="rib">Bonus</span>` : isBonus(c) || isPart(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
     </div>`;
 }
 const coverHtml = c => coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : madeCover(c);
@@ -1460,7 +1468,7 @@ function soonCover(u) {
   const img = COVERS[`${u.cls}-${u.n}`];
   if (img) return `<div class="soon-cover" style="padding: 0"><img src="${img}" alt="" width="360" height="509" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; box-shadow: none"><span class="rib">Coming soon</span></div>`;
   return `<div class="soon-cover night">
-      <span class="w">Chemophile</span><span class="p">${esc(PART[u.cls] || clsName(u.cls))}</span>
+      <span class="w">Chemophile</span><span class="p">${esc(bookPart(u.cls))}</span>
       <span class="f"><span>${u.f || ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(u)] || ""}</span></span>
       <span class="c">${chNo(u)}</span><span class="t">${esc(u.title)}</span>
       <span class="rib">Coming soon</span><span class="bar"></span>
@@ -1473,6 +1481,8 @@ const SHELF_GROUPS = {
   phy: ["⚡ Physics", "Physics bhi Hinglish mein: rozana ki cheezon se samjho, exam ke liye English mein likho."],
   bio: ["🧬 Biology", "Biology bhi Hinglish mein: diagrams ke saath, aasaan bhasha mein."]
 };
+// Classes without JEE / NEET (9, 10, university books): the same section holds the class's bonus booklets.
+const SHELF_BONUS = ["🎁 Bonus booklets", "Is class ke saath extra: bonus chapters, mock tests aur quick revision, competition exams ke point of view se."];
 // A chapter's JEE/NEET extra topics: shown on the chapter's own card when included, as a card when sold on their own.
 const extraOf = c => CHAPTERS.find(x => isPart(x) && x.cls === c.cls && baseN(x.n) === +c.n);
 const extraChips = c => { const x = !isPart(c) && extraOf(c);
@@ -1485,7 +1495,8 @@ function renderShelf() {
   const many = kinds.some(k => k === "phy" || k === "bio");
   let lastKind = null;
   $("#shelf").innerHTML = items.map(({ c, u }) => {
-    const kind = kindOf(c || u), head = kind !== lastKind && (kind !== "chem" || many) ? `<div class="shelf-head${lastKind ? "" : " first"}"><h3>${SHELF_GROUPS[kind][0]}</h3>${SHELF_GROUPS[kind][1] ? `<p>${SHELF_GROUPS[kind][1]}</p>` : ""}</div>` : "";
+    const kind = kindOf(c || u), grp = kind === "special" && !isJeeCls(cls) ? SHELF_BONUS : SHELF_GROUPS[kind];
+    const head = kind !== lastKind && (kind !== "chem" || many) ? `<div class="shelf-head${lastKind ? "" : " first"}"><h3>${grp[0]}</h3>${grp[1] ? `<p>${grp[1]}</p>` : ""}</div>` : "";
     lastKind = kind;
     if (c) {
       const k = key(c), on = pack.has(k);
@@ -1511,14 +1522,14 @@ function renderShelf() {
       <a class="notify" href="${wa(msg)}" target="_blank" rel="noopener">Notify me →</a>
     </div>`;
   }).join("") || `<div class="shelf-head"><h3>${esc(clsName(cls))}: books coming soon</h3><p>${SAMPLE_BOOKS[cls] ? `The free sample is ready: <a href="#free-sample">read it now →</a> ` : ""}Adeel Sir is writing the books now. <a href="${wa(`Hello Adeel Sir, please tell me when the Chemophile ${clsName(cls)} books are ready.`)}" target="_blank" rel="noopener">Get a WhatsApp message when they're ready →</a></p></div>`;
-  const book = PART[cls] ? `Chemophile ${PART[cls]}` : clsName(cls);
+  const book = PART[cls] ? bookName(cls) : clsName(cls);
   const count = kind => [ready.filter(c => kindOf(c) === kind && !isPart(c)).length, soon.filter(u => kindOf(u) === kind).length];
   const [mainReady, mainSoon] = count("chem"), extra = ["special", "phy", "bio"].map(k => [k, count(k)[0] + count(k)[1]]).filter(([, n]) => n);
-  const names = { special: "JEE/NEET special", phy: "Physics", bio: "Biology" };
+  const names = { special: isJeeCls(cls) ? "JEE/NEET special" : "bonus", phy: "Physics", bio: "Biology" };
   $("#shelf-note").textContent = (mainReady
     ? `${book}: ${mainSoon ? `${mainReady} chapters ready, ${mainSoon} coming soon.` : mainReady === 1 ? "1 chapter is ready." : `all ${mainReady} chapters are ready.`}`
     : mainSoon ? `${book}: all ${mainSoon} chapters are coming soon. Tap "Notify me" under the ones you want.` : `${book}.`)
-    + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} chapter${n > 1 ? "s" : ""}`).join(", ")}.` : "");
+    + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} ${k === "special" && !isJeeCls(cls) ? "booklet" : "chapter"}${n > 1 ? "s" : ""}`).join(", ")}.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
@@ -1633,7 +1644,9 @@ $("#pay-box").addEventListener("click", async e => {
 // ---------- plans and offers ----------
 // Built from the catalog: a card for each way to buy that is switched on, the referral band if it is on.
 function renderPlans() {
-  const from = f => { const ps = CHAPTERS.map(c => priceOf(c, f)).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
+  // "From" is the lowest price of a real chapter of a book; small extras (a mock test, a revision sheet) don't count.
+  const from = f => { const low = list => { const ps = list.map(c => priceOf(c, f)).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
+    return low(CHAPTERS.filter(c => kindOf(c) === "chem" && !isPart(c))) || low(CHAPTERS); };
   const paper = ["colour", "bw"].find(f => FORMATS[f].on);
   const year = onlineDays() === 365 ? "1 full year" : `${onlineDays()} days`;
   const cards = [];
@@ -1664,9 +1677,9 @@ function renderPlans() {
     "1 ID = 1 phone: your copy stays yours", "Sign up free: the sample stays in your library", "Hinglish explanations, English exam answers"
   ].filter(Boolean).map(t => `<li>✓ ${t}</li>`).join("");
   // A word about the offers in the top section too.
-  const trust = $(".trust");
-  if (FORMATS.monthly.on && from("monthly")) trust.insertAdjacentHTML("beforeend", `<li>Monthly plan from ${rupee(from("monthly"))}</li>`);
-  if (REFERRAL.on) trust.insertAdjacentHTML("beforeend", `<li>Refer a friend: ${REFERRAL.days} days free</li>`);
+  const chips = $("#numbers");
+  if (chips && FORMATS.monthly.on && from("monthly")) chips.insertAdjacentHTML("beforeend", `<span class="chip">Monthly plan from <b>${rupee(from("monthly"))}</b></span>`);
+  if (chips && REFERRAL.on) chips.insertAdjacentHTML("beforeend", `<span class="chip">Refer a friend: <b>${REFERRAL.days} days</b> free</span>`);
 }
 renderPlans();
 if (REFERRAL.on) document.querySelector(".faq").insertAdjacentHTML("beforeend", `<details><summary>What is "Refer a friend"?</summary><p>Every student with a login ID has a personal referral code in their library. When a friend orders the online book and gives that code, the student who referred them gets ${REFERRAL.days} extra days on their online book. There is no limit on how many friends you refer.</p></details>`);
@@ -1741,7 +1754,7 @@ function openSheet(k, topicId) {
     <div class="ch-head night">
       ${coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509">` : madeCover(c)}
       <div style="min-width:0">
-        <div class="kicker">Chemophile ${esc(PART[c.cls] || clsName(c.cls))} · ${chNo(c)}</div>
+        <div class="kicker">${esc(bookName(c.cls))} · ${chNo(c)}</div>
         <h3 id="sheet-title">${esc(c.title)}${c.extra ? ` <span style="font-size:.7em;color:var(--night-fg)">${esc(c.extra)}</span>` : ""}</h3>
         ${c.tag ? `<p class="tag">${esc(c.tag)}</p>` : ""}
         <div class="stats">

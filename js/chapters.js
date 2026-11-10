@@ -80,8 +80,17 @@ const baseN = n => +n % PART_FROM;
 const kindOf = c => { const n = baseN(c && c.n); return n > 300 ? "bio" : n > 200 ? "phy" : n > 100 ? "special" : "chem"; };
 const isBonus = c => kindOf(c) === "special";
 const numIn = c => baseN(c.n) - KINDS[kindOf(c)].from;
-const chNo = c => `${KINDS[kindOf(c)].label} ${numIn(c)}${isPart(c) ? " · JEE/NEET extra" : ""}`;
-const chShort = c => `${KINDS[kindOf(c)].short} ${numIn(c)}${isPart(c) ? " extra" : ""}`;
+// Only Class 11 and 12 have JEE / NEET. In every other class (9, 10, a university book) the same
+// 101–199 chapters are that class's "Bonus" booklets: a bonus chapter, a mock test, a revision sheet.
+const isJeeCls = cls => +cls === 11 || +cls === 12;
+const isExtraBook = c => kindOf(c) === "special" && c.cls != null && !isJeeCls(c.cls);
+const kindLabel = (c, short) => isExtraBook(c) ? "Bonus" : KINDS[kindOf(c)][short ? "short" : "label"];
+const chNo = c => `${kindLabel(c)} ${numIn(c)}${isPart(c) ? " · JEE/NEET extra" : ""}`;
+const chShort = c => `${kindLabel(c, true)} ${numIn(c)}${isPart(c) ? " extra" : ""}`;
+// "Chemophile Part 1 (for 11th Class)": the book's name, with "Chemophile" in front exactly once.
+// A university book keeps its own name ("Organic Chemistry Inspired by Clayden").
+const bookName = cls => { const b = String(PART[cls] || clsName(cls)); return isUni(cls) || /^chemophile\b/i.test(b) ? b : `Chemophile ${b}`; };
+const bookPart = cls => String(PART[cls] || clsName(cls)).replace(/^chemophile\s+/i, "");
 // Chapters in reading order: by kind and number, with a chapter's extra topics right after it.
 const orderN = c => baseN(c.n) * 2 + (isPart(c) ? 1 : 0);
 const parentKey = k => { const [c, n] = String(k).split("-"); return +n >= PART_FROM ? `${c}-${+n % PART_FROM}` : null; };
@@ -93,7 +102,7 @@ function parseKey(text) {
   const n = +m[3] < 100 || from ? from + +m[3] : +m[3];
   return `${+m[1]}-${n + (m[4] ? PART_FROM : 0)}`;
 }
-const keyText = k => { const [cl, n] = String(k).split("-"), c = { n: +n }, K = KINDS[kindOf(c)]; return `${cl}-${K.key}${numIn(c)}${isPart(c) ? "X" : ""}`; };
+const keyText = k => { const [cl, n] = String(k).split("-"), c = { cls: +cl, n: +n }, K = KINDS[kindOf(c)]; return `${cl}-${isExtraBook(c) ? "B" : K.key}${numIn(c)}${isPart(c) ? "X" : ""}`; };
 const clsName = cls => CLASS_LABEL[cls] || (isUni(cls) ? "University book" : `Class ${cls}`);
 
 // Chapters still being written. Each shows as "Coming soon" with { cls, n, title, tag, f } (f = formula drawn on its cover).

@@ -1,7 +1,7 @@
 I am Mohd Adeel Khan (Adeel Sir), author of the Chemophile Chemistry booklets. I have attached the PDF of one chapter booklet. Read the whole PDF, page by page, and give me its "chapter info" for my website, in the exact text format below. My website reads your answer line by line, so follow the format exactly.
 
 STEP 1: FIND THESE FROM THE PDF
-1. Chapter key: <class>-<chapter number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3. A JEE / NEET special chapter is <class>-S<number> (Class 11 Special 1 is 11-S1). Physics and Biology chapters of Class 9 and 10 are 9-P1, 10-Bio2 and so on. The JEE / NEET extra topics of a chapter add X: 11-1X. (For a university book, I will tell you the key.)
+1. Chapter key: <class>-<chapter number>. Class 11 Chapter 1 is 11-1, Class 12 Chapter 3 is 12-3. A JEE / NEET special chapter is <class>-S<number> (Class 11 Special 1 is 11-S1). A bonus booklet of Class 9 or 10 (bonus chapter, mock test, revision sheet) is <class>-B<number> (Class 9 Bonus 1 is 9-B1). Physics and Biology chapters of Class 9 and 10 are 9-P1, 10-Bio2 and so on. The JEE / NEET extra topics of a chapter add X: 11-1X. (For a university book, I will tell you the key.)
 2. Title: the chapter name as printed on the cover.
 3. Short: a short name of 1 to 3 words (for small buttons). Example: "Basic Concepts".
 4. Tagline: one catchy Hinglish line (8 to 14 words) that makes a student want to read it. Use the cover line if the book has one.
@@ -85,6 +85,7 @@ Class 11 (Part 1): 11-1 Some Basic Concepts · 11-2 Structure of Atom · 11-3 Cl
 Class 12 (Part 2): 12-1 Solutions · 12-2 Electrochemistry · 12-3 Chemical Kinetics · 12-4 d- and f-Block · 12-5 Coordination Compounds · 12-6 Haloalkanes and Haloarenes · 12-7 Alcohols, Phenols and Ethers · 12-8 Aldehydes, Ketones and Carboxylic Acids · 12-9 Amines · 12-10 Biomolecules
 
 JEE / NEET special chapters: 11-S1, 11-S2 … for Class 11; 12-S1, 12-S2 … for Class 12. Extra topics of a chapter: 11-1X, 12-3X …
+Bonus booklets of Class 9 and 10: 9-B1, 9-B2 …; 10-B1, 10-B2 …
 Class 9 and 10: Chemistry 9-1, 10-1 …; Physics 9-P1, 10-P1 …; Biology 9-Bio1, 10-Bio1 …
 
 This PDF is chapter: [write the key here, e.g. 12-1]

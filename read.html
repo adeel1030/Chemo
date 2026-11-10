@@ -336,7 +336,7 @@
       <div>
         <div class="auth-eyebrow">Chemophile online book</div>
         <h1>Your chemistry book, <span>on your phone.</span></h1>
-        <p class="lede">Class 11 and 12 Chemistry by Adeel Sir, explained in easy Hinglish.</p>
+        <p class="lede">Class 9 to 12 Chemistry by Adeel Sir, explained in easy Hinglish.</p>
         <ul class="perks">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Turn the pages like a real book</li>
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Diagrams, solved examples and exam answers</li>
@@ -991,24 +991,24 @@ async function renderLibrary() {
   const card = k => {
     const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k), ac = access(k);
     const [cls, n] = k.split("-");
-    const title = c.title || (info && info.title) || chNo({ n: +n });
-    const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : chNo({ n: +n });
+    const title = c.title || (info && info.title) || chNo({ cls: +cls, n: +n });
+    const cover = c.n && coverOf(c) ? `<img src="${coverOf(c)}" alt="" width="360" height="509" loading="lazy">` : chNo({ cls: +cls, n: +n });
     const open = pr.ready && ac.open;
     const plan = ac.monthly ? (ac.open ? `<span class="plan-tag">Monthly · paid till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Monthly plan ended ${fmtDate(ac.till)}</span>`)
-      : ac.free ? `<span class="plan-tag free">Free chapter</span>` : ac.part ? `<span class="plan-tag free">Included with ${esc(chNo({ n: baseN(n) }))}</span>`
+      : ac.free ? `<span class="plan-tag free">Free chapter</span>` : ac.part ? `<span class="plan-tag free">Included with ${esc(chNo({ cls: +cls, n: baseN(n) }))}</span>`
       : ac.grant ? (ac.open ? `<span class="plan-tag">Free access till ${fmtDate(ac.till)}</span>` : `<span class="plan-tag off">Free access ended ${fmtDate(ac.till)}</span>`) : "";
     const status = !ac.open ? (ac.monthly ? "Renew your plan to read it again." : ac.grant ? "Buy it to keep reading; your place stays saved." : `Access ended${ac.till ? " on " + fmtDate(ac.till) : ""}.`)
       : !chapterInfo.has(k) ? "Couldn't load right now" : !pr.ready ? "Coming soon" : pr.done ? "Finished · read again any time" : pr.last > 1 ? `Page ${pr.last} of ${pr.total} · ${pr.pct}%` : `${pr.total} pages · not started`;
     return `<div class="card book${open ? "" : ac.open ? " soon" : " locked"}">
       <button class="cv" type="button" ${open ? `data-read="${k}"` : "disabled"} aria-label="Open ${esc(title)}">${cover}</button>
-      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · ${chNo({ n: +n })}</div><h3>${esc(title)}</h3>${plan}
+      <div style="min-width:0"><div class="ch">${esc(clsName(cls))} · ${chNo({ cls: +cls, n: +n })}</div><h3>${esc(title)}</h3>${plan}
         <div class="meta">${status}</div>
         ${open && pr.last > 1 ? `<div class="bar${pr.done ? " done" : ""}"><i style="width: ${pr.pct}%"></i></div>` : ""}
         ${open ? topicMap(k, c, pr) : ""}
         ${open && info && info.quiz && quizRes.get(k) ? `<span class="qscore">Quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}</span><br>` : ""}
         ${open && certReady(k) ? `<button class="btn btn-sm cert-btn" type="button" data-cert="${k}">🏅 My certificate</button><br>` : ""}
         ${open ? `<button class="btn ${pr.last > 1 ? "btn-line" : "btn-sun"} btn-sm" type="button" data-read="${k}">${pr.done ? "Read again" : pr.last > 1 ? "Continue" : "Start reading"}</button>${info && info.quiz ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-quiz="${k}">Quiz · ${info.quiz} Qs</button>` : ""}${info && info.qbank ? `<button class="btn btn-line btn-sm quiz-btn" type="button" data-qbank="${k}">📝 Question bank · ${info.qbank}</button>` : ""}`
-          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} ${chNo({ n: +n })} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
+          : !ac.open ? `<a class="btn btn-wa btn-sm" href="${ac.monthly ? renewMsg() : ac.grant ? wa(`Hello Adeel Sir, I want to buy Chemophile ${clsName(cls)} ${chNo({ cls: +cls, n: +n })} (ID ${me.loginId}).`) : wa(`Hello Adeel Sir, I want to renew my Chemophile ID ${me.loginId}.`)}" target="_blank" rel="noopener">${ac.grant ? "Buy on WhatsApp" : "Renew on WhatsApp"}</a>` : ""}</div>
     </div>`;
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
@@ -1824,7 +1824,7 @@ function renderMyReading(keys) {
     <div>${rows.map(([k, r]) => {
       const c = findChapter(k) || {}, total = r.total || (chapterInfo.get(k) || {}).pageCount || 0, seen = (r.seen || []).length;
       const pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
-      return `<div class="rrow"><div class="t"><span>${chShort({ n: +(c.n || k.split("-")[1]) })} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
+      return `<div class="rrow"><div class="t"><span>${chShort({ cls: +k.split("-")[0], n: +(c.n || k.split("-")[1]) })} · ${esc(c.short || c.title || k)}</span><span>${pct}%</span></div>
         <div class="bar${pct >= 100 ? " done" : ""}"><i style="width: ${pct}%"></i></div>
         <div class="m">${seen} of ${total} pages · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 1} time${(r.opens || 1) === 1 ? "" : "s"}${r.updatedAt && r.updatedAt.toDate ? " · last read " + ago(r.updatedAt.toDate()) : ""}${quizRes.get(k) ? ` · quiz best ${quizRes.get(k).best}/${quizRes.get(k).total}` : ""}</div>
         ${certReady(k) ? `<div class="cert-hint">🏅 Certificate ready: open it from the chapter card.</div>` : `<div class="cert-hint">🏅 Certificate: read ${CERT_READ * 100}% of the pages${(chapterInfo.get(k) || {}).quiz ? ` and score ${CERT_QUIZ * 100}% in the quiz` : ""}.</div>`}</div>`;

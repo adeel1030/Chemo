@@ -1,5 +1,5 @@
 // Firebase project settings for the online reader (read.html) and admin panel (admin.html).
-// Fill these in once, following SETUP.md. These values are safe to keep public:
+// Fill these in once, following the setup guide. These values are safe to keep public:
 // who can read what is enforced by firestore.rules, not by hiding this file.
 export const firebaseConfig = {
   apiKey: "AIzaSyDXGPdjkkxQJzytZBr3qrF71cifqKxnpOQ",

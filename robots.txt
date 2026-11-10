@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
+Disallow: /README.md
+Disallow: /firestore.rules
+Disallow: /chapter-info-prompt.txt
+Disallow: /question-bank-prompt.txt
 
 Sitemap: https://chemophile.maproductsindia.com/sitemap.xml

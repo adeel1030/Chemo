@@ -287,7 +287,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
   <div class="wrap center-screen" id="v-setup" hidden>
     <div class="card login-card">
       <h1>Firebase is not set up yet</h1>
-      <p>Add the Firebase project settings and admin email to <code>js/firebase-config.js</code>. The steps are in <code>SETUP.md</code>.</p>
+      <p>Add the Firebase project settings and admin email to <code>js/firebase-config.js</code>. Follow the steps in your setup guide.</p>
     </div>
   </div>
 
@@ -667,7 +667,7 @@ else onAuthStateChanged(auth, async user => {
 // Firestore error codes, in words the admin can act on. Nothing is deleted in any of these cases.
 function why(ex) {
   const c = ex && ex.code;
-  return c === "permission-denied" ? "Firebase refused to share the data (permission-denied). The Firestore rules are not published, have a mistake, or have a different admin email. Paste the full rules again (SETUP.md, step 6)."
+  return c === "permission-denied" ? "Firebase refused to share the data (permission-denied). The Firestore rules are not published, have a mistake, or have a different admin email. Paste the full rules again (Firebase console → Firestore Database → Rules → Publish)."
     : c === "resource-exhausted" ? "Firebase's free daily limit is used up (resource-exhausted). Your data is safe; the limit resets around 1:30 pm India time. Firebase console → Usage shows it."
     : c === "unavailable" || c === "deadline-exceeded" ? "No connection to Firebase. Check the internet and reload."
     : `Firebase error (${c || (ex && ex.message) || ex}). Reload the page; if it stays, send this text to the developer.`;
@@ -888,7 +888,7 @@ $("#new-form").addEventListener("submit", async e => {
     loadStudents();
   } catch (ex) {
     fail(ex.code === "auth/email-already-in-use" ? `Login ID "${id}" already exists (it may belong to a deleted student). Choose another ID.`
-      : ex.code === "auth/operation-not-allowed" ? "Email/Password login is not switched on in Firebase. See step 3 in SETUP.md."
+      : ex.code === "auth/operation-not-allowed" ? "Email/Password login is not switched on in Firebase. In the Firebase console open Authentication → Sign-in method and switch on Email/Password."
       : "Could not create the ID: " + (ex.message || ex.code));
   } finally {
     deleteApp(sec).catch(() => {});
@@ -1930,7 +1930,7 @@ $("#news-form").addEventListener("submit", async e => {
     $("#n-title").value = ""; $("#n-text").value = ""; $("#n-till").value = ""; $("#n-who").value = "all"; $("#n-cls").value = "0";
     await loadNews();
   } catch (ex) {
-    fail(ex.code === "permission-denied" ? "Not posted: paste the latest Firestore rules first (SETUP.md, step 6)." : "Not posted: " + (ex.message || ex.code));
+    fail(ex.code === "permission-denied" ? "Not posted: paste the latest Firestore rules first (Firebase console → Firestore Database → Rules → Publish)." : "Not posted: " + (ex.message || ex.code));
   }
   $("#n-btn").disabled = false;
 });
@@ -2006,7 +2006,7 @@ async function commit(change, done) {
   loadChapters().catch(() => {});
   renderStudents();
 }
-const saveError = ex => ex.code === "permission-denied" ? "Not saved: paste the latest Firestore rules first (SETUP.md, step 6)." : (ex.message || ex.code);
+const saveError = ex => ex.code === "permission-denied" ? "Not saved: paste the latest Firestore rules first (Firebase console → Firestore Database → Rules → Publish)." : (ex.message || ex.code);
 
 function priceLine(price = {}, mrp = {}) {
   const parts = onFormats().filter(f => +price[f] > 0).map(f => `<span>${fmtShort(f)} ${+mrp[f] > +price[f] ? `<s>₹${mrp[f]}</s>` : ""}<b>₹${price[f]}</b>${f === "monthly" ? "/mo" : ""}</span>`);
@@ -2195,7 +2195,9 @@ function readPrices(old = {}, oldMrp = {}) {
 }
 const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
 // What a new chapter can be (its number range says it; see KINDS in js/chapters.js).
-const KIND_OPTS = [["chem", "Chemistry chapter (the book)"], ["special", "JEE / NEET special chapter"], ["phy", "Physics chapter"], ["bio", "Biology chapter"]];
+// Class 11 and 12 have JEE / NEET special chapters; in every other class the same slot is a "Bonus" booklet.
+const kindOpts = cls => [["chem", "Chemistry chapter (the book)"], ["special", isJeeCls(cls) ? "JEE / NEET special chapter" : "Bonus booklet (bonus chapter, mock test, revision sheet)"], ["phy", "Physics chapter"], ["bio", "Biology chapter"]];
+const kindNoLabel = (cls, kind) => (kind === "special" && !isJeeCls(cls) ? "Bonus" : KINDS[kind].label.replace(" Ch", "")) + " no.";
 const nextN = (cls, kind) => Math.max(KINDS[kind].from, ...cat.chapters.filter(x => +x.cls === +cls && !isPart(x) && kindOf(x) === kind).map(x => +x.n)) + 1;
 // One dialog for every chapter: a book chapter, a JEE/NEET special, a Physics or Biology chapter, or the
 // JEE/NEET extra topics of a chapter (its own PDF, "included" with the chapter or sold on its own).
@@ -2208,11 +2210,11 @@ function chapterDialog(i, kindNew, parent) {
   const topicsText = (c.topics || []).map(t => `${t[0]} | ${t[2]}`).join("\n");
   const myPart = !part && !isNew && cat.chapters.find(x => +x.cls === +c.cls && +x.n === +c.n + PART_FROM);
   openDialog(partNew ? `JEE/NEET extra topics · ${clsName(c.cls)} ${chNo(parent)}` : isNew ? `New chapter in ${clsName(catCls)}` : `${clsName(c.cls)} · ${chNo(c)}`, `
-    ${part ? `<p class="cat-sub">🎯 The JEE / NEET extra topics of <b>${esc(chNo({ n: baseN(c.n) }))}</b>, as their own PDF. Upload it in the Chapters tab like any chapter. Students find it right under the chapter.</p>` : ""}
-    ${isNew && !part ? `<div class="field"><label for="d-kind">What is it?</label><select id="d-kind">${KIND_OPTS.map(([k, l]) => `<option value="${k}"${k === kindOf(c) ? " selected" : ""}>${l}</option>`).join("")}</select>
-      <span class="hint">JEE/NEET special chapters, and Physics and Biology chapters, show in their own section of the class on the website.</span></div>` : ""}
+    ${part ? `<p class="cat-sub">🎯 The JEE / NEET extra topics of <b>${esc(chNo({ cls: c.cls, n: baseN(c.n) }))}</b>, as their own PDF. Upload it in the Chapters tab like any chapter. Students find it right under the chapter.</p>` : ""}
+    ${isNew && !part ? `<div class="field"><label for="d-kind">What is it?</label><select id="d-kind">${kindOpts(c.cls).map(([k, l]) => `<option value="${k}"${k === kindOf(c) ? " selected" : ""}>${l}</option>`).join("")}</select>
+      <span class="hint">${isJeeCls(c.cls) ? "JEE/NEET special chapters" : "Bonus booklets"}, and Physics and Biology chapters, show in their own section of the class on the website.</span></div>` : ""}
     <div class="cat-row">
-      ${isNew && !part ? `<div class="field sm"><label for="d-n" id="d-n-l">${KINDS[kindOf(c)].label.replace(" Ch", "")} no.</label><input id="d-n" type="number" min="1" max="99" inputmode="numeric" value="${numIn(c)}"></div>` : ""}
+      ${isNew && !part ? `<div class="field sm"><label for="d-n" id="d-n-l">${kindNoLabel(c.cls, kindOf(c))}</label><input id="d-n" type="number" min="1" max="99" inputmode="numeric" value="${numIn(c)}"></div>` : ""}
       <div class="field lg"><label for="d-title">Name</label><input id="d-title" value="${esc(c.title)}"></div>
     </div>
     <div class="cat-row">
@@ -2221,7 +2223,7 @@ function chapterDialog(i, kindNew, parent) {
       <div class="field sm"><label for="d-pages">Pages</label><input id="d-pages" type="number" min="0" inputmode="numeric" value="${numVal(c.pages)}"></div>
       <div class="field" style="flex-basis: 150px"><label for="d-soon">On the website</label><select id="d-soon"><option value="">Live</option><option value="1"${c.soon ? " selected" : ""}>Coming soon</option></select></div>
     </div>
-    ${part ? `<label class="cat-check free-check"><input type="checkbox" id="d-incl"${c.included !== false ? " checked" : ""}> <span><b>Included with the chapter</b>: everyone who has ${esc(chNo({ n: baseN(c.n) }))} reads these too, at no extra cost. Untick to sell them on their own, with the prices below.</span></label>`
+    ${part ? `<label class="cat-check free-check"><input type="checkbox" id="d-incl"${c.included !== false ? " checked" : ""}> <span><b>Included with the chapter</b>: everyone who has ${esc(chNo({ cls: c.cls, n: baseN(c.n) }))} reads these too, at no extra cost. Untick to sell them on their own, with the prices below.</span></label>`
       : `<label class="cat-check free-check"><input type="checkbox" id="d-free"${c.free ? " checked" : ""}> <span><b>Free chapter</b>: every student who signs up (free) can read it, no payment. Good for a free sample section.</span></label>`}
     <div id="d-prices">${priceFields(c.price, c.mrp)}</div>
     ${custom ? `<div class="field"><label for="d-topics">Topics, one per line: name | start page (optional)</label><textarea id="d-topics" placeholder="Atoms and molecules | 4">${esc(topicsText)}</textarea><span class="hint">Easier: 📄 Info in the Chapters tab fills topics, sub-topics, counts and the quiz from the booklet.</span></div>` : ""}
@@ -2233,7 +2235,7 @@ function chapterDialog(i, kindNew, parent) {
       const n = isNew && !part ? from + parseInt(val("d-n"), 10) : +c.n, title = val("d-title");
       if (isNew && !part && !(n - from >= 1 && n - from <= 99)) throw new Error("Number: 1 to 99.");
       if (!title) throw new Error("Write the name.");
-      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ n })}.`);
+      if (isNew && cat.chapters.some(x => +x.cls === +c.cls && +x.n === n)) throw new Error(`${clsName(c.cls)} already has ${chNo({ cls: c.cls, n })}.`);
       const { price, mrp } = readPrices(c.price, c.mrp), soon = !!val("d-soon");
       const free = !part && !!(dlg.querySelector("#d-free") || {}).checked, included = part && dlg.querySelector("#d-incl").checked;
       if (!soon && !free && !included && !onFormats().some(f => price[f] > 0)) throw new Error(part ? "Give a price, or tick Included with the chapter." : "Give at least one price, tick Free, or set it to Coming soon.");
@@ -2244,11 +2246,11 @@ function chapterDialog(i, kindNew, parent) {
       else if (!!c.free !== free || free) await setDoc(doc(db, "chapters", k), { free }, { merge: true });
       // Topics left as they were keep their sections and sub-topics.
       if (custom && val("d-topics") !== topicsText.trim()) item.topics = val("d-topics").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [name, pg] = l.split("|").map(x => x.trim()); return [name, "", parseInt(pg, 10) || 1, ""]; });
-      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[at(next.chapters, c, ckey)] = item; }, `${clsName(c.cls)} ${chNo({ n })} saved.`);
+      await commit(next => { if (isNew) next.chapters.push(item); else next.chapters[at(next.chapters, c, ckey)] = item; }, `${clsName(c.cls)} ${chNo({ cls: c.cls, n })} saved.`);
     },
     custom && !isNew ? async () => { await commit(next => { next.chapters.splice(at(next.chapters, c, ckey), 1); }, `${clsName(c.cls)} ${chNo(c)} removed.`); } : null);
   const kindSel = dlg.querySelector("#d-kind");
-  if (kindSel) kindSel.addEventListener("change", () => { const k = kindSel.value; dlg.querySelector("#d-n").value = nextN(catCls, k) - KINDS[k].from; dlg.querySelector("#d-n-l").textContent = KINDS[k].label.replace(" Ch", "") + " no."; });
+  if (kindSel) kindSel.addEventListener("change", () => { const k = kindSel.value; dlg.querySelector("#d-n").value = nextN(catCls, k) - KINDS[k].from; dlg.querySelector("#d-n-l").textContent = kindNoLabel(catCls, k); });
   const incl = dlg.querySelector("#d-incl"), prices = dlg.querySelector("#d-prices");
   if (incl) { const sync = () => { prices.hidden = incl.checked; }; incl.addEventListener("change", sync); sync(); }
   const pn = dlg.querySelector("[data-part-new]"), pe = dlg.querySelector("[data-part-edit]");
