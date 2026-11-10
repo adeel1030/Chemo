@@ -919,6 +919,7 @@ $("#new-form").addEventListener("submit", async e => {
       name, phone, loginId: id, active: true, ...data, ...(referrer ? { referredBy: referrer.uid } : {}),
       deviceId: null, deviceInfo: null, boundAt: null, createdAt: serverTimestamp()
     });
+    await relinkPhone({ uid: cred.user.uid, loginId: id, phone }, null);
     const thanks = referrer ? await rewardReferrer(referrer, name).catch(ex => ({ error: ex })) : null;
     await setDoc(doc(db, "secrets", cred.user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
     await signOut(secAuth);
@@ -993,7 +994,7 @@ const waLink = (phone, text) => `https://wa.me/${phone ? "91" + phone : ""}?text
 function studentMessage(s, pw = s.password) {
   const hi = `Hello ${(s.name || "").split(" ")[0]}!`, chapters = (s.chapters || []).map(chName).join(", ");
   const plan = subKeys(s).length ? `\nMonthly plan: ${subKeys(s).map(chName).join(", ")}\nPaid till: ${fmtDate(subEnd(s))} (renew every ${monthDays()} days)` : "";
-  if (s.promo) return `${hi} Your Chemophile online book (promo code ${s.promo}).\n\nLink: ${readerLink()}\nChapters: ${chapters}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}\n\nOpen the link on the same phone and browser where you entered the code. You don't need to enter the code again.\n- Adeel Sir`;
+  if (s.promo) return `${hi} Your Chemophile online book (promo code ${s.promo}).\n\nLink: ${readerLink()}\nChapters: ${chapters}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}\n\nOpen the link on the same phone and browser where you entered the code. It asks you to make your own login ID and password once; your chapters stay open on it till the same date. After that, log in with your ID or your WhatsApp number.\n- Adeel Sir`;
   return `${hi} Your Chemophile online book ${pw ? "is ready" : "details"}.\n\nLink: ${readerLink()}\nLogin ID: ${s.loginId}\nPassword: ${pw || "the same password I sent you earlier"}\n${chapters ? `\nChapters: ${chapters}${s.expiresAt ? `\nValid until: ${fmtDate(s.expiresAt)}` : ""}` : ""}${plan}\n\nPlease note: this ID works on one phone only. It locks to the first phone you log in on. Do not share your ID with anyone.\n- Adeel Sir`;
 }
 
@@ -1027,7 +1028,42 @@ async function loadStudents() {
   studentsLoaded = true;
   if (!students.length) $("#new-box").open = true;
   renderStudents();
+  syncPhones().then(renderStudents).catch(ex => console.warn("phones", ex));
 }
+// ---------- log in with a phone number ----------
+// phones/{10-digit number} = { id, uid }: the reader's login box takes a WhatsApp number instead of the ID.
+// One ID per number: the first ID made with a number gets it (two children on a parent's number: the second
+// logs in with the ID). Every ID with a number but no link gets one here, and links to deleted IDs or old
+// numbers are removed.
+let phones = new Map();
+const PHONE_RE = /^\d{10}$/;
+async function syncPhones() {
+  try { phones = new Map((await getDocs(collection(db, "phones"))).docs.map(d => [d.id, d.data()])); }
+  catch (e) { phones = new Map(); return; }
+  const writes = [];
+  phones.forEach((v, ph) => { const s = students.find(x => x.uid === v.uid); if (!s || s.phone !== ph || s.promo || s.loginId !== v.id) { writes.push(["del", ph]); phones.delete(ph); } });
+  [...students].sort((a, b) => ((a.createdAt && a.createdAt.toMillis()) || 0) - ((b.createdAt && b.createdAt.toMillis()) || 0)).forEach(s => {
+    if (s.promo || !s.loginId || !PHONE_RE.test(s.phone || "") || phones.has(s.phone)) return;
+    const v = { id: s.loginId, uid: s.uid }; phones.set(s.phone, v); writes.push(["set", s.phone, v]);
+  });
+  for (let i = 0; i < writes.length; i += 400) {
+    const batch = writeBatch(db);
+    writes.slice(i, i + 400).forEach(([op, ph, v]) => op === "set" ? batch.set(doc(db, "phones", ph), v) : batch.delete(doc(db, "phones", ph)));
+    await batch.commit();
+  }
+}
+// Move a student's phone link when their number changes (or the ID is made).
+async function relinkPhone(s, oldPhone) {
+  if (oldPhone && oldPhone !== s.phone && phones.get(oldPhone) && phones.get(oldPhone).uid === s.uid) { await deleteAll([doc(db, "phones", oldPhone)]).catch(() => {}); phones.delete(oldPhone); }
+  if (s.promo || !s.loginId || !PHONE_RE.test(s.phone || "")) return;
+  let cur = phones.get(s.phone);
+  if (!cur) { const d = await getDoc(doc(db, "phones", s.phone)).catch(() => null); cur = d && d.exists() ? d.data() : null; }
+  if (cur) { phones.set(s.phone, cur); return; }
+  const v = { id: s.loginId, uid: s.uid };
+  await setDoc(doc(db, "phones", s.phone), v).catch(() => {}); phones.set(s.phone, v);
+}
+const phoneLine = s => { if (s.promo || !PHONE_RE.test(s.phone || "")) return ""; const v = phones.get(s.phone);
+  return !v ? "" : v.uid === s.uid ? " · 📱 logs in with this number too" : ` · number also used by ID ${esc(v.id)}`; };
 let teacherReqs = [], readingAll = [];
 // Copy alert: many pages "read" far too fast (a few seconds a page) looks like someone copying the chapter.
 const COPY_PAGES = 25, COPY_SEC_PER_PAGE = 8;
@@ -1061,7 +1097,7 @@ function renderStudents() {
     <div class="stu" data-uid="${s.uid}">
       <div class="stu-top">
         <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
-        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>${REFERRAL.on ? ` · code ${refCodeOf(s.uid)}` : ""}`}${s.phone ? ` · ${esc(s.phone)}` : ""}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
+        <div style="min-width:0"><h3>${esc(s.name)}</h3><div class="sub">${s.promo ? `Promo <b>${esc(s.promo)}</b>` : `ID <b>${esc(s.loginId)}</b>${REFERRAL.on ? ` · code ${refCodeOf(s.uid)}` : ""}`}${s.phone ? ` · ${esc(s.phone)}` : ""}${phoneLine(s)}${s.createdAt ? ` · joined ${fmtDate(s.createdAt)}` : ""}</div></div>
         <div class="pills">
           ${isSignup(s) ? `<span class="pill warn">Signed up · ${esc(classesText(s) || "no class")} · not bought yet</span>` : ""}
           ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) || isSignup(s) ? "" : `<span class="pill good">Active</span>`}
@@ -1292,6 +1328,7 @@ $("#students").addEventListener("click", async e => {
     if (b.dataset.act === "del-yes") {
       b.disabled = true;
       await deleteAll(await studentRefs(s.uid));
+      if (s.phone && phones.get(s.phone) && phones.get(s.phone).uid === s.uid) { await deleteAll([doc(db, "phones", s.phone)]).catch(() => {}); phones.delete(s.phone); }
       students = students.filter(x => x !== s); renderStudents();
     }
   } catch (ex) {
@@ -1367,7 +1404,8 @@ Free access to my Chemophile Chemistry book: *${bookSummary(p.chapters)}*
 
 *Code:* ${p.code}
 *Link:* ${readerLink()}
-Open the link → tap "Promo code" → enter the code, your name and number → tap "Open the book".
+New here? Open the link → *Sign up* → fill in your details and this code in "Promo code".
+Already have a Chemophile ID? Log in → enter the code under "Have a promo code?".
 
 ⏳ ${left > 0 ? `Only ${left} ${left === 1 ? "place" : "places"}${p.used ? " left" : ""} · ` : ""}Ends ${fmtDate(p.expiresAt)}
 - Adeel Sir`;
@@ -1540,7 +1578,10 @@ function detailsDialog(s) {
       if (phone && phone.length !== 10) throw new Error("WhatsApp number: 10 digits.");
       const update = { name, phone, role: dlg.querySelector("#d-srole").value || null, school: val("d-sschool"), city: val("d-scity"), classes: pickedIn("#d-scls").map(Number) };
       await updateDoc(doc(db, "users", s.uid), update);
-      Object.assign(s, update); renderStudents();
+      const oldPhone = s.phone;
+      Object.assign(s, update);
+      if (oldPhone !== s.phone) await relinkPhone(s, oldPhone);
+      renderStudents();
     });
 }
 

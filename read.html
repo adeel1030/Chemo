@@ -129,6 +129,7 @@
 .acct dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere; }
 .acct .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .promo-note { margin-top: 8px; }
+.linkish { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
 .pw-wrap { position: relative; }
 .pw-wrap input { padding-right: 52px; }
 .pw-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); padding: 8px; border-radius: 8px; cursor: pointer; display: grid; }
@@ -364,15 +365,15 @@
       <div class="tabs" role="tablist" aria-label="How to sign in">
         <button type="button" role="tab" aria-selected="true" data-tab="login-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Log in</button>
         <button type="button" role="tab" aria-selected="false" data-tab="signup-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M2 21a8 8 0 0 1 13-6"/><path d="M19 15v6M16 18h6"/></svg>Sign up</button>
-        <button type="button" role="tab" aria-selected="false" data-tab="promo-form"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/></svg>Promo</button>
       </div>
 
       <form id="login-form" class="login-card" novalidate>
-        <div class="field"><label for="login-id">Login ID</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. rahul11"></div>
+        <div class="field"><label for="login-id">Login ID or WhatsApp number</label><input id="login-id" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. rahul11 or 98765 43210"></div>
         <div class="field"><label for="login-pw">Password</label><div class="pw-wrap"><input id="login-pw" type="password" autocomplete="current-password"><button class="pw-eye" type="button" id="pw-eye" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
         <div class="msg bad" id="login-err" role="alert" hidden></div>
         <button class="btn btn-sun" type="submit" id="login-btn">Log in</button>
-        <p class="hint">Use the ID and password Adeel Sir sent you on WhatsApp. One ID works on one phone only.</p>
+        <p class="hint">Log in with your ID, or the WhatsApp number you signed up with, and your password. One ID works on one phone only.</p>
+        <p class="hint">New here? <button class="linkish" type="button" data-go-tab="signup-form">Sign up first</button>: it's free. Got a promo code? Enter it while signing up.</p>
       </form>
 
       <form id="signup-form" class="login-card" novalidate hidden>
@@ -385,6 +386,7 @@
         <div class="field"><label for="su-school" id="su-school-lbl">School or college</label><input id="su-school" autocomplete="organization" maxlength="100" placeholder="e.g. DPS Noida"></div>
         <div class="field"><label for="su-city">City</label><input id="su-city" autocomplete="address-level2" maxlength="60" placeholder="e.g. Delhi"></div>
         <div class="field"><label id="su-cls-lbl">Your class (tick one or more)</label><div class="cls-picks" id="su-cls"></div></div>
+        <div class="field"><label for="su-code">Promo code (optional)</label><input id="su-code" autocapitalize="characters" spellcheck="false" autocomplete="off" maxlength="20" placeholder="e.g. DPS2026"><span class="hint">From your teacher or school. Leave it empty if you don't have one.</span></div>
         <div class="field"><label for="su-id">Choose a login ID</label><input id="su-id" autocapitalize="none" spellcheck="false" autocomplete="username" placeholder="e.g. rahul2026"><span class="hint">Small letters and numbers, 3 to 24 characters</span></div>
         <div class="field"><label for="su-pw">Choose a password</label><input id="su-pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
         <div class="msg bad" id="su-err" role="alert" hidden></div>
@@ -392,18 +394,21 @@
         <p class="hint">Your ID works on this phone only, like a bought ID. Chapters you buy later open on the same ID.</p>
       </form>
 
-      <form id="promo-form" class="login-card" novalidate hidden>
-        <div class="field"><label for="promo-code">Promo code</label><input id="promo-code" autocapitalize="characters" spellcheck="false" autocomplete="off" placeholder="e.g. ADEEL2026"></div>
-        <div class="field"><label for="promo-name">Your name</label><input id="promo-name" autocomplete="name"></div>
-        <div class="field"><label for="promo-phone">WhatsApp number</label><input id="promo-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"></div>
-        <div class="msg bad" id="promo-err" role="alert" hidden></div>
-        <button class="btn btn-sun" type="submit" id="promo-btn">Open the book</button>
-        <p class="hint">The book opens on this phone, in this browser, until the code's last date.</p>
-      </form>
-
       <p class="hint auth-foot">Don't have the book yet? <a href="index.html#pack">Order here</a> or <a href="index.html#free-sample">read the free sample</a>.<br><a href="policies.html">Terms, refund and privacy policies</a></p>
       <p class="hint auth-foot" data-ios-tip hidden>On iPhone: tap <b>Share</b> then <b>Add to Home Screen</b> to keep Chemophile as an app.</p>
     </div>
+  </div>
+
+  <div class="wrap center-screen" id="v-convert" hidden>
+    <form class="card login-card" id="cv-form" novalidate>
+      <h1>Make your login ID</h1>
+      <p id="cv-text"></p>
+      <div class="field"><label for="cv-id">Choose a login ID</label><input id="cv-id" autocapitalize="none" spellcheck="false" autocomplete="username" placeholder="e.g. rahul2026"><span class="hint">Small letters and numbers, 3 to 24 characters</span></div>
+      <div class="field"><label for="cv-pw">Choose a password</label><input id="cv-pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
+      <div class="msg bad" id="cv-err" role="alert" hidden></div>
+      <button class="btn btn-sun" type="submit" id="cv-btn">Save my ID</button>
+      <p class="hint">After this, log in any time with your ID or your WhatsApp number, and this password. Your ID works on this phone, like every Chemophile ID.</p>
+    </form>
   </div>
 
   <div class="wrap center-screen" id="v-blocked" hidden>
@@ -454,6 +459,7 @@
       <div class="card acct" id="acct-card">
         <h2>My account</h2>
         <dl id="acct"></dl>
+        <p class="hint" id="acct-phone" hidden></p>
         <p class="hint" id="acct-tip"></p>
         <p class="hint"><a href="policies.html#online">Online book rules</a> · <a href="policies.html#refund">Refunds</a> · <a href="policies.html#privacy">Privacy</a></p>
         <div class="actions">
@@ -510,14 +516,14 @@
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script src="js/flipbook.js"></script>
 <script type="module">
-import { onAuthStateChanged, signInWithEmailAndPassword, signInAnonymously, signOut, updatePassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
 const $ = s => document.querySelector(s);
-const VIEWS = ["v-loading", "v-setup", "v-login", "v-blocked", "v-library"];
+const VIEWS = ["v-loading", "v-setup", "v-login", "v-convert", "v-blocked", "v-library"];
 const wa = text => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
@@ -525,6 +531,25 @@ const store = {
 };
 const fmtDate = d => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 const PROMO_PATTERN = /^[A-Z0-9-]{4,20}$/;
+const PHONE_PATTERN = /^\d{10}$/;
+// Log in with a phone number: phones/{number} = { id, uid } links a WhatsApp number to one login ID.
+// undefined = could not check, null = not linked yet.
+async function phoneOwner(phone) {
+  if (!PHONE_PATTERN.test(phone || "")) return undefined;
+  try { const s = await getDoc(doc(db, "phones", phone)); return s.exists() ? s.data() : null; } catch (e) { return undefined; }
+}
+// Link the student's number to their ID, if no other ID has it yet. Returns who has the number now.
+async function linkPhone(uid, phone, id) {
+  const o = await phoneOwner(phone);
+  if (o !== null) return o;
+  try { await setDoc(doc(db, "phones", phone), { id, uid }); return { id, uid }; } catch (e) { return undefined; }
+}
+// Why a promo code can't be used now ("" if it can).
+function promoProblem(p) {
+  const till = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
+  return !p ? "This promo code is not valid. Check the spelling." : p.active === false ? "This promo code has been switched off."
+    : !till || till < new Date() ? "This promo code has expired." : (p.used || 0) >= p.maxUses ? "This promo code has reached its limit." : "";
+}
 
 function show(id) {
   VIEWS.forEach(v => { $("#" + v).hidden = v !== id; });
@@ -568,10 +593,11 @@ document.querySelector(".tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]");
   if (!b) return;
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
-  ["login-form", "signup-form", "promo-form"].forEach(id => { $("#" + id).hidden = id !== b.dataset.tab; });
-  const [t, sub] = { "login-form": ["Welcome back", "Log in to read your chapters."], "signup-form": ["Join Chemophile", "Free account, free sample, in one minute."], "promo-form": ["Got a promo code?", "Open the book your teacher or school shared."] }[b.dataset.tab];
+  ["login-form", "signup-form"].forEach(id => { $("#" + id).hidden = id !== b.dataset.tab; });
+  const [t, sub] = { "login-form": ["Welcome back", "Log in to read your chapters."], "signup-form": ["Join Chemophile", "Free account, free sample, in one minute."] }[b.dataset.tab];
   $("#auth-title").textContent = t; $("#auth-sub").textContent = sub;
 });
+$("#login-form").addEventListener("click", e => { const b = e.target.closest("[data-go-tab]"); if (b) document.querySelector(`.tabs [data-tab="${b.dataset.goTab}"]`).click(); });
 // read.html#signup opens the sign-up tab (links from the website).
 if (location.hash === "#signup" || location.hash === "#teacher") document.querySelector('.tabs [data-tab="signup-form"]').click();
 if (location.hash === "#teacher") document.querySelector('input[name="su-role"][value="teacher"]').checked = true;
@@ -587,6 +613,7 @@ if (!configured) {
   onAuthStateChanged(auth, user => {
     if (busy) return;
     if (!user) {
+      stopWatching();
       me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
       if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
@@ -598,7 +625,7 @@ if (!configured) {
 
 // ---------- login with ID ----------
 const loginErrors = {
-  "auth/invalid-credential": "Wrong login ID or password. Please check and try again.",
+  "auth/invalid-credential": "Wrong login ID, number or password. Please check and try again.",
   "auth/wrong-password": "Wrong password.",
   "auth/user-not-found": "This login ID was not found.",
   "auth/user-disabled": "This ID has been blocked. Please contact Adeel Sir.",
@@ -607,24 +634,41 @@ const loginErrors = {
 };
 $("#login-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const id = $("#login-id").value.trim().toLowerCase();
+  const raw = $("#login-id").value.trim().toLowerCase();
   const pw = $("#login-pw").value;
-  const err = $("#login-err");
+  const err = $("#login-err"), fail = t => { err.textContent = t; err.hidden = false; $("#login-btn").disabled = false; };
   err.hidden = true;
   // Adeel Sir can log in here with the admin email to see every chapter, on any number of devices.
-  const admin = isAdminEmail(id);
-  if ((!admin && !ID_PATTERN.test(id)) || !pw) { err.textContent = "Enter both your login ID and password."; err.hidden = false; return; }
-  if (!admin && !deviceId()) { err.textContent = "You can't log in from this browser. Turn off Private/Incognito mode and open it in normal Chrome."; err.hidden = false; return; }
+  const admin = isAdminEmail(raw);
+  // A WhatsApp number (with or without +91 and spaces) stands for the login ID it is linked to.
+  const digits = raw.replace(/[\s()+-]/g, ""), byPhone = !admin && /^\d{10,13}$/.test(digits);
+  if ((!admin && !byPhone && !ID_PATTERN.test(raw)) || !pw) return fail("Enter your login ID (or WhatsApp number) and your password.");
+  if (!admin && !deviceId()) return fail("You can't log in from this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
   $("#login-btn").disabled = true;
+  let id = raw;
+  if (byPhone) {
+    const o = await phoneOwner(digits.slice(-10));
+    if (o && o.id) id = o.id;
+    else if (!ID_PATTERN.test(raw)) return fail(o === null
+      ? "This number is not linked to any ID yet. Log in with your login ID once (after that the number works too), or sign up if you are new."
+      : "Could not check this number right now. Log in with your login ID.");
+  }
   try {
-    if (auth.currentUser) await signOut(auth);
+    if (auth.currentUser) { stopWatching(); await signOut(auth); }
     await signInWithEmailAndPassword(auth, admin ? id : idToEmail(id), pw);
   } catch (ex) {
-    err.textContent = loginErrors[ex.code] || "Could not log in. Please try again.";
+    // A number that is not linked was tried as a login ID too: say so, rather than "ID not found".
+    const unlinked = byPhone && id === raw && ["auth/user-not-found", "auth/invalid-credential"].includes(ex.code);
+    err.textContent = unlinked ? "This number is not linked to any ID yet (or the password is wrong). Log in with your login ID once, after that the number works too. New here? Sign up first."
+      : loginErrors[ex.code] || "Could not log in. Please try again.";
     err.hidden = false;
   }
   $("#login-btn").disabled = false;
 });
+// After logging out, the login box opens on "Log in" (not on the sign-up form used earlier).
+const toLogin = () => document.querySelector('.tabs [data-tab="login-form"]').click();
+// Stop listening to the student's records first, so logging out doesn't leave a listener that is refused.
+const stopWatching = () => { if (unwatch) { unwatch(); unwatch = null; } if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } };
 $("#logout").addEventListener("click", () => {
   // A promo login cannot be restored after logging out, so ask first.
   if (me && me.promo) {
@@ -634,10 +678,10 @@ $("#logout").addEventListener("click", () => {
     $("#logout-no").focus();
     return;
   }
-  signOut(auth);
+  toLogin(); stopWatching(); signOut(auth);
 });
 $("#logout-no").addEventListener("click", () => { $("#logout-confirm").hidden = true; });
-$("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden = true; signOut(auth); });
+$("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden = true; toLogin(); stopWatching(); signOut(auth); });
 
 // ---------- sign up ----------
 // Anyone can make a free ID. It locks to this device at once, has no chapters, and shows the free sample of
@@ -656,15 +700,28 @@ $("#signup-form").addEventListener("submit", async e => {
   const classes = [...document.querySelectorAll("#su-cls input:checked")].map(i => +i.value);
   const id = $("#su-id").value.trim().toLowerCase(), pw = $("#su-pw").value;
   const role = suRole(), school = $("#su-school").value.trim(), city = $("#su-city").value.trim();
+  const code = $("#su-code").value.trim().toUpperCase();
   if (name.length < 2) return fail("Enter your name.");
   if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
   if (school.length < 2) return fail("Enter your school or college name.");
   if (!classes.length) return fail("Tick your class.");
   if (!ID_PATTERN.test(id)) return fail("Login ID: small letters and numbers (and . _ -), 3 to 24 characters.");
   if (pw.length < 6) return fail("Use at least 6 characters for the password.");
+  if (code && !PROMO_PATTERN.test(code)) return fail("Promo code: check the spelling, or leave the box empty.");
   const mine = deviceId();
   if (!mine) return fail("You can't sign up from this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
   busy = true; $("#su-btn").disabled = true;
+  // A promo code is checked before the account is made: a wrong or full code stops the sign-up here.
+  let promo = null;
+  if (code) {
+    try { const ps = await getDoc(doc(db, "promos", code)); promo = ps.exists() ? ps.data() : null; }
+    catch (ex) {
+      busy = false; $("#su-btn").disabled = false;
+      return fail(ex.code === "permission-denied" ? "Promo codes can't be checked right now. Sign up without the code, then enter it in your library." : loginErrors["auth/network-request-failed"]);
+    }
+    const why = promoProblem(promo);
+    if (why) { busy = false; $("#su-btn").disabled = false; return fail(`${why} Correct it, or leave the box empty to sign up without a code.`); }
+  }
   let user = null;
   try {
     if (auth.currentUser) await signOut(auth);
@@ -676,6 +733,12 @@ $("#signup-form").addEventListener("submit", async e => {
     });
     // Adeel Sir's copy of the password, so he can send it again if it is forgotten.
     setDoc(doc(db, "secrets", user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
+    await linkPhone(user.uid, phone, id);
+    if (promo) {
+      me = { name, phone, loginId: id };
+      try { const n = await applyCode(user.uid, code, promo); codeNote = [`🎉 Welcome! Code ${code} applied: ${n} chapter${n > 1 ? "s" : ""} open till ${fmtDate(promo.expiresAt.toDate())}. Happy reading!`, "good"]; }
+      catch (ex) { codeNote = [`Your account is ready, but code ${code} could not be applied${ex.code === "permission-denied" ? " (it may have just filled up)" : ""}. Try it again below.`, "bad"]; }
+    }
     busy = false; $("#su-btn").disabled = false;
     start(user);
   } catch (ex) {
@@ -690,61 +753,49 @@ $("#signup-form").addEventListener("submit", async e => {
   }
 });
 
-// ---------- promo code ----------
-$("#promo-form").addEventListener("submit", async e => {
+// ---------- old promo-code readers make their ID ----------
+// Promo codes used to open the book without an ID. Those readers now make their own login ID and password
+// once: the same account becomes a normal signed-up ID, and the code's chapters stay open till its last date.
+function showConvert(user) {
+  const till = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null, open = till && till > new Date();
+  $("#cv-text").textContent = `Hello ${(me.name || "").split(" ")[0] || "there"}! Opening the book with only a promo code has stopped. Make your own login ID and password once. ${open
+    ? `Your promo chapters stay open till ${fmtDate(till)}, and chapters you buy later open on the same ID.` : "Your promo period is over, but you keep a free account: read the free sample and buy chapters on the same ID."}`;
+  // A reader whose ID was made but not saved yet (say the internet dropped) only finishes saving it.
+  const made = !user.isAnonymous && user.email ? emailToId(user.email) : "";
+  $("#cv-id").value = made || $("#cv-id").value; $("#cv-id").disabled = !!made;
+  $("#cv-err").hidden = true; $("#logout").hidden = true;
+  show("v-convert");
+}
+$("#cv-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const err = $("#promo-err");
-  const fail = t => { err.textContent = t; err.hidden = false; };
+  const err = $("#cv-err"), fail = t => { err.textContent = t; err.hidden = false; };
   err.hidden = true;
-  const code = $("#promo-code").value.trim().toUpperCase();
-  const name = $("#promo-name").value.trim();
-  const phone = $("#promo-phone").value.replace(/\D/g, "").slice(-10);
-  if (!PROMO_PATTERN.test(code)) return fail("Enter a valid promo code.");
-  if (name.length < 2) return fail("Enter your name.");
-  if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
-  const mine = deviceId();
-  if (!mine) return fail("The book can't open in this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
-
-  busy = true;
-  $("#promo-btn").disabled = true;
-  let user = null;
+  const user = auth.currentUser, id = $("#cv-id").value.trim().toLowerCase(), pw = $("#cv-pw").value;
+  if (!user || !me || !me.promo) return;
+  if (!ID_PATTERN.test(id)) return fail("Login ID: small letters and numbers (and . _ -), 3 to 24 characters.");
+  if (pw.length < 6) return fail("Use at least 6 characters for the password.");
+  busy = true; $("#cv-btn").disabled = true;
   try {
-    if (auth.currentUser && !auth.currentUser.isAnonymous) await signOut(auth);
-    user = auth.currentUser || (await signInAnonymously(auth)).user;
-    const ps = await getDoc(doc(db, "promos", code));
-    const p = ps.exists() ? ps.data() : null;
-    const expires = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
-    if (!p) throw new Error("This promo code is not valid. Check the spelling.");
-    if (p.active === false) throw new Error("This promo code has been switched off.");
-    if (!expires || expires < new Date()) throw new Error("This promo code has expired.");
-    if ((p.used || 0) >= p.maxUses) throw new Error("This promo code has reached its limit.");
-    const existing = await getDoc(doc(db, "users", user.uid));
-    if (!existing.exists()) {
-      const batch = writeBatch(db);
-      batch.set(doc(db, "users", user.uid), {
-        name, phone, loginId: `promo ${code}`, chapters: p.chapters, active: true,
-        deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp(), createdAt: serverTimestamp(),
-        promo: code, expiresAt: p.expiresAt
-      });
-      batch.update(doc(db, "promos", code), { used: increment(1) });
-      batch.set(doc(db, "promos", code, "redemptions", user.uid), { name, phone, deviceInfo: deviceInfo(), at: serverTimestamp() });
-      await batch.commit();
-    }
-    busy = false;
-    $("#promo-btn").disabled = false;
+    if (user.isAnonymous) await linkWithCredential(user, EmailAuthProvider.credential(idToEmail(id), pw));
+    else await updatePassword(user, pw);
+    await user.getIdToken(true);
+    const old = me, till = old.expiresAt, batch = writeBatch(db);
+    batch.update(doc(db, "users", user.uid), { loginId: id, promo: deleteField(), expiresAt: deleteField(), chapters: [], signup: true, convertedAt: serverTimestamp() });
+    if (till && till.toDate && till.toDate() > new Date()) (old.chapters || []).forEach(k => batch.set(doc(db, "users", user.uid, "grants", k), { till, code: old.promo, at: serverTimestamp() }));
+    await batch.commit();
+    setDoc(doc(db, "secrets", user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
+    await linkPhone(user.uid, old.phone, id);
+    codeNote = [`✓ Your login ID is ${id}. From now on, log in with it (or your WhatsApp number) and your password.`, "good"];
+    busy = false; $("#cv-btn").disabled = false; $("#cv-pw").value = "";
     start(user);
   } catch (ex) {
-    busy = false;
-    $("#promo-btn").disabled = false;
-    if (user && user.isAnonymous) {
-      const has = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-      if (!has || !has.exists()) { try { await user.delete(); } catch (e2) { try { await signOut(auth); } catch (e3) {} } }
-    }
-    fail(ex.code === "permission-denied" ? "This promo code isn't working (limit reached or expired). Please contact Adeel Sir."
-      : ex.code === "auth/operation-not-allowed" ? "Promo codes are not switched on yet. Please contact Adeel Sir."
+    busy = false; $("#cv-btn").disabled = false;
+    fail(ex.code === "auth/email-already-in-use" || ex.code === "auth/credential-already-in-use" ? `The login ID "${id}" is taken. Try another one, like ${id.replace(/\d+$/, "")}${Math.floor(100 + Math.random() * 900)}.`
+      : ex.code === "auth/requires-recent-login" ? "Please try once more."
       : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
-      : ex.message);
-    show("v-login");
+      : ex.code === "permission-denied" ? "Your ID is made, but it could not be saved yet. Please WhatsApp Adeel Sir, then try again later."
+      : "Could not save. Please try again.");
+    if (auth.currentUser && !auth.currentUser.isAnonymous) { $("#cv-id").value = emailToId(auth.currentUser.email || ""); $("#cv-id").disabled = true; }
   }
 });
 
@@ -781,7 +832,12 @@ async function start(user) {
   }
   me = snap.data();
   pwBase = me.pwAt ? me.pwAt.seconds : 0; pwChangedHere = false;
-  if (!me.promo) await loadGrants(user.uid);
+  if (me.promo) {
+    if (unwatch) { unwatch(); unwatch = null; }
+    if (me.active === false) return kick("This ID is blocked", "Your account is blocked right now. Please contact Adeel Sir.", `Hello Adeel Sir, my Chemophile promo account shows as blocked.`);
+    return showConvert(user);
+  }
+  await loadGrants(user.uid);
   const label = me.promo ? `promo code ${me.promo}` : `ID "${loginId}"`;
   const mine = deviceId();
   if (!mine) {
@@ -835,10 +891,22 @@ async function start(user) {
   });
 
   me.loginId = me.promo ? `promo ${me.promo}` : loginId;
+  // Log in with the WhatsApp number too: link it to this ID if no other ID has it.
+  phoneLink = undefined; $("#acct-phone").hidden = true;
+  linkPhone(user.uid, me.phone, loginId).then(o => { phoneLink = o; showPhoneLink(); });
   $("#who").textContent = `${me.name || loginId}${me.promo ? "" : " · " + loginId}`;
   $("#logout").hidden = false;
   $("#pw-box").hidden = !!me.promo;
   renderLibrary();
+}
+
+let phoneLink, codeNote = null;
+function showPhoneLink() {
+  const box = $("#acct-phone"), o = phoneLink, uid = auth.currentUser && auth.currentUser.uid;
+  if (!me || me.admin || !o || !uid) { box.hidden = true; return; }
+  box.textContent = o.uid === uid ? `📱 You can log in with your WhatsApp number ${me.phone} instead of your ID.`
+    : `📱 Your WhatsApp number is linked to another ID, so log in with your ID "${me.loginId}".`;
+  box.hidden = false;
 }
 
 // ---------- announcements ----------
@@ -1149,6 +1217,22 @@ $("#v-library").addEventListener("click", e => { const b = e.target.closest("[da
 // One write: the code's count goes up by one, the redemption is recorded, and one free-access record per chapter.
 function renderRedeem() {
   $("#redeem").hidden = !!(me.admin || me.promo);
+  // A message from signing up with a code, or from making an ID, shows here once.
+  if (codeNote && !me.admin) { const m = $("#redeem-msg"); m.className = "msg " + codeNote[1]; m.textContent = codeNote[0]; m.hidden = false; codeNote = null; }
+}
+// Use a promo code on this ID. One write: the code's count goes up by one, the redemption is recorded, and one
+// free-access record per chapter. Returns the number of chapters it opened.
+async function applyCode(uid, code, p) {
+  const till = p.expiresAt.toDate();
+  // Chapters already open for longer than the code would give are left as they are.
+  const add = (p.chapters || []).filter(k => !(grantTill(k) >= till));
+  if (!add.length) throw new Error("You already have every chapter on this code.");
+  const batch = writeBatch(db);
+  batch.update(doc(db, "promos", code), { used: increment(1) });
+  batch.set(doc(db, "promos", code, "redemptions", uid), { name: me.name || "", phone: me.phone || "", loginId: me.loginId, deviceInfo: deviceInfo(), at: serverTimestamp() });
+  add.forEach(k => batch.set(doc(db, "users", uid, "grants", k), { till: p.expiresAt, code, at: serverTimestamp() }));
+  await batch.commit();
+  return add.length;
 }
 $("#redeem-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -1158,23 +1242,13 @@ $("#redeem-form").addEventListener("submit", async e => {
   $("#redeem-btn").disabled = true;
   try {
     const ps = await getDoc(doc(db, "promos", code)), p = ps.exists() ? ps.data() : null;
-    const till = p && p.expiresAt && p.expiresAt.toDate ? p.expiresAt.toDate() : null;
-    if (!p) throw new Error("This code is not valid. Check the spelling.");
-    if (p.active === false) throw new Error("This code has been switched off.");
-    if (!till || till < new Date()) throw new Error("This code has expired.");
-    if ((p.used || 0) >= p.maxUses) throw new Error("This code has reached its limit.");
-    // Chapters already open for longer than the code would give are left as they are.
-    const add = (p.chapters || []).filter(k => !(grantTill(k) >= till));
-    if (!add.length) throw new Error("You already have every chapter on this code.");
-    const uid = auth.currentUser.uid, batch = writeBatch(db);
-    batch.update(doc(db, "promos", code), { used: increment(1) });
-    batch.set(doc(db, "promos", code, "redemptions", uid), { name: me.name || "", phone: me.phone || "", loginId: me.loginId, deviceInfo: deviceInfo(), at: serverTimestamp() });
-    add.forEach(k => batch.set(doc(db, "users", uid, "grants", k), { till: p.expiresAt, code, at: serverTimestamp() }));
-    await batch.commit();
+    const why = promoProblem(p);
+    if (why) throw new Error(why);
+    const uid = auth.currentUser.uid, n = await applyCode(uid, code, p);
     await loadGrants(uid);
     $("#redeem-code").value = "";
     await renderLibrary();
-    say(`🎉 Code ${code} applied: ${add.length} chapter${add.length > 1 ? "s" : ""} open till ${fmtDate(till)}. Happy reading!`, "good");
+    say(`🎉 Code ${code} applied: ${n} chapter${n > 1 ? "s" : ""} open till ${fmtDate(p.expiresAt.toDate())}. Happy reading!`, "good");
     $("#redeem").scrollIntoView({ block: "center", behavior: "smooth" });
   } catch (ex) {
     say(ex.code === "permission-denied" ? "This code can't be used on your ID: you may have used it already, or it is full or expired." : ex.message || "Could not apply the code. Try again.", "bad");

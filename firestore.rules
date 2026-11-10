@@ -67,23 +67,6 @@ service cloud.firestore {
     // A promo code may be used while it is switched on, before its last date, and under its limit.
     function promoOpen(p) { return p.active == true && request.time < p.expiresAt && p.used < p.maxUses; }
 
-    // A promo user is created together with: the code's use count going up by one, and a redemption record.
-    function validPromoSignup(uid) {
-      let d = request.resource.data;
-      let before = get(promoPath(d.promo)).data;
-      let after = getAfter(promoPath(d.promo)).data;
-      return signedIn() && request.auth.uid == uid
-        && d.keys().hasOnly(['name', 'phone', 'loginId', 'chapters', 'active', 'deviceId', 'deviceInfo', 'boundAt', 'createdAt', 'promo', 'expiresAt'])
-        && d.promo is string
-        && promoOpen(before)
-        && after.used == before.used + 1
-        && d.chapters == before.chapters
-        && d.expiresAt == before.expiresAt
-        && d.active == true
-        && d.deviceId is string
-        && existsAfter(/databases/$(database)/documents/promos/$(d.promo)/redemptions/$(uid));
-    }
-
     // A free sign-up from the reader: the student's own new login makes its own document, with the login ID of
     // its email, no chapters, no plan and no end date, locked to the device it signs up on. Only the admin can
     // add chapters to it later (after payment).
@@ -104,7 +87,8 @@ service cloud.firestore {
     // One document per student: name, phone, chapters bought, and the device the ID is locked to.
     match /users/{uid} {
       allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
-      allow create: if isAdmin() || validPromoSignup(uid) || validSelfSignup(uid);
+      // Every reader signs up with their own login ID (a promo code is used after that, on the same ID).
+      allow create: if isAdmin() || validSelfSignup(uid);
       allow delete: if isAdmin();
       // A student may only lock their ID to a device when it is not locked yet (only the admin can unlock it),
       // may stamp the time they last opened a book, and may fill in their own details.
@@ -132,6 +116,16 @@ service cloud.firestore {
         signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pwAt'])
         && request.resource.data.pwAt == request.time
+      ) || (
+        // An old promo-code reader makes their own login ID and password: the account becomes a normal
+        // signed-up ID (its promo chapters move to free access till the same date, see grants below).
+        signedIn() && request.auth.uid == uid
+        && resource.data.get('promo', null) is string
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['loginId', 'promo', 'chapters', 'expiresAt', 'signup', 'convertedAt'])
+        && !('promo' in request.resource.data) && !('expiresAt' in request.resource.data)
+        && request.resource.data.chapters == [] && request.resource.data.signup == true
+        && request.resource.data.loginId == request.auth.token.email.split('@')[0]
+        && request.resource.data.convertedAt == request.time
       );
 
       // Free access to one chapter till a date: from a promo code (see validGrant), or given by the admin
@@ -142,6 +136,15 @@ service cloud.firestore {
         allow create: if signedIn() && request.auth.uid == uid && student().get('promo', null) == null && validGrant(uid, ch);
         allow update: if signedIn() && request.auth.uid == uid && student().get('promo', null) == null && validGrant(uid, ch)
           && resource.data.till < request.resource.data.till;
+        // When an old promo-code reader makes their ID (in the same write), each chapter of their code stays
+        // open till the code's same last date.
+        allow create: if signedIn() && request.auth.uid == uid
+          && student().get('promo', null) is string
+          && request.resource.data.keys().hasOnly(['till', 'code', 'at'])
+          && request.resource.data.code == student().promo
+          && ch in student().chapters
+          && request.resource.data.till == student().expiresAt
+          && getAfter(userPath(uid)).data.get('promo', null) == null;
       }
 
       // Reading record, one document per chapter: last page, highest page, pages seen, minutes, times opened.
@@ -196,30 +199,25 @@ service cloud.firestore {
         && request.resource.data.password is string;
     }
 
-    // Promo codes made by the admin. Anyone signed in may look up one code by its exact name (not list them),
-    // and may raise its use count by one only while creating their own promo account in the same write.
+    // Promo codes made by the admin. Anyone may look up one code by its exact name (not list them), so the
+    // sign-up form can check a code before making the account. A signed-in student may raise its use count by
+    // one only together with their own redemption record.
     match /promos/{code} {
-      allow get: if signedIn();
+      allow get: if true;
       allow list, create, delete: if isAdmin();
-      // Either a new promo account is made in the same write, or a student who already has an ID uses the
-      // code for the first time (their redemption record is made in the same write).
+      // A student with an ID uses the code for the first time (their redemption record is made in the same write).
       allow update: if isAdmin() || (
         signedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used'])
         && request.resource.data.used == resource.data.used + 1
         && promoOpen(resource.data)
-        && (
-          (!exists(userPath(request.auth.uid)) && getAfter(userPath(request.auth.uid)).data.promo == code)
-          || (exists(userPath(request.auth.uid)) && student().get('promo', null) == null
-            && !exists(redemptionPath(code, request.auth.uid)) && existsAfter(redemptionPath(code, request.auth.uid)))
-        )
+        && exists(userPath(request.auth.uid)) && student().get('promo', null) == null
+        && !exists(redemptionPath(code, request.auth.uid)) && existsAfter(redemptionPath(code, request.auth.uid))
       );
       match /redemptions/{uid} {
-        allow create: if signedIn() && request.auth.uid == uid && (
-          (!exists(userPath(uid)) && getAfter(userPath(uid)).data.promo == code)
-          || (exists(userPath(uid)) && student().get('promo', null) == null
-            && getAfter(promoPath(code)).data.used == get(promoPath(code)).data.used + 1)
-        );
+        allow create: if signedIn() && request.auth.uid == uid
+          && exists(userPath(uid)) && student().get('promo', null) == null
+          && getAfter(promoPath(code)).data.used == get(promoPath(code)).data.used + 1;
         allow read, delete: if isAdmin();
       }
     }
@@ -286,6 +284,20 @@ service cloud.firestore {
         && d.classes is list && d.classes.size() >= 1 && d.classes.size() <= 12
         && d.photo is string && d.photo.size() > 1000 && d.photo.size() < 900000
         && d.at == request.time;
+    }
+
+    // Log in with a phone number: phones/{10-digit number} = { id: login ID, uid }. Anyone may look up one
+    // number (not list them) to find its login ID; the password is still needed. A student may link their own
+    // number to their own ID once (one ID per number); the admin may change or remove any link.
+    match /phones/{phone} {
+      allow get: if true;
+      allow list, write: if isAdmin();
+      allow create: if signedIn() && phone.matches('^[0-9]{10}$')
+        && request.resource.data.keys().hasOnly(['id', 'uid'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.id == request.auth.token.email.split('@')[0]
+        && getAfter(userPath(request.auth.uid)).data.phone == phone
+        && getAfter(userPath(request.auth.uid)).data.loginId == request.resource.data.id;
     }
 
     // The catalog (books, chapters, prices, combos, offer) that the website shows. Anyone may read it.
