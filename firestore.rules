@@ -300,6 +300,23 @@ service cloud.firestore {
         && getAfter(userPath(request.auth.uid)).data.loginId == request.resource.data.id;
     }
 
+    // Day-wise activity: daily/{YYYY-MM-DD}_{uid} = { uid, date, minutes, ch: { chapter: { m: minutes, p: [pages] } },
+    // quiz: { quiz: { s: last score, n: out of, t: tries } }, last: time }. The reader adds to its own day; the
+    // admin reads every day of every student (by date, or by student).
+    match /daily/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.date is string && request.resource.data.date.matches('^20[0-9]{2}-[01][0-9]-[0-3][0-9]$')
+        && id == request.resource.data.date + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'date', 'minutes', 'ch', 'quiz', 'last'])
+        && (!('minutes' in request.resource.data) || (request.resource.data.minutes is number && request.resource.data.minutes <= 1440))
+        && (!('ch' in request.resource.data) || (request.resource.data.ch is map && request.resource.data.ch.size() <= 40))
+        && (!('quiz' in request.resource.data) || (request.resource.data.quiz is map && request.resource.data.quiz.size() <= 80))
+        && request.resource.data.last == request.time;
+      allow delete: if isAdmin();
+    }
+
     // The catalog (books, chapters, prices, combos, offer) that the website shows. Anyone may read it.
     match /catalog/{id} {
       allow read: if true;

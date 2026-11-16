@@ -517,7 +517,7 @@
 <script src="js/flipbook.js"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -1745,6 +1745,7 @@ function saveScore(key, res, old) {
   const hist = [...((old && old.hist) || []), { s: res.last, n: res.total, t: Date.now() }].slice(-10);
   quizRes.set(key, Object.assign({}, res, { hist, at: Timestamp.now() }));
   const ref = doc(db, "users", auth.currentUser.uid, "quiz", key);
+  logDay({ quiz: { [key]: { s: res.last, n: res.total, t: increment(1) } } });
   // Older Firestore rules refuse the history: then save the score without it.
   setDoc(ref, Object.assign({}, res, { hist, at: serverTimestamp() }))
     .catch(e => e.code === "permission-denied" ? setDoc(ref, Object.assign({}, res, { at: serverTimestamp() })) : Promise.reject(e))
@@ -1953,10 +1954,20 @@ function trackTick() {
   if (!document.hidden && now - track.active < 5 * 60e3) { track.ms += now - track.tick; addToday(now - track.tick); }
   track.tick = now;
 }
+// Today's activity for Adeel Sir's day-wise view: minutes and pages per chapter, added to daily/{date}_{uid}.
+function logDay(part) {
+  if (!me || me.admin || !auth.currentUser) return;
+  const uid = auth.currentUser.uid, date = dayKey();
+  setDoc(doc(db, "daily", `${date}_${uid}`), Object.assign({ uid, date, last: serverTimestamp() }, part), { merge: true }).catch(e => console.warn("day", e));
+}
 function flushReading() {
   if (!track || me.admin) return;
   trackTick();
   const t = track, base = reading.get(t.k) || {};
+  // Minutes and pages since the last save go to today's record.
+  const dm = Math.round(t.ms / 6000) / 10, fresh = [...(t.fresh || [])].slice(0, 500);
+  if (dm > 0 || fresh.length) logDay({ minutes: increment(dm), ch: { [t.k]: Object.assign({ m: increment(dm) }, fresh.length ? { p: arrayUnion(...fresh) } : {}) } });
+  t.fresh = new Set();
   const data = {
     last: t.last, max: Math.max(base.max || 0, t.max), seen: [...t.seen].sort((a, b) => a - b).slice(0, 2000),
     minutes: Math.round(((base.minutes || 0) + t.ms / 60000) * 10) / 10, opens: t.opens, total: t.total, updatedAt: serverTimestamp()
@@ -1978,6 +1989,7 @@ function pageSeen(n) {
   if (!track) return;
   track.active = Date.now();
   track.seen.add(n); track.last = n; track.max = Math.max(track.max, n);
+  (track.fresh || (track.fresh = new Set())).add(n);
 }
 function stopTracking() {
   if (!track) return;

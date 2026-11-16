@@ -34,6 +34,18 @@ body { background: var(--paper); }
 .desk { display: grid; grid-template-columns: minmax(0, 1fr); }
 .side { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--night-3); border-top: 1px solid rgba(255,255,255,.08); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
 .nav-btn .long { display: none; }
+/* Phones: five sections in the bar and the rest under "More", which opens as a panel above the bar. */
+.side .more-btn { display: none; }
+@media (max-width: 899px) {
+  .side { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .side .more-item { display: none; }
+  .side .more-btn { display: grid; }
+  .side.more-open { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .side.more-open .more-item { display: flex; position: relative; grid-column: span 3; flex-direction: row; justify-content: flex-start; gap: 10px; font-size: .9rem; padding: 12px 14px; order: -1; background: rgba(255,255,255,.05); }
+  .side.more-open .more-item svg { width: 20px; height: 20px; }
+  .side.more-open .more-item .long { display: inline; } .side.more-open .more-item .short { display: none; }
+  .side.more-open .more-btn { color: var(--sun); }
+}
 @media (max-width: 420px) { .nav-btn { font-size: .62rem; padding: 7px 1px; } .nav-btn svg { width: 20px; height: 20px; } }
 @media (min-width: 900px) { .nav-btn .long { display: inline; } .nav-btn .short { display: none; } }
 .nav-btn { display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--night-muted); font: 600 .72rem var(--font-body); padding: 7px 4px; border-radius: 10px; cursor: pointer; position: relative; }
@@ -114,6 +126,24 @@ body { background: var(--paper); }
 .chap-picks label { display: flex; gap: 8px; align-items: center; font-size: .92rem; padding: 4px 0; cursor: pointer; }
 .chap-picks input { width: 18px; height: 18px; accent-color: var(--good); }
 .pick-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+/* Chapter picker: a class drop-down and search on top, what is chosen, then the chapters of one class. */
+.chap-picks.pk { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--paper); }
+.pk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pk-bar .pk-cls { flex: 1 1 210px; min-width: 0; }
+.pk-bar .pk-q { flex: 1 1 160px; min-width: 0; }
+/* The picker's and Activity's own boxes look like every other field. */
+.pk-bar select, .pk-bar input, .act-tools select, .act-tools input { font: .95rem var(--font-body); padding: 8px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); min-height: 40px; }
+.pk-bar select:focus, .pk-bar input:focus, .act-tools select:focus, .act-tools input:focus { border-color: var(--accent); outline: none; }
+.pk-sum { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .86rem; }
+.pk-sum > b { margin-right: 4px; }
+.pk-chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 3px 10px; font: 600 .78rem var(--font-body); cursor: pointer; }
+.pk-chip:hover { border-color: var(--bad); color: var(--bad); }
+.pk-chip.whole { border-color: var(--good); color: var(--good); }
+.pk-chip.whole:hover { border-color: var(--accent); color: var(--accent); }
+.pk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 2px 14px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+.pk-list label { display: flex; gap: 8px; align-items: center; font-size: .92rem; padding: 5px 0; cursor: pointer; }
+.pk-list label[hidden] { display: none; }
+.pk-list input { width: 18px; height: 18px; accent-color: var(--good); flex: none; }
 .creds { display: grid; gap: 10px; border: 2px dashed var(--good); border-radius: 12px; padding: 14px; }
 .creds pre { margin: 0; white-space: pre-wrap; font: .95rem/1.5 var(--font-body); background: var(--paper); border-radius: 10px; padding: 12px; user-select: all; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -159,10 +189,6 @@ body { background: var(--paper); }
 .pg-big.zoom { cursor: zoom-out; }
 .pg-big.zoom img { width: 200%; max-width: none; }
 dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
-.pv-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: center; font-size: .92rem; }
-.pv-bar label { display: inline-flex; align-items: center; gap: 6px; margin: 0; white-space: nowrap; }
-.pv-bar input { width: 70px; text-align: center; padding: 6px 8px; }
-#pv-box { min-height: 200px; max-height: 68vh; border: 1px solid var(--line); }
 .ch-cv { width: 44px; height: 62px; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,.18); background: var(--paper); align-self: start; }
 /* Chapters tab: one row per chapter. The row is a button; tapping it opens the chapter's details under it. */
 .chap-row { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
@@ -194,6 +220,49 @@ dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
 .next-step { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0; }
 .next-step:not(.bad):not(.warn) { background: var(--paper); color: var(--fg); }
 .linkish { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
+/* Activity: by date or by student. */
+.act-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.act-tools input[type=date] { width: auto; min-width: 150px; padding: 7px 10px; }
+.act-tools select { width: auto; flex: 0 1 220px; padding: 7px 10px; }
+.act-pick { position: relative; flex: 1 1 260px; min-width: 0; }
+.act-pick input { width: 100%; }
+.act-hits { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 30px rgba(20, 18, 70, .18); max-height: 320px; overflow-y: auto; }
+.act-hits button { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; color: var(--fg); padding: 10px 12px; font: inherit; cursor: pointer; }
+.act-hits button:first-child { border-top: 0; }
+.act-hits button:hover, .act-hits button:focus-visible { background: var(--paper); }
+.act-hits small { color: var(--muted); margin-left: 6px; }
+.act-sum { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 130px), 1fr)); gap: 10px; }
+.act-sum div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.act-sum b { display: block; font: 800 1.35rem/1.1 var(--font-display); color: var(--accent); }
+.act-sum span { font-size: .78rem; color: var(--muted); }
+.act-list { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.act-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.act-row:first-child { border-top: 0; }
+.act-row .who2 { font-weight: 700; min-width: 0; }
+.act-row .who2 small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.act-row .mins { font: 800 1.05rem var(--font-display); white-space: nowrap; text-align: right; }
+.act-row .mins small { display: block; font: 500 .74rem var(--font-body); color: var(--muted); }
+.act-row ul { grid-column: 1 / -1; margin: 0; padding-left: 18px; display: grid; gap: 2px; font-size: .86rem; color: var(--muted); }
+.act-row ul b { color: var(--fg); font-weight: 600; }
+.act-row .linkish { font-weight: 700; text-align: left; }
+.act-row.old { background: var(--paper); }
+.act-bars { display: flex; align-items: flex-end; gap: 3px; height: 90px; padding: 6px 2px 0; border-bottom: 1px solid var(--line); }
+.act-bars button { flex: 1 1 0; min-width: 3px; border: 0; padding: 0; border-radius: 3px 3px 0 0; background: var(--accent); opacity: .85; cursor: pointer; }
+.act-bars button.zero { background: var(--line); opacity: 1; min-height: 2px; }
+.act-bars button:hover { opacity: 1; background: var(--sun); }
+.act-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between; }
+.act-head h2 { font-size: 1.2rem; }
+/* Read books: the shelf of chapters. */
+.rd-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.rd-book { display: grid; gap: 6px; border: 0; background: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.rd-book .cv { aspect-ratio: 360 / 509; border-radius: 8px; overflow: hidden; background: var(--night); color: var(--sun); display: grid; place-items: center; font: 800 1rem var(--font-display); box-shadow: 0 8px 20px rgba(20, 18, 70, .18); transition: transform .15s; }
+.rd-book .cv img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rd-book:hover .cv { transform: translateY(-3px); }
+.rd-book b { font-size: .9rem; line-height: 1.25; }
+.rd-book small { color: var(--muted); font-size: .78rem; }
+.rd-book[disabled] { cursor: default; opacity: .5; }
+.rd-book[disabled]:hover .cv { transform: none; }
+.rd-head { grid-column: 1 / -1; font: 700 1.02rem var(--font-display); margin-top: 6px; }
 /* Quiz scores: who scored what. */
 .sc-sum { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .9rem; color: var(--muted); }
 .sc-sum b { color: var(--fg); }
@@ -343,14 +412,17 @@ textarea:focus { border-color: var(--accent); outline: none; }
   </div>
 
   <div class="desk" id="v-admin" hidden>
-    <nav class="side" aria-label="Admin sections">
+    <nav class="side" id="side" aria-label="Admin sections">
       <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="long">Overview</span><span class="short">Home</span><span class="dot" id="dot-home" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
-      <button class="nav-btn" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 14h2M11 14h2M14.5 14h2M7.5 17.5h2M11 17.5h2"/></svg>Activity</button>
+      <button class="nav-btn more-item" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
+      <button class="nav-btn more-item" type="button" data-tab="t-read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H3.5A1.5 1.5 0 0 1 2 16z"/><path d="M22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5h6a1.5 1.5 0 0 0 1.5-1.5z"/></svg><span class="long">Read books</span><span class="short">Read</span></button>
       <button class="nav-btn" type="button" data-tab="t-doubts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5"/><path d="M12 16.5h.01"/></svg>Doubts<span class="dot" id="dot-doubts" hidden></span></button>
-      <button class="nav-btn" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
-      <button class="nav-btn" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
+      <button class="nav-btn more-item" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
+      <button class="nav-btn more-item" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
+      <button class="nav-btn more-btn" type="button" id="more-btn" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More<span class="dot" id="dot-more" hidden></span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
     </nav>
 
@@ -370,6 +442,8 @@ textarea:focus { border-color: var(--accent); outline: none; }
             <button class="btn btn-line" type="button" data-go="new-news">+ New announcement</button>
             <button class="btn btn-line" type="button" data-go="t-chapters">Add or upload a chapter</button>
             <button class="btn btn-line" type="button" data-go="scores">📊 Quiz scores</button>
+            <button class="btn btn-line" type="button" data-go="t-activity">📅 Today's activity</button>
+            <button class="btn btn-line" type="button" data-go="t-read">📖 Read books</button>
             <button class="btn btn-line" type="button" data-go="t-catalog">Change prices or offers</button>
           </div>
           <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
@@ -585,6 +659,39 @@ textarea:focus { border-color: var(--accent); outline: none; }
         </div>
       </form>
     </dialog>
+
+    <section id="t-activity" class="stack" hidden>
+      <div class="page-head"><div><h1>Activity</h1><p>Who read what, day by day. Pick a date to see every student, or pick a student to see each day.</p></div></div>
+      <div class="card stack">
+        <div class="seg" role="tablist" aria-label="Show activity" id="act-mode">
+          <button type="button" role="tab" data-am="date" aria-selected="true">📅 By date</button>
+          <button type="button" role="tab" data-am="stu" aria-selected="false">👤 By student</button>
+        </div>
+        <div class="act-tools" id="act-date-tools">
+          <button class="btn btn-line btn-sm" type="button" data-ad="-1" aria-label="Day before">‹</button>
+          <input type="date" id="act-date" aria-label="Date">
+          <button class="btn btn-line btn-sm" type="button" data-ad="1" aria-label="Day after">›</button>
+          <button class="btn btn-line btn-sm" type="button" data-ad="0">Today</button>
+          <select id="act-cls" aria-label="Class"></select>
+        </div>
+        <div class="act-tools" id="act-stu-tools" hidden>
+          <div class="act-pick"><input type="search" id="act-q" autocomplete="off" placeholder="🔎 Student: name, ID or WhatsApp number" aria-label="Find a student"><div class="act-hits" id="act-hits" hidden></div></div>
+          <select id="act-range" aria-label="Days"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="0">Every day</option></select>
+        </div>
+      </div>
+      <div id="act-out"></div>
+    </section>
+
+    <section id="t-read" class="stack" hidden>
+      <div class="page-head"><div><h1>Read books</h1><p>Read any uploaded chapter, page by page, as students see it.</p></div></div>
+      <div class="card">
+        <div class="cat-top">
+          <div class="field"><label for="rd-cls">Class or book</label><select id="rd-cls"></select></div>
+          <div class="field"><label for="rd-q">Find a chapter</label><input id="rd-q" type="search" autocomplete="off" placeholder="e.g. mole, atom, 12-3"></div>
+        </div>
+      </div>
+      <div class="rd-shelf" id="rd-shelf"></div>
+    </section>
 
     <section id="t-chapters" class="stack" hidden>
       <div class="page-head"><div><h1>Chapters</h1><p id="chap-progress">Pick a class, then tap a chapter to upload its PDF, edit it or see it.</p></div>
@@ -812,12 +919,20 @@ function renderCharts() {
 }
 
 // ---------- navigation ----------
-const TABS = ["t-home", "t-students", "t-promos", "t-chapters", "t-doubts", "t-news", "t-catalog"];
+const TABS = ["t-home", "t-students", "t-activity", "t-promos", "t-chapters", "t-read", "t-doubts", "t-news", "t-catalog"];
 function go(tab) {
-  document.querySelectorAll(".nav-btn").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
+  document.querySelectorAll(".nav-btn[data-tab]").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
   TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
+  // On a phone, "More" lights up when the open section is one of its own.
+  const more = !!document.querySelector(`.more-item[data-tab="${tab}"]`);
+  if (more) $("#more-btn").setAttribute("aria-current", "page"); else $("#more-btn").removeAttribute("aria-current");
+  $("#side").classList.remove("more-open"); $("#more-btn").setAttribute("aria-expanded", "false");
+  if (tab === "t-activity") renderActivity();
+  if (tab === "t-read") renderShelf();
   window.scrollTo(0, 0);
 }
+$("#more-btn").addEventListener("click", () => { const open = $("#side").classList.toggle("more-open"); $("#more-btn").setAttribute("aria-expanded", String(open)); });
+document.addEventListener("click", e => { if (!e.target.closest("#side")) { $("#side").classList.remove("more-open"); $("#more-btn").setAttribute("aria-expanded", "false"); } });
 $(".side").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) go(b.dataset.tab); });
 // Buttons on the overview: open a form, or a list already filtered.
 document.addEventListener("click", e => {
@@ -835,26 +950,66 @@ document.addEventListener("click", e => {
 });
 
 // ---------- new student ----------
-const picks = (box, selected = []) => {
-  box.innerHTML = classList().filter(cls => CHAPTERS.some(c => c.cls === cls)).map(cls => `<div class="pick-head"><b>${esc(clsName(cls))}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of ${esc(clsName(cls))}</button></div>` +
-    CHAPTERS.filter(c => c.cls === cls).map(c => {
-      const k = chapterKey(c);
-      return `<label><input type="checkbox" value="${k}"${selected.includes(k) ? " checked" : ""}> ${esc(chName(k))}</label>`;
-    }).join("")).join("");
-};
+// ---------- chapter picker ----------
+// One class at a time (a drop-down shows how many are chosen in each class), a search box across every class,
+// "All of this class", and a line of what is chosen (tap one to remove it). Used wherever chapters are given.
+function picks(box, selected = [], opts = {}) {
+  const list = opts.chapters || CHAPTERS, sel = new Set(selected);
+  const classes = classList().filter(cls => list.some(c => +c.cls === cls));
+  const cls = opts.cls != null && classes.includes(+opts.cls) ? +opts.cls : classes.find(c => selected.some(k => +k.split("-")[0] === c)) ?? classes[0];
+  box.classList.add("pk");
+  box.innerHTML = classes.length ? `<div class="pk-bar">
+      <select class="pk-cls" aria-label="Class or book">${classes.map(c => `<option value="${c}"${c === cls ? " selected" : ""}>${esc(clsName(c))}</option>`).join("")}</select>
+      <input class="pk-q" type="search" placeholder="🔎 Find a chapter" aria-label="Find a chapter" autocomplete="off">
+      <button class="btn btn-line btn-sm" type="button" data-pk="all">All of this class</button>
+      <button class="btn btn-line btn-sm" type="button" data-pk="none">Clear all</button></div>
+    <div class="pk-sum" aria-live="polite"></div>
+    <div class="pk-list">${[...list].sort((a, b) => a.cls - b.cls || orderN(a) - orderN(b)).map(c => { const k = chapterKey(c), nm = opts.label ? opts.label(c) : chName(k);
+      return `<label data-cls="${c.cls}" data-name="${esc((clsName(c.cls) + " " + nm).toLowerCase())}"><input type="checkbox" value="${k}"${sel.has(k) ? " checked" : ""}><span>${esc(nm)}</span></label>`; }).join("")}</div>`
+    : `<p class="hint">No chapters yet.</p>`;
+  pkSync(box);
+}
+function pkSync(box) {
+  if (!box || !box.classList.contains("pk") || !box.querySelector(".pk-cls")) return;
+  const cls = box.querySelector(".pk-cls").value, q = box.querySelector(".pk-q").value.trim().toLowerCase();
+  const labels = [...box.querySelectorAll(".pk-list label")], on = l => l.querySelector("input").checked;
+  labels.forEach(l => { l.hidden = q ? !q.split(/\s+/).every(w => l.dataset.name.includes(w)) : l.dataset.cls !== cls; });
+  const shown = labels.filter(l => !l.hidden), all = shown.length && shown.every(on);
+  box.querySelector('[data-pk="all"]').textContent = q ? (all ? "Untick these" : "Tick these") : all ? `Untick all of ${clsName(cls)}` : `All of ${clsName(cls)}`;
+  box.querySelector('[data-pk="all"]').disabled = !shown.length;
+  [...box.querySelectorAll(".pk-cls option")].forEach(o => {
+    const mine = labels.filter(l => l.dataset.cls === o.value), n = mine.filter(on).length;
+    o.textContent = `${clsName(o.value)} · ${n ? `${n} of ${mine.length} chosen` : `${mine.length} chapter${mine.length === 1 ? "" : "s"}`}`;
+  });
+  // What is chosen: a whole class in one word, otherwise each chapter (tap to remove).
+  const chosen = labels.filter(on), byCls = [...new Set(chosen.map(l => l.dataset.cls))];
+  box.querySelector(".pk-sum").innerHTML = chosen.length ? `<b>${chosen.length} chosen</b>` + byCls.map(c => {
+    const mine = labels.filter(l => l.dataset.cls === c), got = mine.filter(on);
+    return got.length === mine.length && mine.length > 1
+      ? `<button type="button" class="pk-chip whole" data-pk-go="${c}">${esc(clsName(c))}: all ${mine.length} ✓</button>`
+      : got.map(l => `<button type="button" class="pk-chip" data-pk-off="${l.querySelector("input").value}" title="Remove">${byCls.length > 1 || c !== cls ? esc(clsName(c)) + " · " : ""}${esc(l.querySelector("span").textContent)} ×</button>`).join("");
+  }).join("") : `<span class="hint">Nothing chosen yet. Pick a class, then tick its chapters.</span>`;
+}
+const pkChanged = box => { pkSync(box); box.dispatchEvent(new Event("change", { bubbles: true })); };
+document.addEventListener("change", e => { const box = e.target.closest(".pk"); if (box && (e.target.matches(".pk-cls") || e.target.matches(".pk-list input"))) pkSync(box); });
+document.addEventListener("input", e => { if (e.target.matches(".pk-q")) pkSync(e.target.closest(".pk")); });
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-pick-cls]");
-  if (!b) return;
-  const boxes = [...b.closest(".chap-picks").querySelectorAll(`input[value^="${b.dataset.pickCls}-"]`)];
-  const all = boxes.every(x => x.checked);
-  boxes.forEach(x => { x.checked = !all; });
+  const b = e.target.closest("[data-pk], [data-pk-off], [data-pk-go]"), box = b && b.closest(".pk");
+  if (!box) return;
+  const labels = [...box.querySelectorAll(".pk-list label")];
+  if (b.dataset.pk === "all") { const shown = labels.filter(l => !l.hidden), all = shown.every(l => l.querySelector("input").checked); shown.forEach(l => { l.querySelector("input").checked = !all; }); }
+  if (b.dataset.pk === "none") labels.forEach(l => { l.querySelector("input").checked = false; });
+  if (b.dataset.pkOff) { const i = box.querySelector(`.pk-list input[value="${b.dataset.pkOff}"]`); if (i) i.checked = false; }
+  if (b.dataset.pkGo) { box.querySelector(".pk-cls").value = b.dataset.pkGo; box.querySelector(".pk-q").value = ""; }
+  pkChanged(box);
 });
-const picked = box => [...box.querySelectorAll("input:checked")].map(i => i.value);
+const picked = box => [...box.querySelectorAll(".pk-list input:checked, :scope > label input:checked")].map(i => i.value);
 picks($("#new-ch"));
 $("#all-ch").addEventListener("click", () => {
-  const boxes = [...$("#new-ch").querySelectorAll("input")];
+  const boxes = [...$("#new-ch").querySelectorAll(".pk-list input")];
   const all = boxes.every(b => b.checked);
   boxes.forEach(b => { b.checked = !all; });
+  pkChanged($("#new-ch"));
 });
 
 function genPassword() {
@@ -971,12 +1126,13 @@ async function studentRefs(uid) {
   const tries = await getDocs(collection(db, "users", uid, "attempts"));
   const reads = await getDocs(collection(db, "users", uid, "reading")).catch(() => ({ docs: [] }));
   const quiz = await getDocs(collection(db, "users", uid, "quiz")).catch(() => ({ docs: [] }));
+  const days = await getDocs(query(collection(db, "daily"), where("uid", "==", uid))).catch(() => ({ docs: [] }));
   const marks = await getDocs(collection(db, "users", uid, "marks")).catch(() => ({ docs: [] }));
   const grantDocs = await getDocs(collection(db, "users", uid, "grants")).catch(() => ({ docs: [] }));
   const req = await getDoc(doc(db, "teacherRequests", uid)).catch(() => null);
   const asked = await getDocs(query(collection(db, "doubts"), where("uid", "==", uid))).catch(() => ({ docs: [] }));
   const pw = await getDoc(doc(db, "secrets", uid)).catch(() => null);
-  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...grantDocs.docs.map(d => d.ref), ...(req && req.exists() ? [req.ref] : []), ...asked.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
+  return [...tries.docs.map(d => d.ref), ...reads.docs.map(d => d.ref), ...quiz.docs.map(d => d.ref), ...days.docs.map(d => d.ref), ...marks.docs.map(d => d.ref), ...grantDocs.docs.map(d => d.ref), ...(req && req.exists() ? [req.ref] : []), ...asked.docs.map(d => d.ref), ...(pw && pw.exists() ? [pw.ref] : []), doc(db, "users", uid)];
 }
 // Firestore takes at most 500 writes in one batch.
 async function deleteAll(refs) {
@@ -1125,6 +1281,7 @@ function renderStudents() {
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
         <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading &amp; scores</button>
+        <button class="btn btn-line btn-sm" type="button" data-act="days">📅 Day by day</button>
         ${s.phone ? `<a class="btn btn-line btn-sm" data-askrev="${s.uid}" href="${waLink(s.phone, reviewAsk(s))}" target="_blank" rel="noopener">⭐ Ask for review${s.reviewAskedAt ? " ✓" : ""}</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="details">Edit details</button>
         <button class="btn btn-line btn-sm" type="button" data-act="give">Free access</button>
@@ -1236,11 +1393,11 @@ $("#students").addEventListener("click", async e => {
   const ref = doc(db, "users", s.uid);
   try {
     if (b.dataset.act === "edit") {
-      picks(row.querySelector(".edit .buy-picks"), s.chapters || []);
+      picks(row.querySelector(".edit .buy-picks"), s.chapters || [], { cls: (s.classes || [])[0] });
       // Renewing an expired ID starts from a year ahead.
       row.querySelector(".edit .till").value = isOver(s) || unpaid(s) ? inAYear() : toInput(s.expiresAt);
       if (!s.promo) {
-        picks(row.querySelector(".edit .sub-picks"), subKeys(s));
+        picks(row.querySelector(".edit .sub-picks"), subKeys(s), { cls: (s.classes || [])[0] });
         row.querySelector(".edit .sub-till").value = subKeys(s).length ? toInput(subEnd(s)) : inDays(monthDays());
       }
       row.querySelector(".edit").hidden = false;
@@ -1289,6 +1446,7 @@ $("#students").addEventListener("click", async e => {
       s.grants = []; renderStudents();
       return;
     }
+    if (b.dataset.act === "days") { actUid = s.uid; actMode = "stu"; return go("t-activity"); }
     if (b.dataset.act === "reading") {
       const box = row.querySelector(".reading-box");
       if (!box.hidden) { box.hidden = true; return; }
@@ -1609,7 +1767,7 @@ function giveDialog(s, opts = {}) {
       const m = (opts.msgEl && opts.msgEl()) || $(`.stu[data-uid="${s.uid}"] .msg`);
       if (m) { m.className = "msg good"; m.hidden = false; m.innerHTML = `Free access given till <b>${fmtDate(till)}</b>. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`; }
     }, null, { saveLabel: opts.saveLabel || "Give free access" });
-  picks(dlg.querySelector("#d-gpicks"), [...new Set([...pre, ...liveGrants(s).map(g => g.ch)])]);
+  picks(dlg.querySelector("#d-gpicks"), [...new Set([...pre, ...liveGrants(s).map(g => g.ch)])], { cls: (s.classes || [])[0] });
 }
 
 // ---------- teacher requests ----------
@@ -1622,6 +1780,8 @@ function renderTeacherReqs() {
   const waiting = list.filter(r => r.status === "pending").length;
   $("#treq-count").textContent = waiting ? `(${waiting} waiting)` : `(${list.length})`;
   const dot = $("#dot-promo"); dot.hidden = !waiting; dot.textContent = waiting;
+  // On a phone, Promo codes sits under "More": its dot shows there too.
+  const more = $("#dot-more"); more.hidden = !waiting; more.textContent = waiting;
   $("#treqs").innerHTML = list.map(r => `<div class="stu" data-treq="${r.uid}">
     <div class="stu-top">
       ${isPhoto(r.photo) ? `<button class="idthumb" type="button" data-tact="photo" aria-label="See the ID card of ${esc(r.name)}"><img src="${r.photo}" alt=""></button>` : `<div class="avatar">ID</div>`}
@@ -2417,14 +2577,10 @@ function comboDialog(i) {
     <div class="field"><label for="d-cname">Combo name</label><input id="d-cname" value="${esc(x.name)}" placeholder="Class 11 full book"></div>
     <div class="field"><label for="d-ctext">One line about it (optional)</label><input id="d-ctext" value="${esc(x.text || "")}" placeholder="All 9 chapters together"></div>
     <label class="cat-check"><input type="checkbox" id="d-con"${x.on !== false ? " checked" : ""}> Show on the website</label>
-    <div><b>Chapters in this combo</b><div class="chap-picks" id="d-cpicks">${classesOf().map(cls => {
-      const chs = cat.chapters.filter(c => +c.cls === cls && !c.soon).sort((a, b) => a.n - b.n);
-      return chs.length ? `<div class="pick-head"><b>${esc(clsName(cls))}</b> <button class="btn btn-line btn-sm" type="button" data-pick-cls="${cls}">All of ${esc(clsName(cls))}</button></div>` +
-        chs.map(c => `<label><input type="checkbox" value="${ckey(c)}"${x.chapters.includes(ckey(c)) ? " checked" : ""}> ${chShort(c)} ${esc(c.short || c.title)}</label>`).join("") : "";
-    }).join("")}</div></div>
+    <div><b>Chapters in this combo</b><div class="chap-picks" id="d-cpicks"></div></div>
     <div id="d-cprices">${priceFields(x.price, x.mrp, single(x.chapters))}</div>`,
     async () => {
-      const chapters = [...dlg.querySelectorAll("#d-cpicks input:checked")].map(e => e.value), name = val("d-cname"), on = dlg.querySelector("#d-con").checked;
+      const chapters = picked(dlg.querySelector("#d-cpicks")), name = val("d-cname"), on = dlg.querySelector("#d-con").checked;
       const { price, mrp } = readPrices(x.price, x.mrp);
       if (!name) throw new Error("Write the combo name.");
       if (!chapters.length) throw new Error("Tick the chapters in this combo.");
@@ -2434,12 +2590,12 @@ function comboDialog(i) {
     },
     isNew ? null : async () => { await commit(next => { next.combos.splice(at(next.combos, x, y => y.id || JSON.stringify(y)), 1); }, `Combo "${x.name}" removed.`); });
   // Show what the ticked chapters cost one by one, to help set the MRP.
+  picks(dlg.querySelector("#d-cpicks"), x.chapters, { chapters: cat.chapters.filter(c => !c.soon), label: c => `${chShort(c)} ${c.short || c.title}` });
   const refresh = () => {
-    const keys = [...dlg.querySelectorAll("#d-cpicks input:checked")].map(e => e.value), h = single(keys);
+    const keys = picked(dlg.querySelector("#d-cpicks")), h = single(keys);
     onFormats().forEach(f => { const l = dlg.querySelector(`label[for="m-${f}"]`); if (l) l.textContent = `MRP ₹${h[f] ? ` (single: ${h[f]})` : ""}`; });
   };
   dlg.querySelector("#d-cpicks").addEventListener("change", refresh);
-  dlg.querySelector("#d-cpicks").addEventListener("click", e => { if (e.target.closest("[data-pick-cls]")) setTimeout(refresh); });
 }
 $("#t-catalog").addEventListener("click", async e => {
   const ch = e.target.closest("[data-edit-ch]"), cb = e.target.closest("[data-edit-combo]"), b = e.target.closest("[data-cat]");
@@ -2680,7 +2836,7 @@ $("#chap-rows").addEventListener("click", async e => {
     if (openK) $(`.chap-row[data-k="${k}"]`).scrollIntoView({ block: "nearest" });
     return;
   }
-  if (e.target.closest("[data-view]")) return viewDialog(k);
+  if (e.target.closest("[data-view]")) return openAdminBook(k);
   if (e.target.closest("[data-edit]")) return chapterDialog(idx);
   if (e.target.closest("[data-price]")) return priceDialog(idx);
   if (e.target.closest("[data-scores]")) return scoresDialog(k);
@@ -2942,43 +3098,197 @@ async function qbDialog(k) {
 $("#qb-bulk").addEventListener("click", () => qbDialog(null));
 $("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[data-qb]"); if (b) qbDialog(b.closest(".chap-row").dataset.k); });
 
-// ---------- view a chapter, page by page ----------
-// The uploaded pages, as the student gets them: to check a chapter without leaving the admin panel.
-let pv = null;
-function viewDialog(k) {
-  pv = { k, n: 1, total: (uploaded.get(k) || {}).pageCount || 0 };
-  openDialog(chName(k), `<div class="pv-bar"><button class="btn btn-line btn-sm" type="button" data-pv="-1" aria-label="Previous page">‹ Previous</button>
-      <label>Page <input id="pv-n" type="number" min="1" max="${pv.total}" value="1" inputmode="numeric" aria-label="Page number"> of ${pv.total}</label>
-      <button class="btn btn-line btn-sm" type="button" data-pv="1" aria-label="Next page">Next ›</button></div>
-    <div class="pg-big" id="pv-box"></div>
-    <p class="hint">Tap the page to zoom in or out. The ← and → keys turn the page. To try it exactly as a student does, <a href="read.html#open=${k}" target="_blank" rel="noopener">open it in the reader ↗</a> and log in there with your admin email.</p>`, null);
-  dlg.classList.add("wide-dlg"); dlg.addEventListener("close", () => { dlg.classList.remove("wide-dlg"); pv = null; }, { once: true });
-  drawView();
+// ---------- read books ----------
+// Every uploaded chapter on a shelf, opened in the same book the students read (St.PageFlip + js/flipbook.js,
+// loaded the first time a book is opened). Adeel Sir's last page of each chapter is kept on this device.
+let rdCls = null, bookLibs = null;
+const loadScript = src => new Promise((ok, no) => { const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = () => no(new Error("The book viewer could not load. Check the internet and try again.")); document.head.append(t); });
+const bookLib = () => bookLibs || (bookLibs = (window.St ? Promise.resolve() : loadScript("https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"))
+  .then(() => window.Flipbook ? null : loadScript("js/flipbook.js")).catch(ex => { bookLibs = null; throw ex; }));
+const lastPageKey = k => `chemophile-admin-last-${k}`;
+const lastPage = k => { try { return +localStorage.getItem(lastPageKey(k)) || 0; } catch (e) { return 0; } };
+function renderShelf() {
+  if (!cat || !chaptersLoaded) { $("#rd-shelf").innerHTML = `<div class="spinner" role="status" aria-label="Loading" style="margin: 30px auto"></div>`; return; }
+  const classes = classesOf();
+  if (!classes.includes(rdCls)) rdCls = classes.includes(catCls) ? catCls : classes[0];
+  $("#rd-cls").innerHTML = classes.map(c => `<option value="${c}"${c === rdCls ? " selected" : ""}>${esc(clsName(c))} (${chapsOf(c).filter(x => uploaded.get(chapterKey(x))).length} to read)</option>`).join("");
+  const q = $("#rd-q").value.trim().toLowerCase();
+  const list = q ? classes.flatMap(chapsOf).filter(c => `${chapterKey(c)} ${keyText(chapterKey(c))} ${clsName(c.cls)} ${chNo(c)} ${c.title} ${c.short || ""}`.toLowerCase().includes(q)) : chapsOf(rdCls);
+  const kinds = new Set(list.map(kindOf));
+  $("#rd-shelf").innerHTML = list.length ? list.map((c, i) => {
+    const k = chapterKey(c), u = uploaded.get(k), lp = lastPage(k);
+    const head = !q && kinds.size > 1 && (!i || kindOf(list[i - 1]) !== kindOf(c)) ? `<h2 class="rd-head">${({ chem: "🧪 Chemistry", special: isJeeCls(c.cls) ? "🏆 JEE / NEET special chapters" : "🎁 Bonus booklets", phy: "⚡ Physics", bio: "🧬 Biology" })[kindOf(c)]}</h2>` : "";
+    return `${head}<button class="rd-book" type="button" data-rd="${k}"${u ? "" : " disabled"}>
+      <span class="cv">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" loading="lazy" width="360" height="509">` : esc(chShort(c))}</span>
+      <b>${q ? esc(clsName(c.cls)) + " · " : ""}${chNo(c)}: ${esc(c.short || c.title)}</b>
+      <small>${u ? `${u.pageCount} pages${lp > 1 ? ` · you were on p. ${lp}` : ""}` : "PDF not uploaded yet"}</small></button>`;
+  }).join("") : `<p class="hint">${q ? "No chapter matches that." : "No chapters in this class yet."}</p>`;
 }
-async function drawView() {
-  const box = $("#pv-box"), at = pv, n = pv.n;
-  $("#pv-n").value = n;
-  dlg.querySelector('[data-pv="-1"]').disabled = n <= 1; dlg.querySelector('[data-pv="1"]').disabled = n >= pv.total;
-  box.classList.remove("zoom");
-  if (!box.firstChild) box.innerHTML = `<div class="spinner" role="status" aria-label="Loading" style="margin: 60px auto"></div>`;
-  const img = await pageImg(pv.k, n);
-  if (pv !== at || pv.n !== n) return;
-  box.innerHTML = img ? `<img src="${img}" alt="Page ${n}">` : `<p class="hint" style="padding: 30px">Page ${n} is not uploaded.</p>`;
-  box.scrollTo(0, 0);
-  if (n < pv.total) pageImg(pv.k, n + 1);
+$("#rd-cls").addEventListener("change", () => { rdCls = +$("#rd-cls").value; renderShelf(); });
+$("#rd-q").addEventListener("input", renderShelf);
+$("#rd-shelf").addEventListener("click", e => { const b = e.target.closest("[data-rd]"); if (b && !b.disabled) openAdminBook(b.dataset.rd); });
+async function openAdminBook(k, page) {
+  const c = findChapter(k) || {}, u = uploaded.get(k);
+  if (!u || !u.pageCount) return catSay(`${chName(k)} is not uploaded yet.`, "bad");
+  try { await bookLib(); } catch (ex) { return catSay(ex.message, "bad"); }
+  new Flipbook({
+    title: `${chName(k)}`, pageCount: u.pageCount,
+    start: page || lastPage(k) || 1,
+    toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
+    onPage: n => { try { localStorage.setItem(lastPageKey(k), n); } catch (e) {} },
+    onClose: () => { if (!$("#t-read").hidden) renderShelf(); },
+    loadPage: async n => {
+      const src = await pageImg(k, n);
+      if (!src) throw new Error("missing");
+      return new Promise((ok, no) => { const i = new Image(); i.alt = ""; i.onload = () => ok(i); i.onerror = no; i.src = src; });
+    }
+  }).open();
 }
-const viewTo = n => { if (!pv) return; const m = Math.max(1, Math.min(pv.total, Math.round(n) || 1)); if (m !== pv.n) { pv.n = m; drawView(); } else $("#pv-n").value = m; };
-dlg.addEventListener("click", e => {
-  if (!pv) return;
-  const b = e.target.closest("[data-pv]");
-  if (b) return viewTo(pv.n + +b.dataset.pv);
-  const box = e.target.closest("#pv-box"); if (box) box.classList.toggle("zoom");
+
+// ---------- activity: day by day ----------
+// daily/{date}_{uid} (written by the reader from 16 Nov 2026): minutes and pages per chapter, quizzes, last time.
+// Before that, only the days a student read 5+ minutes are known (readDays on the student).
+const ACT_FROM = "2026-11-16";
+const actDays = new Map(), actStu = new Map();
+let actMode = "date", actUid = null;
+const dayOf = ts => ts && ts.toDate ? dKey(ts.toDate()) : "";
+const niceDate = d => new Date(d + "T12:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const timeOf = ts => ts && ts.toDate ? ts.toDate().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : "";
+const addDays = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return dKey(x); };
+// [4, 5, 6, 9] → "p. 4–6, 9"
+function pagesText(p) {
+  const a = [...new Set(p || [])].sort((x, y) => x - y), out = [];
+  for (let i = 0; i < a.length;) { let j = i; while (j + 1 < a.length && a[j + 1] === a[j] + 1) j++; out.push(i === j ? a[i] : `${a[i]}–${a[j]}`); i = j + 1; }
+  return out.length ? "p. " + out.join(", ") : "";
+}
+const pagesOf = r => Object.values((r && r.ch) || {}).reduce((a, v) => a + (v.p || []).length, 0);
+const quizzesOf = r => Object.keys((r && r.quiz) || {}).length;
+const doubtsOn = (uid, date) => doubts.filter(d => d.uid === uid && dayOf(d.at) === date);
+const whoOf = uid => { const s = students.find(x => x.uid === uid); return s ? { s, name: s.name || "Student", id: s.promo ? `promo ${s.promo}` : s.loginId || "", cls: classesText(s) } : { s: null, name: "Deleted student", id: "", cls: "" }; };
+// "Class 12 · Ch 1 Solutions": a chapter with its class (two classes both have a Chapter 1).
+const chLabel = k => `${clsName(String(k).split("-")[0])} · ${chName(k)}`;
+// What one student did on one day, line by line.
+function dayLines(r, date, uid) {
+  const lines = [];
+  Object.entries((r && r.ch) || {}).sort((a, b) => (b[1].m || 0) - (a[1].m || 0)).forEach(([k, v]) => {
+    const n = (v.p || []).length;
+    lines.push(`📖 <b>${esc(chLabel(k))}</b>: ${n} page${n === 1 ? "" : "s"}${n ? ` (${pagesText(v.p)})` : ""} · ${fmtMins(v.m || 0)}`);
+  });
+  Object.entries((r && r.quiz) || {}).forEach(([k, v]) => lines.push(`📝 <b>${esc(chLabel(k.replace(/-qb$/, "")))}</b> ${/-qb$/.test(k) ? "question bank" : "quiz"}: ${v.s}/${v.n}${v.t > 1 ? ` (${v.t} tries, last shown)` : ""}`));
+  doubtsOn(uid, date).forEach(d => lines.push(`❓ Asked a doubt on <b>${esc(chLabel(d.ch))}</b>${d.page ? `, p. ${d.page}` : ""}`));
+  const s = students.find(x => x.uid === uid);
+  if (s && dayOf(s.createdAt) === date) lines.push(`🆕 ${s.signup ? "Signed up" : "ID made"} this day`);
+  if (!r && s && (s.readDays || []).includes(date)) lines.push(date < ACT_FROM ? "Read 5 minutes or more (page-by-page details are kept from 16 Nov 2026)" : "Read 5 minutes or more");
+  if (r && r.last) lines.push(`🕒 Last active ${timeOf(r.last)}`);
+  return lines;
+}
+const toCsv = rows => "﻿" + rows.map(r => r.map(v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; }).join(",")).join("\r\n");
+function saveCsv(rows, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" })); a.download = name; document.body.append(a); a.click(); a.remove(); }
+const plain = h => h.replace(/<[^>]+>/g, "");
+let actCsv = null;
+function renderActivity() {
+  if (!$("#act-date").value) $("#act-date").value = dKey(new Date());
+  const cls = $("#act-cls").value || "all";
+  $("#act-cls").innerHTML = `<option value="all">All classes</option>` + classList().map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("");
+  $("#act-cls").value = cls;
+  document.querySelectorAll("#act-mode [data-am]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.am === actMode)));
+  $("#act-date-tools").hidden = actMode !== "date"; $("#act-stu-tools").hidden = actMode !== "stu";
+  return actMode === "date" ? drawDate() : drawStu();
+}
+const actOut = html => { $("#act-out").innerHTML = html; };
+const actErr = ex => `<p class="msg bad">Couldn't load the day-wise record. ${ex.code === "permission-denied" ? "Paste the latest Firestore rules first (Firebase console → Firestore Database → Rules → Publish)." : esc(ex.message || ex.code)}</p>`;
+async function drawDate() {
+  const date = $("#act-date").value || dKey(new Date()), cls = $("#act-cls").value || "all", today = dKey(new Date());
+  if (!actDays.has(date)) actOut(`<div class="spinner" role="status" aria-label="Loading" style="margin: 30px auto"></div>`);
+  let recs = [], err = "";
+  try {
+    if (!actDays.has(date) || date === today) actDays.set(date, (await getDocs(query(collection(db, "daily"), where("date", "==", date)))).docs.map(d => d.data()));
+    recs = actDays.get(date);
+  } catch (ex) { err = actErr(ex); }
+  if (($("#act-date").value || today) !== date || actMode !== "date") return;
+  const byUid = new Map(recs.map(r => [r.uid, r])), uids = new Set(byUid.keys());
+  students.forEach(s => { if ((s.readDays || []).includes(date) || dayOf(s.createdAt) === date) uids.add(s.uid); });
+  doubts.forEach(d => { if (dayOf(d.at) === date) uids.add(d.uid); });
+  let rows = [...uids].map(uid => { const r = byUid.get(uid), w = whoOf(uid); return { uid, w, r, mins: (r && r.minutes) || 0, pages: pagesOf(r), lines: dayLines(r, date, uid), read: !!(r && (r.minutes || pagesOf(r))) || !!(w.s && (w.s.readDays || []).includes(date)) }; });
+  if (cls !== "all") rows = rows.filter(x => (x.w.s && (x.w.s.classes || []).map(Number).includes(+cls)) || Object.keys((x.r && x.r.ch) || {}).some(k => k.startsWith(cls + "-")));
+  rows.sort((a, b) => b.mins - a.mins || b.pages - a.pages || a.w.name.localeCompare(b.w.name));
+  const sum = (f) => rows.reduce((a, x) => a + f(x), 0);
+  actCsv = () => saveCsv([["Date", "Student", "Login ID", "WhatsApp", "Class", "Minutes", "Pages", "What they did"],
+    ...rows.map(x => [date, x.w.name, x.w.id, x.w.s ? x.w.s.phone || "" : "", x.w.cls, Math.round(x.mins), x.pages, x.lines.map(plain).join(" | ")])], `chemophile-activity-${date}.csv`);
+  actOut(`${err}<div class="act-head"><h2>${niceDate(date)}${date === today ? " · today" : ""}</h2>${rows.length ? `<button class="btn btn-line btn-sm" type="button" data-act-csv>⬇ Download (Excel)</button>` : ""}</div>
+    <div class="act-sum"><div><b>${rows.filter(x => x.read).length}</b><span>students read</span></div><div><b>${fmtMins(sum(x => x.mins))}</b><span>reading in all</span></div>
+      <div><b>${sum(x => x.pages)}</b><span>pages opened</span></div><div><b>${sum(x => quizzesOf(x.r))}</b><span>quizzes taken</span></div>
+      <div><b>${doubts.filter(d => dayOf(d.at) === date && rows.some(x => x.uid === d.uid)).length}</b><span>doubts asked</span></div><div><b>${rows.filter(x => x.w.s && dayOf(x.w.s.createdAt) === date).length}</b><span>new sign-ups</span></div></div>
+    ${rows.length ? `<div class="act-list">${rows.map(x => `<div class="act-row${x.r ? "" : " old"}">
+        <div class="who2"><button class="linkish" type="button" data-act-uid="${x.uid}">${esc(x.w.name)}</button><small>${esc([x.w.id, x.w.cls].filter(Boolean).join(" · "))}</small></div>
+        <div class="mins">${x.r ? fmtMins(x.mins) : x.read ? "5+ min" : ""}<small>${x.pages ? `${x.pages} page${x.pages === 1 ? "" : "s"}` : ""}</small></div>
+        <ul>${x.lines.map(l => `<li>${l}</li>`).join("")}</ul></div>`).join("")}</div>`
+      : `<div class="card"><p class="hint">Nobody read, took a quiz or asked a doubt on this day${cls !== "all" ? ` in ${esc(clsName(cls))}` : ""}.</p></div>`}`);
+}
+async function drawStu() {
+  const q = $("#act-q");
+  if (!actUid) {
+    const recent = [...students].filter(s => lastRead(s)).sort((a, b) => lastRead(b) - lastRead(a)).slice(0, 8);
+    actOut(`<div class="card stack"><p class="hint">Search a student above, or pick one who read lately:</p>
+      <div class="chips">${recent.map(s => `<button class="chip" type="button" data-act-uid="${s.uid}">${esc(s.name)} <b>${agoText(lastRead(s))}</b></button>`).join("") || `<span class="hint">Nobody has read yet.</span>`}</div></div>`);
+    return;
+  }
+  const uid = actUid, w = whoOf(uid);
+  if (q.value !== w.name) q.value = w.name;
+  if (!actStu.has(uid)) actOut(`<div class="spinner" role="status" aria-label="Loading" style="margin: 30px auto"></div>`);
+  let recs = [], err = "";
+  try {
+    if (!actStu.has(uid)) actStu.set(uid, (await getDocs(query(collection(db, "daily"), where("uid", "==", uid)))).docs.map(d => d.data()));
+    recs = actStu.get(uid);
+  } catch (ex) { err = actErr(ex); }
+  if (actUid !== uid || actMode !== "stu") return;
+  const byDate = new Map(recs.map(r => [r.date, r])), today = dKey(new Date());
+  const known = [...byDate.keys(), ...((w.s && w.s.readDays) || []), ...doubts.filter(d => d.uid === uid).map(d => dayOf(d.at)), w.s ? dayOf(w.s.createdAt) : ""].filter(Boolean).sort();
+  const n = +$("#act-range").value, first = n ? addDays(today, 1 - n) : (known[0] && known[0] < today ? known[0] : today);
+  const dates = []; for (let d = first; d <= today && dates.length < 400; d = addDays(d, 1)) dates.push(d);
+  const days = dates.map(d => { const r = byDate.get(d), lines = dayLines(r, d, uid); return { d, r, lines, mins: (r && r.minutes) || 0, pages: pagesOf(r), read: !!(r && (r.minutes || pagesOf(r))) || !!(w.s && (w.s.readDays || []).includes(d)) }; });
+  const active = days.filter(x => x.lines.length), readDays = days.filter(x => x.read), mins = days.reduce((a, x) => a + x.mins, 0), top = Math.max(1, ...days.map(x => x.mins));
+  actCsv = () => saveCsv([["Student", w.name, w.id, w.s ? w.s.phone || "" : ""], [], ["Date", "Minutes", "Pages", "What they did"],
+    ...active.slice().reverse().map(x => [x.d, Math.round(x.mins), x.pages, x.lines.map(plain).join(" | ")])], `chemophile-activity-${(w.id || w.name).replace(/[^a-z0-9]+/gi, "-")}.csv`);
+  actOut(`${err}<div class="card stack">
+      <div class="act-head"><h2>${esc(w.name)} <span class="hint">${esc([w.id, w.s && w.s.phone, w.cls].filter(Boolean).join(" · "))}</span></h2>
+        <div class="actions"><button class="btn btn-line btn-sm" type="button" data-act-csv>⬇ Download (Excel)</button><button class="btn btn-line btn-sm" type="button" data-act-open="${uid}">Open in Students</button></div></div>
+      <div class="act-sum"><div><b>${readDays.length}</b><span>day${readDays.length === 1 ? "" : "s"} read, of ${dates.length}</span></div><div><b>${fmtMins(mins)}</b><span>reading in all</span></div>
+        <div><b>${days.reduce((a, x) => a + x.pages, 0)}</b><span>pages opened</span></div><div><b>${readDays.length ? fmtMins(mins / Math.max(1, days.filter(x => x.mins).length)) : "-"}</b><span>a day, when reading</span></div>
+        <div><b>${w.s ? streakOf(w.s) : 0}</b><span>day streak now</span></div><div><b>${w.s && lastRead(w.s) ? agoText(lastRead(w.s)) : "never"}</b><span>last read</span></div></div>
+      ${dates.length > 1 ? `<div class="act-bars" role="img" aria-label="Minutes read each day">${days.map(x => `<button type="button" data-act-day="${x.d}" class="${x.mins || x.read ? "" : "zero"}" style="height: ${x.mins ? Math.max(6, Math.round(x.mins / top * 100)) : x.read ? 12 : 2}%" title="${niceDate(x.d)}: ${x.mins ? fmtMins(x.mins) : x.read ? "read 5+ min" : "no reading"}"></button>`).join("")}</div>
+        <p class="hint" style="margin: 0">Each bar is one day (${niceDate(dates[0])} to today). Tap a bar to see everyone's activity that day.</p>` : ""}</div>
+    ${active.length ? `<div class="act-list">${active.slice().reverse().map(x => `<div class="act-row${x.r ? "" : " old"}">
+        <div class="who2"><button class="linkish" type="button" data-act-day="${x.d}">${niceDate(x.d)}</button>${x.d === today ? "<small>today</small>" : ""}</div>
+        <div class="mins">${x.r ? fmtMins(x.mins) : x.read ? "5+ min" : ""}<small>${x.pages ? `${x.pages} page${x.pages === 1 ? "" : "s"}` : ""}</small></div>
+        <ul>${x.lines.map(l => `<li>${l}</li>`).join("")}</ul></div>`).join("")}</div>`
+      : `<div class="card"><p class="hint">No reading, quiz or doubt in these days.</p></div>`}`);
+}
+// Find a student: name, login ID, WhatsApp number or promo code.
+function actHits() {
+  const q = $("#act-q").value.trim().toLowerCase(), box = $("#act-hits");
+  if (!q) { box.hidden = true; return; }
+  const list = students.filter(s => [s.name, s.loginId, s.phone, s.promo].some(v => v && String(v).toLowerCase().includes(q))).slice(0, 10);
+  box.innerHTML = list.length ? list.map(s => `<button type="button" data-act-uid="${s.uid}">${esc(s.name)}<small>${esc([s.promo ? "promo " + s.promo : s.loginId, s.phone, classesText(s)].filter(Boolean).join(" · "))}</small></button>`).join("") : `<p class="hint" style="padding: 10px 12px; margin: 0">No student matches.</p>`;
+  box.hidden = false;
+}
+$("#act-q").addEventListener("input", actHits);
+$("#act-q").addEventListener("focus", actHits);
+$("#act-q").addEventListener("keydown", e => { if (e.key === "Enter") { const b = $("#act-hits button"); if (b) { e.preventDefault(); b.click(); } } if (e.key === "Escape") $("#act-hits").hidden = true; });
+document.addEventListener("click", e => { if (!e.target.closest(".act-pick")) $("#act-hits").hidden = true; });
+$("#t-activity").addEventListener("change", e => {
+  if (e.target.id === "act-date" || e.target.id === "act-cls") drawDate();
+  if (e.target.id === "act-range") drawStu();
 });
-dlg.addEventListener("change", e => { if (pv && e.target.id === "pv-n") viewTo(+e.target.value); });
-dlg.addEventListener("keydown", e => {
-  if (!pv || e.target.id === "pv-n" && e.key !== "Enter") return;
-  if (e.key === "ArrowRight") viewTo(pv.n + 1); if (e.key === "ArrowLeft") viewTo(pv.n - 1);
-  if (e.key === "Enter" && e.target.id === "pv-n") { e.preventDefault(); viewTo(+e.target.value); }
+$("#t-activity").addEventListener("click", e => {
+  const m = e.target.closest("[data-am]"), ad = e.target.closest("[data-ad]"), u = e.target.closest("[data-act-uid]"), d = e.target.closest("[data-act-day]");
+  if (m) { actMode = m.dataset.am; return renderActivity(); }
+  if (ad) { const t = dKey(new Date()), cur = $("#act-date").value || t; $("#act-date").value = ad.dataset.ad === "0" ? t : addDays(cur, +ad.dataset.ad) > t ? t : addDays(cur, +ad.dataset.ad); return drawDate(); }
+  if (u) { actUid = u.dataset.actUid; actMode = "stu"; $("#act-hits").hidden = true; return renderActivity(); }
+  if (d) { $("#act-date").value = d.dataset.actDay; actMode = "date"; return renderActivity(); }
+  if (e.target.closest("[data-act-csv]") && actCsv) return actCsv();
+  const o = e.target.closest("[data-act-open]");
+  if (o) { const s = students.find(x => x.uid === o.dataset.actOpen); stuFilter = "all"; $("#stu-search").value = s ? s.loginId || s.name : ""; renderStudents(); go("t-students"); }
 });
 
 // ---------- quiz scores: who scored what ----------
