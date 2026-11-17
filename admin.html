@@ -2735,14 +2735,15 @@ $("#chap-filters").addEventListener("click", e => { const b = e.target.closest("
 // ---------- book covers ----------
 // Each chapter's cover on the website and in the reader is the first page of its PDF: a small picture
 // (300 pixels wide) kept in catalog/covers. catalog.coversAt tells phones when to fetch them again.
-const COVER_PX = 300;
+// 240 pixels wide at 62% quality: about 10 KB a cover, so 200 covers are about 2 MB in all.
+const COVER_PX = 240, COVER_Q = 0.62;
 let coversTried = false;
 function coverFrom(src) {
   const w = COVER_PX, h = Math.round(COVER_PX * (src.height || 1) / (src.width || 1));
   const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
   const x = cv.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, w, h);
-  let url = cv.toDataURL("image/webp", 0.75);
-  if (!url.startsWith("data:image/webp")) url = cv.toDataURL("image/jpeg", 0.75);
+  let url = cv.toDataURL("image/webp", COVER_Q);
+  if (!url.startsWith("data:image/webp")) url = cv.toDataURL("image/jpeg", COVER_Q);
   return url;
 }
 async function saveCovers(add) {
@@ -2759,18 +2760,22 @@ async function saveCovers(add) {
   const at = Date.now(), before = COVER_DOCS;
   for (let i = 0; i < Math.max(shards.length, before); i++) await setDoc(doc(db, "catalog", coverDocId(i)), { data: JSON.stringify(shards[i] || {}), at });
   Object.assign(COVERS, add);
-  await commit(next => { next.coversAt = at; next.coverDocs = shards.length; }, "Book covers updated: the first page of each PDF.");
+  await commit(next => { next.coversAt = at; next.coverDocs = shards.length; next.coverPx = COVER_PX; }, "Book covers updated: the first page of each PDF.");
 }
 // Chapters uploaded before covers were made from the PDF get theirs from page 1 already in Firebase.
+// Covers made at an older, bigger size are made again (once) at the new size, from page 1 as well.
 async function backfillCovers() {
-  const missing = [...uploaded.keys()].filter(k => !COVERS[k] && findChapter(k));
+  const remake = +cat.coverPx !== COVER_PX;
+  const missing = [...uploaded.keys()].filter(k => (remake || !COVERS[k]) && findChapter(k));
   if (!missing.length) return;
   const add = {};
+  if (remake) catSay(`Making the book covers lighter (${missing.length})… keep this page open for a minute.`);
   for (const k of missing) {
     const s = await getDoc(doc(db, "pages", pageId(k, 1)));
-    if (!s.exists() || !s.data().img) continue;
+    const src = s.exists() && s.data().img ? s.data().img : remake && COVERS[k];
+    if (!src) continue;
     const img = new Image();
-    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = s.data().img; });
+    await new Promise((ok, no) => { img.onload = ok; img.onerror = no; img.src = src; });
     add[k] = coverFrom(img);
   }
   if (!Object.keys(add).length) return;

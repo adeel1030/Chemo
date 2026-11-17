@@ -444,12 +444,19 @@ let COVERS_AT = 0, COVER_DOCS = 1;
 // catalog/covers-3 … (catalog.coverDocs says how many).
 const coverDocId = i => i ? `covers-${i + 1}` : "covers";
 const coverOf = c => COVERS[`${c.cls}-${c.n}`] || (c.custom ? null : `assets/thumbs/${assetName(c)}-1.webp`);
+// This device's copy of the covers, in IndexedDB (room for hundreds; localStorage holds only about 5 MB).
+const coverStore = {
+  db: null,
+  open() { return this.db || (this.db = new Promise((ok, no) => { const r = indexedDB.open("chemophile-covers", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); })); },
+  async get() { try { const d = await this.open(); return await new Promise(ok => { const q = d.transaction("kv").objectStore("kv").get("covers"); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); } catch (e) { return null; } },
+  async set(v) { try { const d = await this.open(); d.transaction("kv", "readwrite").objectStore("kv").put(v, "covers"); } catch (e) {} }
+};
 // Brings the covers in: from this device's copy if it is the latest (catalog.coversAt says), else via
 // get(record id) for each record of covers.
 async function loadCovers(get) {
   if (!COVERS_AT) return;
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem("chemophile-covers")); } catch (e) {}
+  let saved = await coverStore.get();
+  if (!saved) { try { saved = JSON.parse(localStorage.getItem("chemophile-covers")); } catch (e) {} }
   if (saved && saved.at === COVERS_AT && saved.map) { Object.assign(COVERS, saved.map); return; }
   try {
     const parts = await Promise.all(Array.from({ length: COVER_DOCS }, (x, i) => get(coverDocId(i))));
@@ -457,7 +464,8 @@ async function loadCovers(get) {
     const map = Object.assign({}, ...parts.map(p => p || {}));
     Object.keys(COVERS).forEach(k => delete COVERS[k]);
     Object.assign(COVERS, map);
-    try { localStorage.setItem("chemophile-covers", JSON.stringify({ at: COVERS_AT, map })); } catch (e) {}
+    await coverStore.set({ at: COVERS_AT, map });
+    try { localStorage.removeItem("chemophile-covers"); } catch (e) {}
   } catch (e) { if (saved && saved.map) Object.assign(COVERS, saved.map); }
 }
 // Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
