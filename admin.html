@@ -246,6 +246,12 @@ dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
 .act-row ul b { color: var(--fg); font-weight: 600; }
 .act-row .linkish { font-weight: 700; text-align: left; }
 .act-row.old { background: var(--paper); }
+.act-row ul.tp, .reading-box ul.tp { grid-column: auto; list-style: none; padding: 4px 0 2px 12px; margin: 4px 0 0; border-left: 3px solid var(--line); gap: 3px; font-size: .84rem; }
+ul.tp b { color: var(--fg); font-weight: 600; }
+.tdone { font-size: .84rem; margin-top: 4px; }
+.tdone summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+ul.tp .pg { color: var(--muted); }
+ul.tp .sb { color: var(--muted); font-size: .8rem; }
 .act-bars { display: flex; align-items: flex-end; gap: 3px; height: 90px; padding: 6px 2px 0; border-bottom: 1px solid var(--line); }
 .act-bars button { flex: 1 1 0; min-width: 3px; border: 0; padding: 0; border-radius: 3px 3px 0 0; background: var(--accent); opacity: .85; cursor: pointer; }
 .act-bars button.zero { background: var(--line); opacity: 1; min-height: 2px; }
@@ -873,6 +879,7 @@ function renderDash() {
     ...unpaid.map(s => `<div class="todo-item bad"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Chapters are locked till they pay.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...[...lately, ...ending].map(s => `<div class="todo-item ${isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : ""}"><i class="ic"></i><span><b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}.<small class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</small></span><a class="btn btn-wa btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
     ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
+    ...(students.filter(sameNumber).length ? [item("warn", `${students.filter(sameNumber).length} students share a WhatsApp number with another student. One number should have one student: change the number of one of them (Edit details).`, "See", "t-students", ` data-filter="samephone"`)] : []),
     ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} Live on the website but not uploaded yet. A student who buys the online book cannot read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters", ` data-filter="noup" data-cls="${missing[0].cls}"`)] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
     ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
@@ -1049,6 +1056,9 @@ $("#new-form").addEventListener("submit", async e => {
   const fail = t => { msg.className = "msg bad"; msg.textContent = t; msg.hidden = false; };
   $("#creds").hidden = true;
   if (!name) return fail("Enter the student's name.");
+  if (phone && phone.length !== 10) return fail("WhatsApp number: 10 digits.");
+  const taken = numberTaken(phone);
+  if (taken) return fail(`This WhatsApp number already belongs to ${taken.name}${taken.loginId ? ` (ID ${taken.loginId})` : ""}. One number, one student: use the student's own number, or give chapters on that ID.`);
   if (!ID_PATTERN.test(id)) return fail("Login ID: lowercase letters, numbers and . _ - only, 3 to 24 characters.");
   if (pw.length < 6) return fail("Use at least 6 characters for the password.");
   if (!chapters.length) return fail("Choose at least one chapter.");
@@ -1218,8 +1228,17 @@ async function relinkPhone(s, oldPhone) {
   const v = { id: s.loginId, uid: s.uid };
   await setDoc(doc(db, "phones", s.phone), v).catch(() => {}); phones.set(s.phone, v);
 }
+// One WhatsApp number, one student: who else has this number (another student, or a number link)?
+function numberTaken(phone, uid) {
+  if (!PHONE_RE.test(phone || "")) return null;
+  const s = students.find(x => x.uid !== uid && x.phone === phone);
+  if (s) return s;
+  const v = phones.get(phone);
+  return v && v.uid !== uid ? { name: "another student", loginId: v.id } : null;
+}
+const sameNumber = s => !!numberTaken(s.phone, s.uid);
 const phoneLine = s => { if (s.promo || !PHONE_RE.test(s.phone || "")) return ""; const v = phones.get(s.phone);
-  return !v ? "" : v.uid === s.uid ? " · 📱 logs in with this number too" : ` · number also used by ID ${esc(v.id)}`; };
+  return !v ? (sameNumber(s) ? ` · <b style="color: var(--bad)">⚠ same number as another student</b>` : "") : v.uid === s.uid ? " · 📱 logs in with this number too" : ` · <b style="color: var(--bad)">⚠ same number as ID ${esc(v.id)}</b>`; };
 let teacherReqs = [], readingAll = [];
 // Copy alert: many pages "read" far too fast (a few seconds a page) looks like someone copying the chapter.
 const COPY_PAGES = 25, COPY_SEC_PER_PAGE = 8;
@@ -1240,6 +1259,7 @@ const FILTERS = [
   ["signup", "Signed up, not bought", isSignup],
   ["free", "Free access", s => liveGrants(s).length > 0],
   ["teacher", "Teachers", s => s.role === "teacher"],
+  ["samephone", "Same number", sameNumber],
 ];
 let stuFilter = "all";
 const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -1460,7 +1480,7 @@ $("#students").addEventListener("click", async e => {
         docs.sort((a, b) => ((b[1].updatedAt && b[1].updatedAt.toMillis()) || 0) - ((a[1].updatedAt && a[1].updatedAt.toMillis()) || 0)).map(([k, r]) => {
           const total = r.total || 0, seen = (r.seen || []).length, pct = total ? Math.min(100, Math.round(seen / total * 100)) : 0;
           return `<div class="rrow"><div class="t"><span>${esc(chName(k))}</span><span>${pct}%</span></div><div class="meter"><i style="width: ${pct}%"></i></div>
-            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 0}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}</div></div>`;
+            <div class="m">${seen} of ${total} pages · up to page ${r.max || 0} · ${fmtMins(r.minutes || 0)} · opened ${r.opens || 0}×${r.updatedAt ? " · " + agoText(r.updatedAt.toDate()) : ""}</div>${topicsDone(k, r.seen)}</div>`;
         }).join("") + (quiz.size ? `<h4 class="sc-h">📊 Quiz scores</h4><div class="sc-list">${[...quiz].filter(([, q]) => q.total > 0).map(([id, q]) => {
           const r = Object.assign({}, q, { ch: id.replace(/-qb$/, ""), qb: /-qb$/.test(id), pct: Math.round((q.best || 0) / q.total * 100) });
           return `<div class="sc-row"><span class="snm">${esc(chName(r.ch))}<small>${scKind(r)}</small></span>${scScore(r)}<span class="m">${scMeta(r)}</span></div>`; }).join("")}</div>` : "");
@@ -1734,6 +1754,8 @@ function detailsDialog(s) {
       const name = val("d-sname"), phone = val("d-sphone").replace(/\D/g, "").slice(-10);
       if (name.length < 2) throw new Error("Write the name.");
       if (phone && phone.length !== 10) throw new Error("WhatsApp number: 10 digits.");
+      const taken = phone !== s.phone && numberTaken(phone, s.uid);
+      if (taken) throw new Error(`This number already belongs to ${taken.name}${taken.loginId ? ` (ID ${taken.loginId})` : ""}. One number, one student.`);
       const update = { name, phone, role: dlg.querySelector("#d-srole").value || null, school: val("d-sschool"), city: val("d-scity"), classes: pickedIn("#d-scls").map(Number) };
       await updateDoc(doc(db, "users", s.uid), update);
       const oldPhone = s.phone;
@@ -3165,6 +3187,44 @@ const pagesOf = r => Object.values((r && r.ch) || {}).reduce((a, v) => a + (v.p 
 const quizzesOf = r => Object.keys((r && r.quiz) || {}).length;
 const doubtsOn = (uid, date) => doubts.filter(d => d.uid === uid && dayOf(d.at) === date);
 const whoOf = uid => { const s = students.find(x => x.uid === uid); return s ? { s, name: s.name || "Student", id: s.promo ? `promo ${s.promo}` : s.loginId || "", cls: classesText(s) } : { s: null, name: "Deleted student", id: "", cls: "" }; };
+// What a student read: the topic and sub-topic of each page, from the chapter's contents (each topic and
+// sub-topic carries the page it starts on). Pages before the first topic are the cover and contents.
+const tidy = t => String(t || "").replace(/<[^>]+>/g, "").trim();
+const topicMarks = new Map();
+function marksOf(k) {
+  if (topicMarks.has(k)) return topicMarks.get(k);
+  const c = findChapter(k), out = [];
+  ((c && c.topics) || []).forEach(([name, sec, start, subs], i) => {
+    out.push({ p: +start || 1, t: i, name: tidy(name), sub: null });
+    String(subs || "").split(" · ").forEach(sb => { const m = sb.match(/^(.*\S)\s+(\d+)$/); if (m && +m[2] >= (+start || 1)) out.push({ p: +m[2], t: i, name: tidy(name), sub: tidy(m[1]) }); });
+  });
+  out.sort((a, b) => a.p - b.p || (a.sub ? 1 : 0) - (b.sub ? 1 : 0));
+  topicMarks.set(k, out);
+  return out;
+}
+// [{ name, n (topic number), subs: [..], pages: [..] }] for the pages read, in book order.
+function whatRead(k, pages) {
+  const marks = marksOf(k), groups = new Map();
+  if (!marks.length) return [];
+  [...new Set(pages || [])].sort((a, b) => a - b).forEach(p => {
+    let m = null; for (const x of marks) { if (x.p <= p) m = x; else break; }
+    const key = m ? m.t : -1;
+    if (!groups.has(key)) groups.set(key, { n: key + 1, name: m ? m.name : "Cover and contents", subs: [], pages: [] });
+    const g = groups.get(key); g.pages.push(p);
+    // the sub-topic this page is in (or the topic's own first page)
+    let sm = null; for (const x of marks) { if (x.p <= p && x.t === key) sm = x; if (x.p > p) break; }
+    if (sm && sm.sub && !g.subs.includes(sm.sub)) g.subs.push(sm.sub);
+  });
+  return [...groups.values()];
+}
+// In the student's reading record: each topic of the chapter, ✓ when they opened its pages.
+function topicsDone(k, seen) {
+  const c = findChapter(k), tops = (c && c.topics) || [], got = new Set(whatRead(k, seen).map(g => g.n));
+  if (!tops.length) return "";
+  return `<details class="tdone"><summary>Topics opened: ${tops.filter((t, i) => got.has(i + 1)).length} of ${tops.length}</summary><ul class="tp">${tops.map((t, i) => `<li>${got.has(i + 1) ? "✅" : "⬜"} Topic ${i + 1} · <b>${esc(tidy(t[0]))}</b></li>`).join("")}</ul></details>`;
+}
+const readHtml = (k, pages) => { const w = whatRead(k, pages); return w.length ? `<ul class="tp">${w.map(g => `<li>${g.n ? `Topic ${g.n} · ` : ""}<b>${esc(g.name)}</b> <span class="pg">(${pagesText(g.pages)})</span>${g.subs.length ? `<br><span class="sb">${g.subs.map(esc).join(" · ")}</span>` : ""}</li>`).join("")}</ul>` : ""; };
+
 // "Class 12 · Ch 1 Solutions": a chapter with its class (two classes both have a Chapter 1).
 const chLabel = k => `${clsName(String(k).split("-")[0])} · ${chName(k)}`;
 // What one student did on one day, line by line.
@@ -3172,7 +3232,7 @@ function dayLines(r, date, uid) {
   const lines = [];
   Object.entries((r && r.ch) || {}).sort((a, b) => (b[1].m || 0) - (a[1].m || 0)).forEach(([k, v]) => {
     const n = (v.p || []).length;
-    lines.push(`📖 <b>${esc(chLabel(k))}</b>: ${n} page${n === 1 ? "" : "s"}${n ? ` (${pagesText(v.p)})` : ""} · ${fmtMins(v.m || 0)}`);
+    lines.push(`📖 <b>${esc(chLabel(k))}</b>: ${n} page${n === 1 ? "" : "s"}${n ? ` (${pagesText(v.p)})` : ""} · ${fmtMins(v.m || 0)}${readHtml(k, v.p)}`);
   });
   Object.entries((r && r.quiz) || {}).forEach(([k, v]) => lines.push(`📝 <b>${esc(chLabel(k.replace(/-qb$/, "")))}</b> ${/-qb$/.test(k) ? "question bank" : "quiz"}: ${v.s}/${v.n}${v.t > 1 ? ` (${v.t} tries, last shown)` : ""}`));
   doubtsOn(uid, date).forEach(d => lines.push(`❓ Asked a doubt on <b>${esc(chLabel(d.ch))}</b>${d.page ? `, p. ${d.page}` : ""}`));
@@ -3184,7 +3244,7 @@ function dayLines(r, date, uid) {
 }
 const toCsv = rows => "﻿" + rows.map(r => r.map(v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; }).join(",")).join("\r\n");
 function saveCsv(rows, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" })); a.download = name; document.body.append(a); a.click(); a.remove(); }
-const plain = h => h.replace(/<[^>]+>/g, "");
+const plain = h => h.replace(/<(li|br)[^>]*>/g, " ; ").replace(/<[^>]+>/g, "").replace(/(\s*;\s*)+/g, " ; ").replace(/^ ; /, "").trim();
 let actCsv = null;
 function renderActivity() {
   if (!$("#act-date").value) $("#act-date").value = dKey(new Date());

@@ -405,6 +405,7 @@
       <p id="cv-text"></p>
       <div class="field"><label for="cv-id">Choose a login ID</label><input id="cv-id" autocapitalize="none" spellcheck="false" autocomplete="username" placeholder="e.g. rahul2026"><span class="hint">Small letters and numbers, 3 to 24 characters</span></div>
       <div class="field"><label for="cv-pw">Choose a password</label><input id="cv-pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
+      <div class="field"><label for="cv-phone">Your WhatsApp number</label><input id="cv-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit"><span class="hint">One number, one student. You can log in with it too.</span></div>
       <div class="msg bad" id="cv-err" role="alert" hidden></div>
       <button class="btn btn-sun" type="submit" id="cv-btn">Save my ID</button>
       <p class="hint">After this, log in any time with your ID or your WhatsApp number, and this password. Your ID works on this phone, like every Chemophile ID.</p>
@@ -598,6 +599,13 @@ document.querySelector(".tabs").addEventListener("click", e => {
   $("#auth-title").textContent = t; $("#auth-sub").textContent = sub;
 });
 $("#login-form").addEventListener("click", e => { const b = e.target.closest("[data-go-tab]"); if (b) document.querySelector(`.tabs [data-tab="${b.dataset.goTab}"]`).click(); });
+// "Log in with 98…": from the sign-up form, when the number already has an ID.
+$("#signup-form").addEventListener("click", e => {
+  const b = e.target.closest("[data-login-phone]");
+  if (!b) return;
+  document.querySelector('.tabs [data-tab="login-form"]').click();
+  $("#login-id").value = b.dataset.loginPhone; $("#login-pw").focus();
+});
 // read.html#signup opens the sign-up tab (links from the website).
 if (location.hash === "#signup" || location.hash === "#teacher") document.querySelector('.tabs [data-tab="signup-form"]').click();
 if (location.hash === "#teacher") document.querySelector('input[name="su-role"][value="teacher"]').checked = true;
@@ -711,6 +719,14 @@ $("#signup-form").addEventListener("submit", async e => {
   const mine = deviceId();
   if (!mine) return fail("You can't sign up from this browser. Turn off Private/Incognito mode and open it in normal Chrome.");
   busy = true; $("#su-btn").disabled = true;
+  // One WhatsApp number, one student: a number that already has an ID stops the sign-up here.
+  const owner = await phoneOwner(phone);
+  if (owner) {
+    busy = false; $("#su-btn").disabled = false;
+    fail("This WhatsApp number already has a Chemophile ID. Log in with this number and your password, or sign up with your own number.");
+    err.insertAdjacentHTML("beforeend", ` <button class="linkish" type="button" data-login-phone="${phone}">Log in with ${phone}</button>`);
+    return;
+  }
   // A promo code is checked before the account is made: a wrong or full code stops the sign-up here.
   let promo = null;
   if (code) {
@@ -726,14 +742,17 @@ $("#signup-form").addEventListener("submit", async e => {
   try {
     if (auth.currentUser) await signOut(auth);
     user = (await createUserWithEmailAndPassword(auth, idToEmail(id), pw)).user;
-    await setDoc(doc(db, "users", user.uid), {
+    // The student and the link of their number, in one write (the rules refuse a number that is taken).
+    const batch = writeBatch(db);
+    batch.set(doc(db, "users", user.uid), {
       name, phone, loginId: id, classes, chapters: [], active: true, signup: true,
       role, school, city, profileAt: serverTimestamp(),
       deviceId: mine, deviceInfo: deviceInfo(), boundAt: serverTimestamp(), createdAt: serverTimestamp()
     });
+    batch.set(doc(db, "phones", phone), { id, uid: user.uid });
+    await batch.commit();
     // Adeel Sir's copy of the password, so he can send it again if it is forgotten.
     setDoc(doc(db, "secrets", user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
-    await linkPhone(user.uid, phone, id);
     if (promo) {
       me = { name, phone, loginId: id };
       try { const n = await applyCode(user.uid, code, promo); codeNote = [`🎉 Welcome! Code ${code} applied: ${n} chapter${n > 1 ? "s" : ""} open till ${fmtDate(promo.expiresAt.toDate())}. Happy reading!`, "good"]; }
@@ -744,6 +763,8 @@ $("#signup-form").addEventListener("submit", async e => {
   } catch (ex) {
     busy = false; $("#su-btn").disabled = false;
     if (user) { try { await user.delete(); } catch (e2) { try { await signOut(auth); } catch (e3) {} } }
+    // Someone took the number in the same moment.
+    if (ex.code === "permission-denied" && await phoneOwner(phone)) { show("v-login"); return fail("This WhatsApp number already has a Chemophile ID. Log in with this number, or sign up with your own number."); }
     fail(ex.code === "auth/email-already-in-use" ? `The login ID "${id}" is taken. Try another one, like ${id.replace(/\d+$/, "")}${Math.floor(100 + Math.random() * 900)}.`
       : ex.code === "auth/operation-not-allowed" ? "Sign up is not switched on yet. Please contact Adeel Sir."
       : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
@@ -763,6 +784,7 @@ function showConvert(user) {
   // A reader whose ID was made but not saved yet (say the internet dropped) only finishes saving it.
   const made = !user.isAnonymous && user.email ? emailToId(user.email) : "";
   $("#cv-id").value = made || $("#cv-id").value; $("#cv-id").disabled = !!made;
+  if (!$("#cv-phone").value) $("#cv-phone").value = me.phone || "";
   $("#cv-err").hidden = true; $("#logout").hidden = true;
   show("v-convert");
 }
@@ -770,21 +792,24 @@ $("#cv-form").addEventListener("submit", async e => {
   e.preventDefault();
   const err = $("#cv-err"), fail = t => { err.textContent = t; err.hidden = false; };
   err.hidden = true;
-  const user = auth.currentUser, id = $("#cv-id").value.trim().toLowerCase(), pw = $("#cv-pw").value;
+  const user = auth.currentUser, id = $("#cv-id").value.trim().toLowerCase(), pw = $("#cv-pw").value, phone = $("#cv-phone").value.replace(/\D/g, "").slice(-10);
   if (!user || !me || !me.promo) return;
   if (!ID_PATTERN.test(id)) return fail("Login ID: small letters and numbers (and . _ -), 3 to 24 characters.");
   if (pw.length < 6) return fail("Use at least 6 characters for the password.");
+  if (!PHONE_PATTERN.test(phone)) return fail("Enter your 10-digit WhatsApp number.");
   busy = true; $("#cv-btn").disabled = true;
+  const owner = await phoneOwner(phone);
+  if (owner && owner.uid !== user.uid) { busy = false; $("#cv-btn").disabled = false; return fail("This WhatsApp number already has another Chemophile ID. Enter your own number."); }
   try {
     if (user.isAnonymous) await linkWithCredential(user, EmailAuthProvider.credential(idToEmail(id), pw));
     else await updatePassword(user, pw);
     await user.getIdToken(true);
     const old = me, till = old.expiresAt, batch = writeBatch(db);
-    batch.update(doc(db, "users", user.uid), { loginId: id, promo: deleteField(), expiresAt: deleteField(), chapters: [], signup: true, convertedAt: serverTimestamp() });
+    batch.update(doc(db, "users", user.uid), { loginId: id, phone, promo: deleteField(), expiresAt: deleteField(), chapters: [], signup: true, convertedAt: serverTimestamp() });
+    if (!owner) batch.set(doc(db, "phones", phone), { id, uid: user.uid });
     if (till && till.toDate && till.toDate() > new Date()) (old.chapters || []).forEach(k => batch.set(doc(db, "users", user.uid, "grants", k), { till, code: old.promo, at: serverTimestamp() }));
     await batch.commit();
     setDoc(doc(db, "secrets", user.uid), { password: pw, at: serverTimestamp() }).catch(() => {});
-    await linkPhone(user.uid, old.phone, id);
     codeNote = [`✓ Your login ID is ${id}. From now on, log in with it (or your WhatsApp number) and your password.`, "good"];
     busy = false; $("#cv-btn").disabled = false; $("#cv-pw").value = "";
     start(user);
@@ -793,7 +818,7 @@ $("#cv-form").addEventListener("submit", async e => {
     fail(ex.code === "auth/email-already-in-use" || ex.code === "auth/credential-already-in-use" ? `The login ID "${id}" is taken. Try another one, like ${id.replace(/\d+$/, "")}${Math.floor(100 + Math.random() * 900)}.`
       : ex.code === "auth/requires-recent-login" ? "Please try once more."
       : ex.code === "auth/network-request-failed" ? loginErrors[ex.code]
-      : ex.code === "permission-denied" ? "Your ID is made, but it could not be saved yet. Please WhatsApp Adeel Sir, then try again later."
+      : ex.code === "permission-denied" ? "Your ID is made, but it could not be saved yet. Check that the WhatsApp number is your own, then try again (or WhatsApp Adeel Sir)."
       : "Could not save. Please try again.");
     if (auth.currentUser && !auth.currentUser.isAnonymous) { $("#cv-id").value = emailToId(auth.currentUser.email || ""); $("#cv-id").disabled = true; }
   }

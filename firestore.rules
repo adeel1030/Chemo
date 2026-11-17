@@ -13,6 +13,7 @@ service cloud.firestore {
     function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
     function redemptionPath(code, uid) { return /databases/$(database)/documents/promos/$(code)/redemptions/$(uid); }
     function grantPath(uid, ch) { return /databases/$(database)/documents/users/$(uid)/grants/$(ch); }
+    function phonePath(phone) { return /databases/$(database)/documents/phones/$(phone); }
 
     // Can the signed-in student open this chapter now? Their ID is active and locked to a device, and either
     // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
@@ -69,7 +70,8 @@ service cloud.firestore {
 
     // A free sign-up from the reader: the student's own new login makes its own document, with the login ID of
     // its email, no chapters, no plan and no end date, locked to the device it signs up on. Only the admin can
-    // add chapters to it later (after payment).
+    // add chapters to it later (after payment). One WhatsApp number, one student: the number must be free, and
+    // its link (phones/{number}) is made in the same write.
     function validSelfSignup(uid) {
       let d = request.resource.data;
       return signedIn() && request.auth.uid == uid
@@ -80,7 +82,8 @@ service cloud.firestore {
         && (!('role' in d) || (validProfile(d) && d.profileAt == request.time))
         && d.classes is list && d.classes.size() >= 1 && d.classes.size() <= 12
         && d.name is string && d.name.size() <= 60
-        && d.phone is string && d.phone.size() <= 15
+        && d.phone is string && d.phone.matches('^[0-9]{10}$')
+        && !exists(phonePath(d.phone)) && getAfter(phonePath(d.phone)).data.uid == uid
         && d.deviceId is string;
     }
 
@@ -121,7 +124,10 @@ service cloud.firestore {
         // signed-up ID (its promo chapters move to free access till the same date, see grants below).
         signedIn() && request.auth.uid == uid
         && resource.data.get('promo', null) is string
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['loginId', 'promo', 'chapters', 'expiresAt', 'signup', 'convertedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['loginId', 'promo', 'chapters', 'expiresAt', 'signup', 'convertedAt', 'phone'])
+        // their own WhatsApp number, not one another student already has (linked in the same write)
+        && request.resource.data.phone.matches('^[0-9]{10}$')
+        && getAfter(phonePath(request.resource.data.phone)).data.uid == uid
         && !('promo' in request.resource.data) && !('expiresAt' in request.resource.data)
         && request.resource.data.chapters == [] && request.resource.data.signup == true
         && request.resource.data.loginId == request.auth.token.email.split('@')[0]
