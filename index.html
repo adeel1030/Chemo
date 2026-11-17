@@ -1256,9 +1256,9 @@ async function loadSiteCatalog() {
     const data = j.fields && j.fields.data && j.fields.data.stringValue;
     if (data && applyCatalog(JSON.parse(data))) {
       try { localStorage.setItem("chemophile-catalog", data); } catch (e) {}
-      await loadCovers(async () => {
+      await loadCovers(async id => {
         const ctl2 = new AbortController(), t2 = setTimeout(() => ctl2.abort(), 5000);
-        const c = await fetch(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/catalog/covers?key=${firebaseConfig.apiKey}`, { signal: ctl2.signal });
+        const c = await fetch(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/catalog/${id}?key=${firebaseConfig.apiKey}`, { signal: ctl2.signal });
         clearTimeout(t2);
         const cj = await c.json();
         return cj.fields && cj.fields.data ? JSON.parse(cj.fields.data.stringValue) : null;

@@ -409,6 +409,7 @@ function applyCatalog(cat) {
   REFERRAL = Object.assign({ on: false, days: 30 }, cat.referral || {});
   SITE = Object.assign({ videos: [], reviews: [] }, cat.site || {});
   COVERS_AT = +cat.coversAt || 0;
+  COVER_DOCS = Math.max(1, +cat.coverDocs || 1);
   if (!COVERS_AT) Object.keys(COVERS).forEach(k => delete COVERS[k]);
   PAY = !cat.pay ? DEFAULT_PAY : cat.pay.upi || cat.pay.link ? cat.pay : null;
   return true;
@@ -438,17 +439,22 @@ const assetName = c => c.cls === 11 ? `ch${c.n}` : `c12-ch${c.n}`;
 // A chapter's cover is the first page of its uploaded PDF (made by the admin panel on upload, kept in
 // catalog/covers). Until a PDF is uploaded, the picture in assets/ is used; a chapter with neither has none (null).
 const COVERS = {};
-let COVERS_AT = 0;
+let COVERS_AT = 0, COVER_DOCS = 1;
+// One Firestore record holds at most about 1 MB, so the covers are spread over catalog/covers, catalog/covers-2,
+// catalog/covers-3 … (catalog.coverDocs says how many).
+const coverDocId = i => i ? `covers-${i + 1}` : "covers";
 const coverOf = c => COVERS[`${c.cls}-${c.n}`] || (c.custom ? null : `assets/thumbs/${assetName(c)}-1.webp`);
-// Brings the covers in: from this device's copy if it is the latest (catalog.coversAt says), else via get().
+// Brings the covers in: from this device's copy if it is the latest (catalog.coversAt says), else via
+// get(record id) for each record of covers.
 async function loadCovers(get) {
   if (!COVERS_AT) return;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem("chemophile-covers")); } catch (e) {}
   if (saved && saved.at === COVERS_AT && saved.map) { Object.assign(COVERS, saved.map); return; }
   try {
-    const map = await get();
-    if (!map) return;
+    const parts = await Promise.all(Array.from({ length: COVER_DOCS }, (x, i) => get(coverDocId(i))));
+    if (!parts[0]) return;
+    const map = Object.assign({}, ...parts.map(p => p || {}));
     Object.keys(COVERS).forEach(k => delete COVERS[k]);
     Object.assign(COVERS, map);
     try { localStorage.setItem("chemophile-covers", JSON.stringify({ at: COVERS_AT, map })); } catch (e) {}

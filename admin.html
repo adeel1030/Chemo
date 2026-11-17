@@ -2686,7 +2686,7 @@ async function loadChapters() {
   renderLighter();
   renderChapRows();
   renderDash();
-  if (cat && !coversTried) { coversTried = true; backfillCovers().catch(ex => console.warn("covers", ex)); }
+  if (cat && !coversTried) { coversTried = true; backfillCovers().catch(ex => { coversTried = false; catSay(`Book covers could not be made: ${saveError(ex)}`, "bad"); }); }
 }
 
 // ---------- the Chapters tab: one class at a time ----------
@@ -2748,12 +2748,18 @@ function coverFrom(src) {
 async function saveCovers(add) {
   const map = Object.assign({}, COVERS, add);
   Object.keys(map).forEach(k => { if (!findChapter(k)) delete map[k]; });
-  const data = JSON.stringify(map);
-  if (data.length > 950000) throw new Error("Too many covers for one record. Ask for help to split them.");
-  const at = Date.now();
-  await setDoc(doc(db, "catalog", "covers"), { data, at });
+  // A Firestore record holds about 1 MB: the covers go into as many records as they need (about 700 KB each).
+  const shards = [{}];
+  let size = 2;
+  Object.keys(map).sort().forEach(k => {
+    const len = k.length + map[k].length + 6;
+    if (size + len > 700000 && Object.keys(shards[shards.length - 1]).length) { shards.push({}); size = 2; }
+    shards[shards.length - 1][k] = map[k]; size += len;
+  });
+  const at = Date.now(), before = COVER_DOCS;
+  for (let i = 0; i < Math.max(shards.length, before); i++) await setDoc(doc(db, "catalog", coverDocId(i)), { data: JSON.stringify(shards[i] || {}), at });
   Object.assign(COVERS, add);
-  await commit(next => { next.coversAt = at; }, "Book covers updated: the first page of each PDF.");
+  await commit(next => { next.coversAt = at; next.coverDocs = shards.length; }, "Book covers updated: the first page of each PDF.");
 }
 // Chapters uploaded before covers were made from the PDF get theirs from page 1 already in Firebase.
 async function backfillCovers() {
@@ -2924,7 +2930,7 @@ $("#chap-rows").addEventListener("click", async e => {
     chInfo.set(k, uploaded.get(k));
     [...pageCache.keys()].filter(x => x.startsWith(k + "|")).forEach(x => pageCache.delete(x));
     renderLighter();
-    if (cover) { upSay(k, "Saving the cover (page 1)…", 100); await saveCovers({ [k]: cover }).catch(ex => console.warn("cover", ex)); }
+    if (cover) { upSay(k, "Saving the cover (page 1)…", 100); await saveCovers({ [k]: cover }).catch(ex => catSay(`The pages are uploaded, but the cover (page 1) could not be saved: ${saveError(ex)} Open the Chapters tab again to retry.`, "bad")); }
     // The website shows the number of pages: keep it the same as the PDF.
     const mine = cat.chapters.find(y => ckey(y) === k);
     if (mine && +mine.pages !== total) await commit(next => { const x = next.chapters.find(y => ckey(y) === k); if (x) x.pages = total; }, `${chName(k)}: ${total} pages uploaded.`).catch(ex => console.warn("pages", ex));

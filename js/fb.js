@@ -54,7 +54,7 @@ export async function loadCatalog() {
     if (!s.exists()) return null;
     const cat = JSON.parse(s.data().data);
     if (!applyCatalog(cat)) return null;
-    await loadCovers(async () => { const c = await getDoc(doc(db, "catalog", "covers")); return c.exists() ? JSON.parse(c.data().data) : null; });
+    await loadCovers(async id => { const c = await getDoc(doc(db, "catalog", id)); return c.exists() ? JSON.parse(c.data().data) : null; });
     return cat;
   } catch (e) { console.warn("catalog", e); return null; }
 }
