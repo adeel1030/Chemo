@@ -219,6 +219,15 @@ dialog.wide-dlg { width: min(900px, 96vw); max-width: 96vw; }
 .pdf-box progress { width: 100%; }
 .next-step { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0; }
 .next-step:not(.bad):not(.warn) { background: var(--paper); color: var(--fg); }
+/* Upload many PDFs: one row per file, with the chapter it goes to. */
+.bulk-list { display: grid; gap: 8px; }
+.bulk-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 4px 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.bulk-row .fn { font-size: .88rem; overflow-wrap: anywhere; }
+.bulk-row .fn small { color: var(--muted); }
+.bulk-row select { font: .9rem var(--font-body); padding: 7px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--fg); min-width: 0; }
+.bulk-row .st { grid-column: 1 / -1; font-size: .82rem; }
+.bulk-row .st:empty { display: none; }
+@media (max-width: 560px) { .bulk-row { grid-template-columns: minmax(0, 1fr); } }
 .linkish { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
 /* Activity: by date or by student. */
 .act-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -707,7 +716,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <div class="cat-top">
           <div class="field"><label for="chap-cls">Class or book</label><select id="chap-cls"></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="chap-book-name"></span></div>
-          <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
+          <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="bulk-up">⬆ Upload many PDFs</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
         </div>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
         <div class="chips" id="chap-filters" role="group" aria-label="Show"></div>
@@ -2028,6 +2037,13 @@ async function copyPrompt(btn, k) {
 }
 const infoHelp = k => `<p class="cat-sub"><b>How:</b> 1) Copy the prompt. 2) In the AI chat where you made the book, attach the chapter PDF and paste the prompt${k ? "" : " (write the chapter key at its end)"}. 3) Paste its answer below, or save it as a .txt file and choose it. Check the preview, then Save.</p>
   <div class="actions"><button class="btn btn-line btn-sm" type="button" data-copy-prompt="${k || ""}">📋 Copy the prompt</button><a class="btn btn-line btn-sm" href="chapter-info-prompt.txt" download>⬇ Download prompt</a></div>`;
+// A .txt file's text; if it has no "### 11-1" line, the chapter comes from the file name (11-1.txt, 12-S1 quiz.txt …).
+async function withKey(f, k) {
+  const t = await f.text();
+  if (/^\s*###/m.test(t)) return t;
+  const g = k || guessChapter(f.name.replace(/\.(txt|md)$/i, ""));
+  return g ? `### ${keyText(g)}\n${t}` : t;
+}
 function infoDialog(k) {
   const c = k && findChapter(k);
   openDialog(k ? `Chapter info · ${clsName(c.cls)} ${chNo(c)}` : "Chapter info & quizzes (many chapters)", `
@@ -2050,7 +2066,7 @@ function infoDialog(k) {
   };
   box.addEventListener("input", check);
   dlg.querySelector("#d-info-file").addEventListener("change", async e => {
-    const texts = await Promise.all([...e.target.files].map(f => f.text()));
+    const texts = await Promise.all([...e.target.files].map(f => withKey(f, k)));
     box.value = texts.join("\n\n"); check();
   });
   dlg.querySelector("[data-copy-prompt]").addEventListener("click", e => copyPrompt(e.currentTarget, k));
@@ -2898,21 +2914,32 @@ $("#chap-rows").addEventListener("click", e => {
 $("#chap-rows").addEventListener("click", async e => {
   const b = e.target.closest("[data-up]");
   if (!b) return;
-  const row = b.closest(".chap-row"), k = row.dataset.k, c = findChapter(k);
-  const before = uploaded.get(k);
+  const row = b.closest(".chap-row"), k = row.dataset.k;
   const file = row.querySelector("input[type=file]").files[0];
   if (!file) { row.querySelector(".status").textContent = "Choose a PDF file first."; return; }
   if (upState.has(k)) return;
-  upSay(k, "Reading the PDF…", 0);
   row.querySelector(".upl").innerHTML = "";
-  let lock = null, done = "";
+  let lock = null;
   try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
+  const r = await uploadChapter(k, file, (t, pct) => upSay(k, t, pct));
+  if (lock) lock.release().catch(() => {});
+  renderChapRows();
+  const st = $(`.chap-row[data-k="${k}"] .status`); if (st) st.textContent = r.msg; else catSay(`${chName(k)}: ${r.msg}`, r.ok ? "good" : "bad");
+  renderDash();
+});
+// One chapter's PDF → page images in Firebase, its page count, and (unless the caller collects them) its cover.
+// Returns { ok, msg, pages, cover }.
+async function uploadChapter(k, file, say, opts = {}) {
+  const c = findChapter(k), before = uploaded.get(k);
+  let res;
+  upState.set(k, { text: "Reading the PDF…", pct: 0 });
   try {
+    say("Reading the PDF…", 0);
     const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
     const total = pdf.numPages;
     let cover = null;
     for (let n = 1; n <= total; n++) {
-      upSay(k, `Uploading page ${n} / ${total}… keep this page open.`, Math.round(((n - 1) / total) * 100));
+      say(`Uploading page ${n} / ${total}… keep this page open.`, Math.round(((n - 1) / total) * 100));
       const page = await pdf.getPage(n);
       const scale = PAGE_PX / page.getViewport({ scale: 1 }).width;
       const vp = page.getViewport({ scale });
@@ -2923,6 +2950,7 @@ $("#chap-rows").addEventListener("click", async e => {
       if (n === 1) cover = coverFrom(canvas);
       page.cleanup();
     }
+    if (pdf.destroy) pdf.destroy();
     const info = { title: c.title, cls: c.cls, n: c.n, pageCount: total, px: PAGE_PX, updatedAt: serverTimestamp() };
     await setDoc(doc(db, "chapters", k), info, { merge: true });
     // A shorter replacement leaves the old extra pages behind; remove them.
@@ -2935,21 +2963,79 @@ $("#chap-rows").addEventListener("click", async e => {
     chInfo.set(k, uploaded.get(k));
     [...pageCache.keys()].filter(x => x.startsWith(k + "|")).forEach(x => pageCache.delete(x));
     renderLighter();
-    if (cover) { upSay(k, "Saving the cover (page 1)…", 100); await saveCovers({ [k]: cover }).catch(ex => catSay(`The pages are uploaded, but the cover (page 1) could not be saved: ${saveError(ex)} Open the Chapters tab again to retry.`, "bad")); }
+    if (cover && !opts.collectCover) { say("Saving the cover (page 1)…", 100); await saveCovers({ [k]: cover }).catch(ex => catSay(`The pages are uploaded, but the cover (page 1) could not be saved: ${saveError(ex)} Open the Chapters tab again to retry.`, "bad")); }
     // The website shows the number of pages: keep it the same as the PDF.
     const mine = cat.chapters.find(y => ckey(y) === k);
     if (mine && +mine.pages !== total) await commit(next => { const x = next.chapters.find(y => ckey(y) === k); if (x) x.pages = total; }, `${chName(k)}: ${total} pages uploaded.`).catch(ex => console.warn("pages", ex));
-    done = `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now. Its cover is page 1.`;
+    res = { ok: true, cover, pages: total, msg: `${before ? "Replaced" : "Uploaded"}: ${total} pages. Students can read it now. Its cover is page 1.` };
   } catch (ex) {
-    done = "Upload stopped: " + (ex.message || ex.code) + ". Please try again.";
+    res = { ok: false, msg: "Upload stopped: " + (ex.message || ex.code) + ". Please try again." };
   } finally {
     upState.delete(k);
-    if (lock) lock.release().catch(() => {});
   }
-  renderChapRows();
-  const st = $(`.chap-row[data-k="${k}"] .status`); if (st) st.textContent = done; else catSay(`${chName(k)}: ${done}`, done.startsWith("Upload stopped") ? "bad" : "good");
-  renderDash();
-});
+  return res;
+}
+
+// ---------- many PDFs at once ----------
+// Choose several PDFs; each is matched to its chapter from the file name ("11-3.pdf", "12-S1 …", "Class 11
+// Chapter 3 …", or the chapter's name), which can be changed, then they upload one after another.
+function guessChapter(name) {
+  const t = name.replace(/\.pdf$/i, "").replace(/_+/g, "-");
+  const all = [...CHAPTERS, ...SOON_CHAPTERS], has = k => all.some(c => chapterKey(c) === k);
+  const k1 = parseKey(t); if (k1 && has(k1)) return k1;
+  const low = t.toLowerCase(), cls = (low.match(/(?:class|cls)\s*-?\s*(\d{1,3})/) || [])[1] || (low.match(/\b(9|10|11|12)(?:th)?\b/) || [])[1] || catCls;
+  const m = low.match(/(?:chapter|ch)\s*-?\s*(\d{1,2})\b/);
+  if (m && has(`${+cls}-${+m[1]}`)) return `${+cls}-${+m[1]}`;
+  const norm = x => String(x || "").toLowerCase().replace(/<[^>]+>/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const n = norm(t), hit = all.filter(c => (norm(c.title).length > 4 && n.includes(norm(c.title))) || (norm(c.short).length > 4 && n.includes(norm(c.short))))
+    .sort((a, b) => (+b.cls === +cls) - (+a.cls === +cls) || norm(b.title).length - norm(a.title).length)[0];
+  return hit ? chapterKey(hit) : "";
+}
+function bulkUploadDialog() {
+  const all = [...CHAPTERS, ...SOON_CHAPTERS].sort((a, b) => a.cls - b.cls || orderN(a) - orderN(b));
+  const options = sel => `<option value="">Choose the chapter…</option>` + [...new Set(all.map(c => c.cls))].map(cls => `<optgroup label="${esc(clsName(cls))}">${all.filter(c => c.cls === cls).map(c => { const k = chapterKey(c); return `<option value="${k}"${k === sel ? " selected" : ""}>${esc(chName(k))}${uploaded.get(k) ? " (uploaded)" : ""}</option>`; }).join("")}</optgroup>`).join("");
+  let files = [];
+  openDialog("Upload many chapters", `
+    <p class="cat-sub">Choose the PDFs (several at once). Each one is matched to its chapter from the file name, e.g. <b>11-3.pdf</b>, <b>12-S1 p-Block.pdf</b> or <b>Class 11 Chapter 3.pdf</b>; check or change it below, then tap Upload all. Keep this page open until all are done.</p>
+    <div class="field"><label for="d-bulk-files">PDF files</label><input id="d-bulk-files" type="file" accept="application/pdf" multiple></div>
+    <div class="bulk-list" id="d-bulk-list"></div>
+    <label class="cat-check" id="d-bulk-rep-wrap" hidden><input type="checkbox" id="d-bulk-rep"> <span>Replace the chapters marked "uploaded": students will read the new PDF.</span></label>`,
+    async () => {
+      const rows = [...dlg.querySelectorAll("#d-bulk-list [data-i]")];
+      if (!rows.length) throw new Error("Choose the PDF files first.");
+      const plan = rows.map(r => ({ r, file: files[+r.dataset.i], k: r.querySelector("select").value }));
+      if (plan.some(x => !x.k)) throw new Error("Choose the chapter of every file.");
+      const ks = plan.map(x => x.k); if (new Set(ks).size !== ks.length) throw new Error("Two files are set to the same chapter.");
+      if (plan.some(x => uploaded.get(x.k)) && !dlg.querySelector("#d-bulk-rep").checked) throw new Error('Some chapters are already uploaded: tick "Replace" to upload them again.');
+      $("#dlg-err").hidden = true;
+      dlg.querySelectorAll("#d-bulk-list select, #d-bulk-files, #d-bulk-rep, [data-dlg], .dlg-x").forEach(x => { x.disabled = true; });
+      let lock = null; try { lock = await navigator.wakeLock?.request("screen"); } catch (err) {}
+      const covers = {}, results = [];
+      for (const [i, x] of plan.entries()) {
+        const st = x.r.querySelector(".st");
+        st.style.color = "";
+        const r = await uploadChapter(x.k, x.file, t => { st.textContent = `${i + 1} of ${plan.length} · ${t}`; }, { collectCover: true });
+        st.textContent = r.ok ? `✓ ${r.pages} pages uploaded` : `✗ ${r.msg}`; st.style.color = r.ok ? "var(--good)" : "var(--bad)";
+        if (r.cover) covers[x.k] = r.cover;
+        results.push([x.k, r]);
+      }
+      if (Object.keys(covers).length) await saveCovers(covers).catch(ex => catSay(`Pages uploaded, but the covers could not be saved: ${saveError(ex)}`, "bad"));
+      if (lock) lock.release().catch(() => {});
+      dlg.querySelectorAll("[data-dlg], .dlg-x").forEach(x => { x.disabled = false; });
+      const good = results.filter(([, r]) => r.ok), bad = results.filter(([, r]) => !r.ok);
+      renderChapRows(); renderDash();
+      catSay(`${good.length} of ${results.length} chapter${results.length > 1 ? "s" : ""} uploaded${good.length ? ": " + good.map(([k, r]) => `${keyText(k)} (${r.pages} pages)`).join(", ") : ""}.${bad.length ? ` Not uploaded: ${bad.map(([k]) => keyText(k)).join(", ")}. Try those again.` : ""}`, bad.length ? "bad" : "good");
+    }, null, { saveLabel: "Upload all" });
+  const list = dlg.querySelector("#d-bulk-list"), rep = dlg.querySelector("#d-bulk-rep-wrap");
+  const sync = () => { rep.hidden = ![...list.querySelectorAll("select")].some(s => s.value && uploaded.get(s.value)); };
+  dlg.querySelector("#d-bulk-files").addEventListener("change", e => {
+    files = [...e.target.files].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    list.innerHTML = files.map((f, i) => `<div class="bulk-row" data-i="${i}"><span class="fn">📄 ${esc(f.name)} <small>${(f.size / 1048576).toFixed(1)} MB</small></span><select aria-label="Chapter for ${esc(f.name)}">${options(guessChapter(f.name))}</select><span class="st hint"></span></div>`).join("");
+    sync();
+  });
+  list.addEventListener("change", sync);
+}
+$("#t-chapters").addEventListener("click", e => { if (e.target.closest('[data-chap="bulk-up"]')) bulkUploadDialog(); });
 
 // ---------- chapter quizzes ----------
 // Written as plain text (easy to type on a phone or paste from notes), saved as quizzes/{chapter}.
@@ -3121,7 +3207,7 @@ async function qbDialog(k) {
     out.innerHTML = (ok.length ? `✓ Ready: ${ok.map(x => `<b>${esc(keyText(x.k))}</b> ${qbSummary(x.qs)}`).join("<br>")}` : "") + (errs.length ? `<br><span style="color: var(--bad)">${errs.slice(0, 6).map(esc).join("<br>")}</span>` : "");
   };
   box.addEventListener("input", check);
-  dlg.querySelector("#d-qb-file").addEventListener("change", async e => { box.value = (await Promise.all([...e.target.files].map(f => f.text()))).join("\n\n"); check(); });
+  dlg.querySelector("#d-qb-file").addEventListener("change", async e => { box.value = (await Promise.all([...e.target.files].map(f => withKey(f, k)))).join("\n\n"); check(); });
   dlg.querySelector("[data-qb-prompt]").addEventListener("click", async e => {
     const btn = e.currentTarget;
     try { let t = await (await fetch("question-bank-prompt.txt", { cache: "no-cache" })).text(); if (k) t = t.replace(/\[write the key here[^\]]*\]/, keyText(k)); await navigator.clipboard.writeText(t); btn.textContent = "✓ Prompt copied"; }
