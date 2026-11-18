@@ -11,8 +11,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/icon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/icon-48.png">
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
-<meta name="theme-color" content="#15134a">
-<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<meta name="theme-color" content="#15134a" data-base="#15134a">
+<script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; var c = +JSON.parse(localStorage.getItem("chemophile-me")); if (c >= 9 && c <= 12) document.documentElement.dataset.cls = c; } catch (e) {}</script>
 <script src="js/theme.js" defer></script>
 <link rel="manifest" href="read.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemophile">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261118b">
+<link rel="stylesheet" href="css/app.css?v=20261118c">
 <style>
 /* Layout: login card (ID or promo code) → bookshelf of the student's chapters → full-screen flipbook. */
 /* Login: a dark welcome panel with the book covers, and the login card beside it (below it on phones). */
@@ -516,13 +516,13 @@
   <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
-<script src="js/chapters.js?v=20261118b"></script>
+<script src="js/chapters.js?v=20261118c"></script>
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-<script src="js/flipbook.js?v=20261118b"></script>
+<script src="js/flipbook.js?v=20261118c"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118b";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118c";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -562,6 +562,15 @@ function show(id) {
 }
 
 let me = null;          // the student's user document
+// The page takes the colour of the student's class (their booklet's cover colour). A student in one class gets
+// that class; a teacher of many classes (or a student who ticked several) gets the class chosen on the website
+// if it is one of theirs, else the Chemophile indigo. Logged out: the class chosen on the website.
+function readerTheme() {
+  let saved = null; try { saved = +JSON.parse(localStorage.getItem("chemophile-me")) || null; } catch (e) {}
+  if (!me || me.admin) return applyClassTheme(me && me.admin ? null : saved);
+  const cls = [...new Set((me.classes || []).map(Number))];
+  applyClassTheme(cls.length === 1 ? cls[0] : cls.includes(saved) ? saved : me.role === "teacher" || !cls.length ? null : cls[0]);
+}
 let unwatch = null;     // stops listening to the user document
 let book = null;        // the open flipbook
 let busy = false;
@@ -614,7 +623,7 @@ if (location.hash === "#signup" || location.hash === "#teacher") document.queryS
 if (location.hash === "#teacher") document.querySelector('input[name="su-role"][value="teacher"]').checked = true;
 // A teacher ticks the classes they teach; the school field says "School or college" either way.
 const suRole = () => document.querySelector('input[name="su-role"]:checked').value;
-function suRoleUI() { $("#su-cls-lbl").textContent = suRole() === "teacher" ? "Classes you teach (tick one or more)" : "Your class (tick one or more)"; }
+function suRoleUI() { $("#su-cls-lbl").textContent = suRole() === "teacher" ? "Classes you teach (tick one or more)" : "Your class (choose one)"; if (typeof renderClassPicks === "function") renderClassPicks(); }
 document.querySelectorAll('input[name="su-role"]').forEach(r => r.addEventListener("change", suRoleUI));
 suRoleUI();
 
@@ -627,7 +636,7 @@ if (!configured) {
       stopWatching();
       // Logged out: the next reader on this tab starts fresh.
       try { sessionStorage.removeItem(READ_UI); } catch (e) {} libCls = "all"; libKind = "all"; uiRestored = false;
-      me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
+      me = null; readerTheme(); newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
       if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
@@ -700,13 +709,19 @@ $("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden =
 // Anyone can make a free ID. It locks to this device at once, has no chapters, and shows the free sample of
 // the classes ticked here until Adeel Sir adds bought chapters to the same ID.
 // The class chosen on the website ("Aap kaun si class mein ho?") comes ticked, till the student ticks for themselves.
-let suTouched = false;
+// A student studies in one class (a round button); a teacher ticks every class they teach.
+var suTouched = false;
 function renderClassPicks() {
+  const teacher = suRole() === "teacher";
   let picked = [...document.querySelectorAll("#su-cls input:checked")].map(i => i.value);
-  if (!suTouched && !picked.length) { try { const m = JSON.parse(localStorage.getItem("chemophile-me")); if (+m) picked = [String(+m)]; } catch (e) {} }
-  $("#su-cls").innerHTML = classList().map(c => `<label><input type="checkbox" value="${c}"${picked.includes(String(c)) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
+  if (!suTouched && !picked.length) { try {
+    const many = JSON.parse(localStorage.getItem("chemophile-classes")), m = JSON.parse(localStorage.getItem("chemophile-me"));
+    picked = teacher && Array.isArray(many) && many.length ? many.map(String) : +m ? [String(+m)] : [];
+  } catch (e) {} }
+  if (!teacher) picked = picked.slice(0, 1);
+  $("#su-cls").innerHTML = classList().map(c => `<label><input type="${teacher ? "checkbox" : "radio"}" name="su-cls-pick" value="${c}"${picked.includes(String(c)) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
 }
-$("#su-cls").addEventListener("change", () => { suTouched = true; });
+$("#su-cls").addEventListener("change", e => { suTouched = true; if (suRole() !== "teacher" && e.target.value) applyClassTheme(e.target.value); });
 renderClassPicks();
 if (configured) loadCatalog().then(() => { catalogTried = true; renderClassPicks(); });
 $("#signup-form").addEventListener("submit", async e => {
@@ -925,6 +940,7 @@ async function start(user) {
   });
 
   me.loginId = me.promo ? `promo ${me.promo}` : loginId;
+  readerTheme();
   // Log in with the WhatsApp number too: link it to this ID if no other ID has it.
   phoneLink = undefined; $("#acct-phone").hidden = true;
   linkPhone(user.uid, me.phone, loginId).then(o => { phoneLink = o; showPhoneLink(); });

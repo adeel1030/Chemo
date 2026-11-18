@@ -37,6 +37,20 @@
   color-scheme: dark;
 }
 
+/* The colour of the student's class, from its booklet covers (see CLASS_COLORS in js/chapters.js).
+   Class 11 is the indigo above. Light look: the class colour for bands and highlights; dark look: a deep tint. */
+:root[data-cls="9"] { --night: #3d0c50; --night-3: #2a0838; --night-muted: #dcc2ea; --accent: #7a2399; --line: #e8dcef; --paper: #f8f4fb; --fg: #2a1035; --muted: #6b5878; }
+:root[data-cls="10"] { --night: #0d4a45; --night-3: #08332f; --night-muted: #bfe3dc; --accent: #0f7a6b; --line: #d6e9e5; --paper: #f2f8f7; --fg: #0f2a27; --muted: #4f6f6a; }
+:root[data-cls="12"] { --night: #5a1424; --night-3: #3f0d18; --night-muted: #f0c6cd; --accent: #a3243d; --line: #f0dade; --paper: #fbf4f5; --fg: #351017; --muted: #7a5960; }
+@media (prefers-color-scheme: dark) {
+  :root[data-cls="9"]:not([data-theme="light"]) { --paper: #1b0a24; --surface: #2a1236; --fg: #f3e9f8; --muted: #c4a9d2; --line: #46245a; --accent: #dcb1f2; }
+  :root[data-cls="10"]:not([data-theme="light"]) { --paper: #071d1b; --surface: #0f2e2a; --fg: #e6f5f2; --muted: #9cc8c0; --line: #1d4a44; --accent: #7fe0cf; }
+  :root[data-cls="12"]:not([data-theme="light"]) { --paper: #220910; --surface: #34121b; --fg: #fbeaed; --muted: #d6a9b1; --line: #5a2230; --accent: #ffb0bf; }
+}
+:root[data-cls="9"][data-theme="dark"] { --paper: #1b0a24; --surface: #2a1236; --fg: #f3e9f8; --muted: #c4a9d2; --line: #46245a; --accent: #dcb1f2; }
+:root[data-cls="10"][data-theme="dark"] { --paper: #071d1b; --surface: #0f2e2a; --fg: #e6f5f2; --muted: #9cc8c0; --line: #1d4a44; --accent: #7fe0cf; }
+:root[data-cls="12"][data-theme="dark"] { --paper: #220910; --surface: #34121b; --fg: #fbeaed; --muted: #d6a9b1; --line: #5a2230; --accent: #ffb0bf; }
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { min-height: 100%; }

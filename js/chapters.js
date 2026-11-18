@@ -76,10 +76,10 @@ const BONUS_FROM = 100, PART_FROM = 1000;
 // Each kind: its number range (from), names, prompt key letters, icon, and the heading and line of its shelf.
 const KINDS = { chem: { from: 0, label: "Chapter", short: "Ch", key: "", subject: "Chemistry", icon: "🧪", head: "🧪 Chemistry" },
   special: { from: 100, label: "JEE/NEET Special", short: "Special", key: "S", subject: "Chemistry", icon: "🏆", head: "🏆 JEE / NEET special chapters",
-    note: "JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho." },
-  phy: { from: 200, label: "Physics Ch", short: "Phy", key: "P", subject: "Physics", icon: "⚡", head: "⚡ Physics", note: "Physics bhi Hinglish mein: rozana ki cheezon se samjho, exam ke liye English mein likho." },
-  bio: { from: 300, label: "Biology Ch", short: "Bio", key: "Bio", subject: "Biology", icon: "🧬", head: "🧬 Biology", note: "Biology bhi Hinglish mein: diagrams ke saath, aasaan bhasha mein." },
-  maths: { from: 400, label: "Maths Ch", short: "Maths", key: "M", subject: "Maths", icon: "📐", head: "📐 Maths", note: "Maths bhi Hinglish mein: har step samjhaya hua, solved examples ke saath." } };
+    note: "For JEE Main, JEE Advanced and NEET: advanced concepts, tricks, past-year questions and extra practice. Study them along with this class." },
+  phy: { from: 200, label: "Physics Ch", short: "Phy", key: "P", subject: "Physics", icon: "⚡", head: "⚡ Physics", note: "Physics explained in Hinglish with everyday things, with exam answers in English." },
+  bio: { from: 300, label: "Biology Ch", short: "Bio", key: "Bio", subject: "Biology", icon: "🧬", head: "🧬 Biology", note: "Biology in simple words, with clear labelled diagrams." },
+  maths: { from: 400, label: "Maths Ch", short: "Maths", key: "M", subject: "Maths", icon: "📐", head: "📐 Maths", note: "Maths with every step explained, and solved examples." } };
 const BUILT_IN_KINDS = Object.keys(KINDS);
 // Subjects added by the admin (catalog.subjects: [{ id, name, key, icon, from }]) become kinds too.
 function setSubjects(list) {
@@ -87,7 +87,7 @@ function setSubjects(list) {
   (list || []).forEach(x => {
     if (!x || !x.id || !(+x.from >= 500 && +x.from <= 900) || KINDS[x.id]) return;
     const name = String(x.name || x.id), icon = x.icon || "📘";
-    KINDS[x.id] = { from: +x.from, label: `${name} Ch`, short: name.length > 8 ? String(x.key || name.slice(0, 4)) : name, key: String(x.key || ""), subject: name, icon, head: `${icon} ${name}`, note: `${name} bhi Hinglish mein, aasaan bhasha mein.`, custom: true };
+    KINDS[x.id] = { from: +x.from, label: `${name} Ch`, short: name.length > 8 ? String(x.key || name.slice(0, 4)) : name, key: String(x.key || ""), subject: name, icon, head: `${icon} ${name}`, note: `${name} in simple words, the Chemophile way.`, custom: true };
   });
 }
 const isPart = c => +(c && c.n) >= PART_FROM;
@@ -490,3 +490,16 @@ async function loadCovers(get) {
 // Pages shown under "Free sample pages" for a chapter: [thumbnail, full image, label].
 const samplePagesOf = c => c.custom ? [] : [[1, "Cover"], [3, "Contents"], [4, "Topic 1, first page"], [5, "Page 5"], [6, "Page 6"]]
   .map(([p, label]) => [`assets/thumbs/${assetName(c)}-${p}.webp`, `assets/pages/${assetName(c)}-${p}.webp`, label]);
+
+// ---------- class colours ----------
+// Each class's booklets have their own cover colour: Class 9 purple, Class 10 teal green, Class 11 indigo,
+// Class 12 maroon (the yellow title is the same on all). The website and the reader take on the colour of the
+// student's class: html[data-cls="9"] etc. in index.html and css/app.css. The <head> of each page sets it from
+// the class saved on this phone before the page draws, so there is no flash of another colour.
+const CLASS_COLORS = { 9: "#3d0c50", 10: "#0d4a45", 11: "#22215f", 12: "#5a1424" };
+function applyClassTheme(cls) {
+  const r = document.documentElement, k = +cls;
+  if (CLASS_COLORS[k]) r.dataset.cls = k; else delete r.dataset.cls;
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute("content", CLASS_COLORS[k] || m.dataset.base || m.getAttribute("content"));
+}
