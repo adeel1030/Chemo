@@ -587,6 +587,48 @@ section.block { padding-block: 64px; }
 .me-foot { margin-top: 14px; font-size: .82rem; color: rgba(255,255,255,.6); }
 @media (max-width: 560px) { .me-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .me-in { padding: 24px 16px 18px; } .me-card b { font-size: 2.2rem; } }
 #samples-more { margin-top: 14px; text-align: center; }
+/* Board exam countdown (Class 10, 12) in the hero. */
+.boards { margin-top: 18px; border: 1px solid rgba(255, 211, 77, .45); background: rgba(255, 211, 77, .08); border-radius: 18px; padding: 14px 16px; max-width: 560px; }
+.boards .bt { font: 800 1.15rem/1.3 var(--font-display); color: var(--sun); }
+.boards .bt b { font-size: 1.6rem; }
+.boards p { margin: 4px 0 0; font-size: .92rem; color: var(--night-muted); }
+.boards ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 2px; font-size: .92rem; }
+.boards ol button { border: 0; background: none; padding: 0; color: var(--night-fg); font: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,255,255,.3); }
+/* The free test band and its dialog. */
+.ft-band { display: flex; gap: 22px; align-items: center; border-radius: 26px; padding: 24px; background: linear-gradient(135deg, var(--night-2), var(--night-3)); border: 1px solid rgba(255,255,255,.12); }
+.ft-art { flex: none; width: 110px; height: 110px; border-radius: 28px; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; font-size: 3rem; position: relative; transform: rotate(-6deg); box-shadow: 0 16px 34px rgba(0,0,0,.3); }
+.ft-art span { position: absolute; right: -8px; bottom: -8px; width: 40px; height: 40px; border-radius: 50%; background: #fff; font: 800 1.3rem/40px var(--font-display); text-align: center; }
+.ft-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+@media (max-width: 560px) { .ft-band { flex-direction: column; text-align: center; padding: 20px 16px; } .ft-acts { justify-content: center; } .ft-art { width: 86px; height: 86px; font-size: 2.4rem; } }
+.ft-dlg { border: 0; padding: 0; width: min(560px, calc(100% - 20px)); max-height: calc(100dvh - 20px); border-radius: 24px; background: linear-gradient(160deg, var(--night), var(--night-3)); color: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+.ft-dlg::backdrop { background: rgba(10, 10, 40, .72); }
+.ft-in { padding: 24px 20px 20px; position: relative; overflow: auto; }
+.ft-x { position: absolute; right: 12px; top: 10px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255,255,255,.1); color: #fff; font-size: 1.4rem; cursor: pointer; }
+.ft-dlg h2 { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.2; padding-right: 36px; }
+.ft-dlg h2 span { color: var(--sun); }
+.ft-dlg .hint { color: var(--night-muted); font-size: .85rem; }
+.ft-form { display: grid; gap: 12px; margin-top: 14px; }
+.ft-form label { display: grid; gap: 4px; font-size: .88rem; font-weight: 600; }
+.ft-form input, .ft-form select { font: inherit; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; padding: 10px 12px; }
+.ft-form select option { color: #111; }
+.ft-err { color: #ffb3c9; font-size: .88rem; min-height: 1.2em; }
+.ft-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); margin: 10px 0 14px; overflow: hidden; }
+.ft-bar i { display: block; height: 100%; background: var(--sun); transition: width .3s; }
+.ft-q { font-size: 1.08rem; font-weight: 600; line-height: 1.45; }
+.ft-ch { font-size: .78rem; color: var(--night-muted); margin-bottom: 6px; }
+.ft-opts { display: grid; gap: 8px; margin-top: 12px; }
+.ft-opts button { text-align: left; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: #fff; border-radius: 14px; padding: 11px 14px; font: inherit; cursor: pointer; }
+.ft-opts button:hover:not(:disabled) { border-color: var(--sun); }
+.ft-opts button.ok { background: rgba(61, 220, 132, .2); border-color: #3ddc84; }
+.ft-opts button.no { background: rgba(255, 122, 147, .18); border-color: #ff7a93; }
+.ft-opts button:disabled { cursor: default; }
+.ft-why { margin-top: 10px; font-size: .9rem; background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px 12px; }
+.ft-next { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.ft-score { text-align: center; margin: 8px 0 6px; }
+.ft-score b { display: block; font: 800 3.4rem/1 var(--font-display); color: var(--sun); }
+.ft-review { display: grid; gap: 8px; margin-top: 12px; font-size: .88rem; }
+.ft-review div { background: rgba(255,255,255,.06); border-radius: 12px; padding: 8px 10px; }
+.ft-review .r { color: #7ff0b0; } .ft-review .w { color: #ffb3c9; }
 #samples-more .samples-grid { margin-top: 14px; text-align: left; }
 .subj-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px auto 0; }
 .subj-tabs:empty { display: none; }
@@ -991,7 +1033,7 @@ body {
   </div>
 </header>
 
-<dialog class="me-gate night" id="me-gate" aria-labelledby="me-gate-h">
+<dialog class="me-gate" id="me-gate" aria-labelledby="me-gate-h">
   <div class="me-in">
     <p class="me-hi">Namaste! 👋</p>
     <div class="me-who" role="radiogroup" aria-label="Who are you?">
@@ -1004,6 +1046,13 @@ body {
     <button class="btn btn-sun me-done" type="button" id="me-done" hidden>Show these classes →</button>
     <div class="me-more" id="me-more"></div>
     <p class="me-foot">You can change your class any time with the 🎓 button at the top.</p>
+  </div>
+</dialog>
+
+<dialog class="ft-dlg" id="ft-dlg" aria-labelledby="ft-h">
+  <div class="ft-in">
+    <button class="ft-x" type="button" id="ft-x" aria-label="Close">×</button>
+    <div id="ft-body"></div>
   </div>
 </dialog>
 
@@ -1025,6 +1074,7 @@ body {
           <a class="btn btn-sun" href="#free-sample">Read free</a>
           <a class="btn btn-ghost" href="#pack">Build your pack</a>
         </div>
+        <div class="boards" id="boards" hidden></div>
         <div class="chips" id="numbers"></div>
         <div class="author">
           <span class="badge" aria-hidden="true">Adeel<br>Sir</span>
@@ -1050,6 +1100,20 @@ body {
       <div class="samples-grid" id="samples-grid"></div>
       <div id="samples-more"></div>
       <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
+    </div>
+  </section>
+
+  <section class="block" id="free-test" hidden>
+    <div class="wrap">
+      <div class="ft-band">
+        <div class="ft-art" aria-hidden="true">🧪<span>5</span></div>
+        <div class="ft-copy">
+          <div class="eyebrow">Free test · 2 minutes · no login</div>
+          <h2 class="sec-title" style="margin-top: 4px">Chalo, dekhte hain <span class="hl">kitna aata hai!</span></h2>
+          <p class="sec-intro" id="ft-intro">5 quick questions from your chapters. See your score and the right answers at once.</p>
+          <div class="ft-acts"><button class="btn btn-sun" type="button" id="ft-start">Start the free test</button><span class="hint" id="ft-count"></span></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1546,6 +1610,159 @@ function faqMe() {
     ${kinds.map(k => { const r = ready.filter(c => kindOf(c) === k), u = soon.filter(x => kindOf(x) === k);
       return `<p><b>${head(k)}:</b> ${[...r.map(c => esc(nameOf(c))), ...u.map(x => esc(x.short || x.title) + " (soon)")].join(", ")}</p>`; }).join("")}`;
 }
+// ---------- talking to Firestore from the website (no login) ----------
+// The website reads with plain web requests (no Firebase library), and writes two things the same way:
+// a visit (one a day per browser, by class) and a free test try.
+let fsCfg = null;
+const fsBase = async () => {
+  if (!fsCfg) { const { firebaseConfig } = await import("./js/firebase-config.js"); if (!firebaseConfig.projectId) throw new Error("not set up"); fsCfg = firebaseConfig; }
+  return { db: `projects/${fsCfg.projectId}/databases/(default)/documents`, key: fsCfg.apiKey };
+};
+const fsCommit = async writes => {
+  const { db, key } = await fsBase();
+  const r = await fetch(`https://firestore.googleapis.com/v1/${db}:commit?key=${key}`, { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ writes: writes.map(w => Object.assign({}, w, w.update ? { update: Object.assign({}, w.update, { name: `${db}/${w.update.name}` }) } : {})) }) });
+  if (!r.ok) throw new Error("save " + r.status);
+};
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+// One visit a day per browser, counted under the class chosen (or "all"). Shown to the admin by class.
+function countVisit() {
+  if (me === null) return;
+  const day = todayKey(), c = me ? String(me) : "all", seen = store.get("chemophile-visit") || {};
+  if (seen.day === day && seen.cls === c) return;
+  store.set("chemophile-visit", { day, cls: c });
+  fsCommit([{ update: { name: `visits/${day}_${c}`, fields: { date: { stringValue: day }, cls: { stringValue: c } } }, updateMask: { fieldPaths: ["date", "cls"] },
+    updateTransforms: [{ fieldPath: "n", increment: { integerValue: "1" } }] }]).catch(() => {});
+}
+
+// ---------- board exam countdown (Class 10, 12) ----------
+// Days to the first paper, the pace that finishes every chapter in time, and five chapters to start with:
+// one from each subject in turn, in syllabus order (the reader picks by the student's own progress).
+function renderBoards() {
+  const box = $("#boards"), days = me ? daysToBoards(me) : null;
+  box.hidden = days === null;
+  if (days === null) return;
+  const main = CHAPTERS.filter(c => c.cls === me && !isPart(c) && kindOf(c) !== "special").sort((a, b) => orderN(a) - orderN(b));
+  const bySub = {}; main.forEach(c => (bySub[kindOf(c)] = bySub[kindOf(c)] || []).push(c));
+  const subs = Object.keys(bySub).sort((a, b) => KINDS[a].from - KINDS[b].from), pick = [];
+  for (let i = 0; pick.length < 5 && subs.some(k => bySub[k][i]); i++) subs.forEach(k => { if (bySub[k][i] && pick.length < 5) pick.push(bySub[k][i]); });
+  const per = main.length ? Math.max(1, Math.floor(days / main.length)) : 0;
+  const when = boardDate(me).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  box.innerHTML = `<div class="bt">⏳ ${days ? `<b>${days}</b> day${days === 1 ? "" : "s"} to your Boards` : "Boards start today. All the best!"}</div>
+    <p>${esc(clsName(me))} board exams from ${when}.${per && days ? ` ${main.length} chapters: finish one every <b>${per} day${per === 1 ? "" : "s"}</b> and you are done in time.` : ""}</p>
+    ${pick.length && days ? `<p style="margin-top: 8px"><b>Start with these 5 chapters:</b></p><ol>${pick.map(c => `<li><button type="button" data-sheet="${key(c)}">${esc(chShort(c))}: ${esc(nameOf(c))}</button></li>`).join("")}</ol>
+    <p style="margin-top: 6px"><a href="read.html#signup" style="color: var(--sun); font-weight: 700">Sign up free</a> and the app picks your next chapters from what you have read.</p>` : ""}`;
+}
+
+// ---------- free test: 5 questions, no login ----------
+// The questions come from minitests/{class} (made in the admin panel from the chapter quizzes). The student
+// gives their name, school and WhatsApp number, answers 5 questions picked across the chapters, and sees the
+// score with every right answer. The try is saved for Adeel Sir (tests/…).
+const ftPools = {};
+async function ftPool(c) {
+  if (ftPools[c] !== undefined) return ftPools[c];
+  try {
+    const { db, key } = await fsBase();
+    const r = await fetch(`https://firestore.googleapis.com/v1/${db}/minitests/${c}?key=${key}`);
+    const j = r.ok ? await r.json() : null, d = j && j.fields && j.fields.data && JSON.parse(j.fields.data.stringValue);
+    ftPools[c] = d && (d.qs || []).filter(q => q.q && (q.o || []).length >= 2) || [];
+  } catch (e) { ftPools[c] = []; }
+  return ftPools[c];
+}
+const ftClasses = () => CLASSES.filter(k => !isUni(k));
+let ft = null;
+async function renderFreeTest() {
+  const c = me || myList[0] || null, sec = $("#free-test");
+  const pool = c ? await ftPool(c) : [];
+  const any = c ? pool.length >= 5 : (await Promise.all(ftClasses().map(ftPool))).some(p => p.length >= 5);
+  sec.hidden = !any;
+  if (!any) return;
+  $("#ft-intro").textContent = c ? `5 quick questions from your ${clsName(c)} chapters. See your score and the right answers at once.` : "5 quick questions from your class's chapters. See your score and the right answers at once.";
+  $("#ft-count").textContent = c ? `${pool.length} questions in the ${clsName(c)} test bank` : "";
+}
+function ftPick(pool) {
+  // One question per chapter in turn, chapters in random order, so the 5 questions cover different chapters.
+  const by = {}; pool.forEach(q => (by[q.ch || ""] = by[q.ch || ""] || []).push(q));
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const groups = shuffle(Object.values(by).map(shuffle)), out = [];
+  for (let i = 0; out.length < 5 && groups.some(g => g[i]); i++) groups.forEach(g => { if (g[i] && out.length < 5) out.push(g[i]); });
+  return out;
+}
+function ftShow(html) { $("#ft-body").innerHTML = html; }
+function ftDetails() {
+  const saved = store.get("chemophile-tester") || {}, c = me || myList[0] || saved.cls || "";
+  ftShow(`<h2 id="ft-h">Free test: <span>5 questions</span></h2>
+    <p class="hint">Tell us who you are. Your result shows right away, and Adeel Sir may send you study tips on WhatsApp.</p>
+    <form class="ft-form" id="ft-form" novalidate>
+      <label>Your name<input id="ft-name" maxlength="60" autocomplete="name" value="${esc(saved.name || "")}"></label>
+      <label>School<input id="ft-school" maxlength="100" autocomplete="organization" value="${esc(saved.school || "")}"></label>
+      <label>WhatsApp number<input id="ft-phone" inputmode="tel" autocomplete="tel" placeholder="10 digit" value="${esc(saved.phone || "")}"></label>
+      <label>Class<select id="ft-cls">${ftClasses().map(k => `<option value="${k}"${+c === k ? " selected" : ""}>${esc(clsName(k))}</option>`).join("")}</select></label>
+      <div class="ft-err" id="ft-err" role="alert"></div>
+      <button class="btn btn-sun" type="submit">Start the test →</button>
+    </form>`);
+  $("#ft-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("#ft-name").value.trim(), school = $("#ft-school").value.trim(), phone = $("#ft-phone").value.replace(/\D/g, "").slice(-10), cls = +$("#ft-cls").value;
+    const err = t => { $("#ft-err").textContent = t; };
+    if (name.length < 2) return err("Please write your name.");
+    if (school.length < 2) return err("Please write your school's name.");
+    if (!/^[6-9][0-9]{9}$/.test(phone)) return err("Please write your 10-digit WhatsApp number.");
+    store.set("chemophile-tester", { name, school, phone, cls });
+    const pool = await ftPool(cls);
+    if (pool.length < 5) return err(`The ${clsName(cls)} test is not ready yet. Please choose another class.`);
+    ft = { name, school, phone, cls, qs: ftPick(pool), i: 0, picks: [] };
+    ftQuestion();
+  });
+  setTimeout(() => { const f = ["#ft-name", "#ft-school", "#ft-phone"].map(x => $(x)).find(x => !x.value); (f || $("#ft-form button")).focus(); }, 50);
+}
+function ftQuestion() {
+  const q = ft.qs[ft.i], c = q.ch && CHAPTERS.find(x => key(x) === q.ch);
+  ftShow(`<h2 id="ft-h">Question <span>${ft.i + 1}</span> of ${ft.qs.length}</h2>
+    <div class="ft-bar"><i style="width: ${Math.round(ft.i / ft.qs.length * 100)}%"></i></div>
+    ${c ? `<div class="ft-ch">${esc(chShort(c))}: ${esc(nameOf(c))}</div>` : ""}
+    <div class="ft-q">${esc(q.q)}</div>
+    <div class="ft-opts">${q.o.map((o, i) => `<button type="button" data-ft="${i}">${String.fromCharCode(65 + i)}. ${esc(o)}</button>`).join("")}</div>
+    <div id="ft-after"></div>`);
+}
+function ftAnswer(i) {
+  const q = ft.qs[ft.i];
+  ft.picks.push(i);
+  document.querySelectorAll("[data-ft]").forEach(b => { b.disabled = true; const k = +b.dataset.ft; if (k === q.a) b.classList.add("ok"); else if (k === i) b.classList.add("no"); });
+  const last = ft.i === ft.qs.length - 1;
+  $("#ft-after").innerHTML = `<div class="ft-why">${i === q.a ? "✅ Right!" : `❌ The right answer is <b>${String.fromCharCode(65 + q.a)}</b>.`}${q.why ? ` ${esc(q.why)}` : ""}</div>
+    <div class="ft-next"><button class="btn btn-sun" type="button" id="ft-next">${last ? "See my result →" : "Next question →"}</button></div>`;
+  $("#ft-next").focus();
+}
+function ftResult() {
+  const score = ft.picks.filter((p, i) => p === ft.qs[i].a).length, n = ft.qs.length;
+  const line = score === n ? "Full marks! Shandaar! 🎉" : score >= 4 ? "Very good! A little revision and you'll get full marks." : score >= 2 ? "Good start. The full chapters will clear up the rest." : "Don't worry: this is exactly what the Chemophile booklets are for.";
+  // Saved for Adeel Sir; the result shows even if saving fails.
+  fsCommit([{ update: { name: `tests/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`, fields: {
+      name: { stringValue: ft.name }, school: { stringValue: ft.school }, phone: { stringValue: ft.phone }, cls: { integerValue: String(ft.cls) },
+      score: { integerValue: String(score) }, n: { integerValue: String(n) }, day: { stringValue: todayKey() },
+      chapters: { arrayValue: { values: [...new Set(ft.qs.map(q => q.ch).filter(Boolean))].slice(0, 10).map(v => ({ stringValue: v })) } } } },
+    currentDocument: { exists: false }, updateTransforms: [{ fieldPath: "at", setToServerValue: "REQUEST_TIME" }] }]).catch(() => {});
+  const share = `I scored ${score}/${n} in the free Chemophile ${clsName(ft.cls)} test! Try it: ${location.origin}${location.pathname}?class=${ft.cls}#free-test`;
+  ftShow(`<h2 id="ft-h">Well done, <span>${esc(ft.name.split(" ")[0])}</span>!</h2>
+    <div class="ft-score"><b>${score}/${n}</b>${esc(line)}</div>
+    <div class="ft-review">${ft.qs.map((q, i) => `<div><b>Q${i + 1}.</b> ${esc(q.q)}<br>${ft.picks[i] === q.a ? `<span class="r">✓ ${esc(q.o[q.a])}</span>` : `<span class="w">✗ ${esc(q.o[ft.picks[i]])}</span> · <span class="r">Right: ${esc(q.o[q.a])}</span>`}</div>`).join("")}</div>
+    <p class="hint" style="margin-top: 14px">These questions come from the Chemophile ${esc(clsName(ft.cls))} chapters. Read the full chapters, with examples, diagrams and exam answers:</p>
+    <div class="ft-next" style="justify-content: stretch">
+      <a class="btn btn-sun" style="flex: 1 1 100%; text-align: center" href="read.html#signup">Sign up free to read the full chapter</a>
+      <a class="btn btn-ghost" style="flex: 1" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Share score</a>
+      <button class="btn btn-ghost" style="flex: 1" type="button" id="ft-again">Try new questions</button>
+    </div>`);
+}
+$("#ft-start").addEventListener("click", () => { ftDetails(); $("#ft-dlg").showModal(); });
+$("#ft-x").addEventListener("click", () => $("#ft-dlg").close());
+$("#ft-body").addEventListener("click", e => {
+  const o = e.target.closest("[data-ft]");
+  if (o && !o.disabled) return ftAnswer(+o.dataset.ft);
+  if (e.target.closest("#ft-next")) { if (++ft.i < ft.qs.length) ftQuestion(); else ftResult(); return; }
+  if (e.target.closest("#ft-again")) ftDetails();
+});
+
 const meGate = $("#me-gate");
 function meChip() {
   const b = $("#me-chip");
@@ -2271,11 +2488,12 @@ $("#copy-phone").addEventListener("click", () => {
 
 // ---------- start ----------
 renderShelf(); renderSamples(); renderPick(); renderSummary(); renderCombos(); renderOffer();
-heroCopy(); heroFan(); renderPain(); faqMe(); meChip();
+heroCopy(); heroFan(); renderPain(); faqMe(); meChip(); renderBoards(); renderFreeTest(); countVisit();
+if (location.hash === "#free-test") setTimeout(() => $("#free-test").scrollIntoView(), 600);
 function personalize() {
   if (firsts().length) { cls = firsts()[0]; subj = "all"; store.set("chemophile-class", cls); saveSiteUI({ subj: null }); }
   heroCopy(); heroFan(); numbers(); bento(); renderSamples(); renderSubjects(); renderPain();
-  renderShelf(); renderPick(); renderPlans(); renderCombos(); reviews(); faqMe(); meChip();
+  renderShelf(); renderPick(); renderPlans(); renderCombos(); reviews(); faqMe(); meChip(); renderBoards(); renderFreeTest(); countVisit();
 }
 if (me === null) openGate();
 const m = location.hash.match(/^#ch(\d+)-(\d+)$/);

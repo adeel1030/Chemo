@@ -390,6 +390,13 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .lock { width: 52px; height: 52px; border-radius: 14px; background: var(--night); color: var(--sun); display: grid; place-items: center; }
 .theme-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: transparent; color: var(--night-fg, #f3f2ff); font-size: 1.05rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
 .theme-btn:hover { background: rgba(255,255,255,.12); }
+/* Website tab */
+.site-tbl { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.site-tbl th, .site-tbl td { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.site-tbl th:first-child, .site-tbl td:first-child { text-align: left; }
+.site-tbl th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.site-tbl td b { color: var(--accent); }
+.site-tbl .bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--accent); opacity: .7; vertical-align: middle; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -437,6 +444,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <button class="nav-btn more-item" type="button" data-tab="t-read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H3.5A1.5 1.5 0 0 1 2 16z"/><path d="M22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5h6a1.5 1.5 0 0 0 1.5-1.5z"/></svg><span class="long">Read books</span><span class="short">Read</span></button>
       <button class="nav-btn" type="button" data-tab="t-doubts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5"/><path d="M12 16.5h.01"/></svg>Doubts<span class="dot" id="dot-doubts" hidden></span></button>
       <button class="nav-btn more-item" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
+      <button class="nav-btn more-item" type="button" data-tab="t-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="long">Website &amp; free tests</span><span class="short">Website</span></button>
       <button class="nav-btn more-item" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
       <button class="nav-btn more-btn" type="button" id="more-btn" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More<span class="dot" id="dot-more" hidden></span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
@@ -679,6 +687,36 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </form>
     </dialog>
 
+    <section id="t-site" class="stack" hidden>
+      <div class="page-head"><div><h1>Website &amp; free tests</h1><p>How many people of each class open the website, sign up and take the free test. Data older than 1 year is deleted on its own.</p></div></div>
+      <div class="msg" id="site-msg" role="status" hidden></div>
+      <div class="card stack">
+        <div class="section-title" style="margin: 0"><h2>By class</h2><select id="site-range" aria-label="Days"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 1 year</option></select></div>
+        <div id="site-cls"></div>
+        <div id="site-days"></div>
+      </div>
+      <div class="card stack">
+        <div class="section-title" style="margin: 0"><h2>Free test takers <span class="hint" id="ft-n"></span></h2><select id="ft-cls" aria-label="Class"></select></div>
+        <p class="hint" style="margin: 0">Students who took the free 5-question test on the website. Send them their result and a sign-up link on WhatsApp.</p>
+        <div class="students" id="ft-list"></div>
+      </div>
+      <div class="card stack">
+        <h2>Free test questions</h2>
+        <p class="hint" style="margin: 0">The website's free test picks 5 questions from a class's question set. The set is made from the chapter quizzes (up to 4 questions from each chapter). Make it again after you add or change quizzes.</p>
+        <div id="mt-list"></div>
+        <div><button class="btn btn-sun btn-sm" type="button" id="mt-make">🧪 Make the free tests from chapter quizzes</button></div>
+      </div>
+      <div class="card stack">
+        <h2>Board exam dates</h2>
+        <p class="hint" style="margin: 0">The first board paper. Class 10 and 12 students see "X days to your Boards" and the 5 chapters to read next, on the website and in the app.</p>
+        <div class="grid2">
+          <div class="field"><label for="bd-10">Class 10 Boards start</label><input id="bd-10" type="date"></div>
+          <div class="field"><label for="bd-12">Class 12 Boards start</label><input id="bd-12" type="date"></div>
+        </div>
+        <div><button class="btn btn-sun btn-sm" type="button" id="bd-save">Save dates</button></div>
+      </div>
+    </section>
+
     <section id="t-activity" class="stack" hidden>
       <div class="page-head"><div><h1>Activity</h1><p>Who read what, day by day. Pick a date to see every student, or pick a student to see each day.</p></div></div>
       <div class="card stack">
@@ -744,7 +782,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
 import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118c";
 
@@ -763,7 +801,27 @@ const isOver = s => !!(s.expiresAt && s.expiresAt.toDate && s.expiresAt.toDate()
 const lastRead = s => s.lastReadAt && s.lastReadAt.toDate ? s.lastReadAt.toDate() : null;
 const daysSince = d => Math.floor((Date.now() - d) / 864e5);
 const agoText = d => { const n = daysSince(d); return n <= 0 ? "today" : n === 1 ? "yesterday" : `${n} days ago`; };
-const isInactive = s => s.active !== false && !!s.deviceId && !!lastRead(s) && daysSince(lastRead(s)) >= 7;
+// The last time a student opened the app: stamped at login (lastSeenAt), when a book opens (lastReadAt), the
+// days they read, or the day the ID was first used on their phone.
+const lastOpen = s => {
+  const t = [s.lastSeenAt, s.lastReadAt, s.boundAt].filter(x => x && x.toDate).map(x => x.toDate().getTime()), rd = (s.readDays || []).slice(-1)[0];
+  if (rd) t.push(new Date(rd + "T12:00").getTime());
+  return t.length ? new Date(Math.max(...t)) : null;
+};
+const isInactive = s => s.active !== false && !!s.deviceId && !s.promo && !!lastOpen(s) && daysSince(lastOpen(s)) >= 7;
+const nudgedText = s => s.nudgedAt && s.nudgedAt.toDate ? ` ✓ ${agoText(s.nudgedAt.toDate())}` : "";
+// The WhatsApp message for a student who has not opened the app for 7+ days.
+function nudgeMessage(s) {
+  const n = lastOpen(s) ? daysSince(lastOpen(s)) : 7, cls = (Array.isArray(s.classes) ? s.classes : []).map(Number).find(hasBoards), b = cls ? daysToBoards(cls) : null;
+  const link = READER_URL || (location.origin + location.pathname.replace(/admin\.html$/, "read.html"));
+  return `Hello ${(s.name || "").split(" ")[0]}! 👋
+You haven't opened your Chemophile book for ${n} days. Roz thoda padho, sab samajh aayega!
+
+Just 15 minutes today: open ${link} and continue from where you stopped.${b ? `\nOnly ${b} days left for your Boards. Let's finish the syllabus on time!` : ""}
+
+Stuck on something? Send your doubt from the book and I will answer.
+- Adeel Sir`;
+}
 const fmtMins = m => m < 1 ? "under 1 min" : m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
 const resetsThisYear = s => (s.resets || []).filter(t => t.toDate && t.toDate() > new Date(Date.now() - 365 * 864e5)).length;
 const subKeys = s => Object.keys(s.subs || {});
@@ -830,6 +888,7 @@ else onAuthStateChanged(auth, async user => {
   if (TABS.includes(ui.tab)) go(ui.tab, true);
   const ct = ui.ctab && document.querySelector(`#cat-tabs [data-ctab="${ui.ctab}"]`); if (ct) ct.click();
   uiReady = true;
+  setTimeout(() => pruneOld().catch(() => {}), 4000);
   // Load each part on its own, so one failure doesn't hide the rest, and say exactly what Firebase answered.
   const fails = [];
   const loading = [];
@@ -971,8 +1030,125 @@ function renderCharts() {
     <div class="chart"><h3>Doubts a week</h3><div class="hint">${doubts.filter(d => d.status === "open").length} waiting now</div>${bars(dw, wl, true)}</div>`;
 }
 
+// ---------- website: visits, sign-ups and free tests by class ----------
+// visits/{date}_{class}: one a day per browser (the class the visitor chose, or "all").
+// tests/{id}: a free test try (name, school, WhatsApp, class, score). minitests/{class}: the test's questions.
+let siteData = null;
+async function loadSiteData(days) {
+  const from = dKey(new Date(Date.now() - (days - 1) * 864e5));
+  const [v, t] = await Promise.all([
+    getDocs(query(collection(db, "visits"), where("date", ">=", from))).then(q => q.docs.map(d => d.data())).catch(() => []),
+    getDocs(query(collection(db, "tests"), where("day", ">=", from))).then(q => q.docs.map(d => ({ id: d.id, ...d.data() }))).catch(() => [])
+  ]);
+  t.sort((a, b) => ((b.at && b.at.toMillis()) || 0) - ((a.at && a.at.toMillis()) || 0));
+  siteData = { days, from, visits: v, tests: t };
+}
+async function renderSite() {
+  const days = +$("#site-range").value || 30;
+  if (!siteData || siteData.days !== days) { $("#site-cls").innerHTML = `<p class="hint">Loading…</p>`; await loadSiteData(days); }
+  const { visits, tests, from } = siteData, since = new Date(from + "T00:00");
+  const joined = students.filter(s => s.createdAt && s.createdAt.toDate && s.createdAt.toDate() >= since);
+  const rows = [...classList().map(String), "all"].map(c => {
+    const v = visits.filter(x => x.cls === c).reduce((a, x) => a + (x.n || 0), 0);
+    const su = c === "all" ? 0 : joined.filter(s => (Array.isArray(s.classes) ? s.classes : []).map(String).includes(c)).length;
+    const bought = c === "all" ? 0 : joined.filter(s => (Array.isArray(s.classes) ? s.classes : []).map(String).includes(c) && !isSignup(s)).length;
+    const ts = c === "all" ? [] : tests.filter(x => String(x.cls) === c), avg = ts.length ? ts.reduce((a, x) => a + x.score / x.n, 0) / ts.length : null;
+    return { c, v, su, bought, ts: ts.length, avg };
+  }).filter(r => r.v || r.su || r.ts);
+  const top = Math.max(1, ...rows.map(r => r.v));
+  $("#site-cls").innerHTML = rows.length ? `<table class="site-tbl"><thead><tr><th>Class</th><th>Visitors</th><th>Signed up</th><th>Bought</th><th>Free tests</th><th>Avg score</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${r.c === "all" ? "All classes / not chosen" : esc(clsName(+r.c))}</td><td><b>${r.v}</b><span class="bar" style="width: ${Math.round(r.v / top * 60)}px"></span></td><td>${r.su}${r.v && r.su ? ` <span class="hint">(${Math.round(r.su / r.v * 100)}%)</span>` : ""}</td><td>${r.bought}</td><td>${r.ts}</td><td>${r.avg == null ? "–" : Math.round(r.avg * 100) + "%"}</td></tr>`).join("")}
+    </tbody></table>
+    <p class="hint" style="margin-top: 8px">Visitors: people who opened the website (each counted once a day) and chose that class. Signed up and Bought: new IDs of that class in this time. The class with many visitors but few sign-ups needs more work.</p>`
+    : `<p class="hint">No visits recorded in this time yet. Visits are counted from now on.</p>`;
+  // Visitors each day (last 14 days of the range).
+  const n = Math.min(14, days), dd = [...Array(n)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - n + 1 + i); return d; });
+  $("#site-days").innerHTML = `<div class="charts"><div class="chart" style="max-width: 520px"><h3>Visitors each day</h3>${bars(dd.map(d => visits.filter(x => x.date === dKey(d)).reduce((a, x) => a + (x.n || 0), 0)), dd.map(d => String(d.getDate())), true)}</div></div>`;
+  // Free test takers
+  const sel = $("#ft-cls"), cur = sel.value || "all", cl = [...new Set(tests.map(x => +x.cls))].sort((a, b) => a - b);
+  sel.innerHTML = `<option value="all">Every class</option>` + cl.map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("");
+  sel.value = cur === "all" || cl.includes(+cur) ? cur : "all";
+  const list = tests.filter(x => sel.value === "all" || String(x.cls) === sel.value);
+  $("#ft-n").textContent = `(${list.length})`;
+  $("#ft-list").innerHTML = list.length ? list.slice(0, 300).map(x => {
+    const known = students.find(s => s.phone === x.phone);
+    return `<div class="stu"><div class="stu-top"><div class="avatar" aria-hidden="true">${esc(initials(x.name))}</div>
+      <div style="min-width: 0"><h3>${esc(x.name)} <span class="pill ${x.score / x.n >= .8 ? "good" : x.score / x.n >= .4 ? "warn" : "bad"}">${x.score}/${x.n}</span></h3>
+      <div class="sub">${esc(clsName(x.cls))} · ${esc(x.school || "")} · ${esc(x.phone)} · ${x.at ? fmtDate(x.at) : esc(x.day)}${known ? ` · <b>has an ID (${esc(known.loginId || "")})</b>` : ""}</div></div></div>
+      <div class="actions"><a class="btn btn-wa btn-sm" data-ftc="${x.id}" href="${waLink(x.phone, testMessage(x))}" target="_blank" rel="noopener">Send result on WhatsApp${x.contactedAt ? " ✓" : ""}</a></div></div>`;
+  }).join("") : `<p class="hint">No free tests taken in this time.</p>`;
+  renderMiniTests();
+  const b = (cat.site && cat.site.boards) || {};
+  $("#bd-10").value = b[10] || BOARD_DEFAULT; $("#bd-12").value = b[12] || BOARD_DEFAULT;
+}
+function testMessage(x) {
+  const link = location.origin + location.pathname.replace(/admin\.html$/, "");
+  return `Hello ${(x.name || "").split(" ")[0]}! 👋 This is Adeel Sir from Chemophile.
+You scored ${x.score}/${x.n} in the free ${clsName(x.cls)} test. ${x.score === x.n ? "Full marks, well done!" : "Good try! The full chapters will make every answer clear."}
+
+Ab ratna nahi, samajhna hai! Sign up free and read the ${clsName(x.cls)} free sample: ${link}read.html#signup
+Any question? Just reply here.
+- Adeel Sir`;
+}
+$("#site-range").addEventListener("change", renderSite);
+$("#ft-cls").addEventListener("change", renderSite);
+$("#ft-list").addEventListener("click", e => {
+  const a = e.target.closest("[data-ftc]"); if (!a || !siteData) return;
+  const x = siteData.tests.find(t => t.id === a.dataset.ftc); if (!x) return;
+  x.contactedAt = Timestamp.now(); updateDoc(doc(db, "tests", x.id), { contactedAt: serverTimestamp() }).catch(() => {}); setTimeout(renderSite, 300);
+});
+async function renderMiniTests() {
+  const box = $("#mt-list"), have = new Map();
+  try { (await getDocs(collection(db, "minitests"))).forEach(d => have.set(d.id, d.data())); } catch (e) {}
+  box.innerHTML = classList().filter(c => !isUni(c)).map(c => { const m = have.get(String(c)), n = m ? (JSON.parse(m.data || "{}").qs || []).length : 0;
+    return `<div class="subline"><b>${esc(clsName(c))}</b><span class="pill ${n >= 5 ? "good" : "warn"}">${n ? `${n} questions` : "No test yet"}</span>${m && m.at ? `<span class="hint">made ${fmtDate(m.at)}</span>` : ""}${n && n < 5 ? `<span class="hint">needs at least 5: add chapter quizzes</span>` : ""}</div>`; }).join("");
+}
+$("#mt-make").addEventListener("click", async () => {
+  const btn = $("#mt-make"); btn.disabled = true; btn.textContent = "Making…";
+  try {
+    const made = [];
+    for (const c of classList().filter(x => !isUni(x))) {
+      const keys = CHAPTERS.filter(x => +x.cls === c && !isPart(x)).map(chapterKey), qs = [];
+      for (const k of keys) {
+        const d = await getDoc(doc(db, "quizzes", k)).catch(() => null);
+        const all = (d && d.exists() && d.data().qs || []).filter(q => q.q && (q.o || []).length >= 2 && Number.isInteger(+q.a));
+        all.sort(() => Math.random() - .5).slice(0, 4).forEach(q => qs.push({ q: q.q, o: q.o, a: +q.a, why: q.why || "", ch: k }));
+      }
+      await setDoc(doc(db, "minitests", String(c)), { data: JSON.stringify({ qs }), count: qs.length, at: serverTimestamp() });
+      made.push(`${clsName(c)}: ${qs.length}`);
+    }
+    toast("Free tests made. " + made.join(" · "));
+  } catch (ex) { toast("Could not make the free tests: " + (ex.message || ex.code)); }
+  btn.disabled = false; btn.textContent = "🧪 Make the free tests from chapter quizzes";
+  renderMiniTests();
+});
+$("#bd-save").addEventListener("click", async () => {
+  const v10 = $("#bd-10").value, v12 = $("#bd-12").value;
+  try { await commit(next => { next.site = next.site || {}; next.site.boards = { 10: v10 || BOARD_DEFAULT, 12: v12 || BOARD_DEFAULT }; }, "Board exam dates saved. The website and the app count down to them."); }
+  catch (ex) { toast("Could not save: " + (ex.message || ex.code)); }
+});
+// Only one year of day-by-day details is kept: older reading days, visits and free test tries are deleted
+// (once a day, when the admin panel opens). Student IDs, chapters bought and scores are not touched.
+const toast = (t, cls = "good") => { const m = $("#site-msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; };
+async function pruneOld() {
+  const today = dKey(new Date());
+  try { if (localStorage.getItem("chemophile-pruned") === today) return; } catch (e) {}
+  const cut = dKey(new Date(Date.now() - 365 * 864e5));
+  let gone = 0;
+  for (const [col, f] of [["daily", "date"], ["visits", "date"], ["tests", "day"]]) {
+    for (let i = 0; i < 20; i++) {
+      const q = await getDocs(query(collection(db, col), where(f, "<", cut), limit(400))).catch(() => null);
+      if (!q || q.empty) break;
+      const b = writeBatch(db); q.docs.forEach(d => b.delete(d.ref)); await b.commit().catch(() => {}); gone += q.size;
+      if (q.size < 400) break;
+    }
+  }
+  try { localStorage.setItem("chemophile-pruned", today); } catch (e) {}
+  if (gone) console.info(`Deleted ${gone} records older than 1 year.`);
+}
+
 // ---------- navigation ----------
-const TABS = ["t-home", "t-students", "t-activity", "t-promos", "t-chapters", "t-read", "t-doubts", "t-news", "t-catalog"];
+const TABS = ["t-home", "t-students", "t-activity", "t-promos", "t-chapters", "t-read", "t-doubts", "t-news", "t-catalog", "t-site"];
 function go(tab, keep) {
   curTab = tab;
   document.querySelectorAll(".nav-btn[data-tab]").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
@@ -983,6 +1159,7 @@ function go(tab, keep) {
   $("#side").classList.remove("more-open"); $("#more-btn").setAttribute("aria-expanded", "false");
   if (tab === "t-activity") renderActivity();
   if (tab === "t-read") renderShelf();
+  if (tab === "t-site") renderSite();
   if (!keep) window.scrollTo(0, 0);
   if (uiReady) saveAdminUI({ tab });
 }
@@ -1301,7 +1478,7 @@ const FILTERS = [
   ["expired", "Expired", isOver],
   ["monthly", "Monthly plan", s => subKeys(s).length > 0],
   ["subover", "Monthly unpaid", subOver],
-  ["inactive", "Not reading 7+ days", isInactive],
+  ["inactive", "Not opened 7+ days", isInactive],
   ["renew", "Ending in 30 days", s => endingSoon(s) || endedLately(s)],
   ["promo", "Promo", s => !!s.promo],
   ["signup", "Signed up, not bought", isSignup],
@@ -1327,7 +1504,7 @@ function renderStudents() {
           ${s.active === false ? `<span class="pill bad">Blocked</span>` : isOver(s) || isSignup(s) ? "" : `<span class="pill good">Active</span>`}
           ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
           ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
-          ${lastRead(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last read ${agoText(lastRead(s))}</span>` : ""}
+          ${lastOpen(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last opened ${agoText(lastOpen(s))}</span>` : ""}
           ${resetsThisYear(s) ? `<span class="pill${resetsThisYear(s) >= BUSINESS.freeResetsPerYear ? " bad" : ""}">Resets this year: ${resetsThisYear(s)}/${BUSINESS.freeResetsPerYear}</span>` : ""}
           ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
           ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
@@ -1347,6 +1524,7 @@ function renderStudents() {
         ${isSignup(s) ? `<a class="btn btn-wa btn-sm" href="${waLink(s.phone, followMessage(s))}" target="_blank" rel="noopener">Follow up on WhatsApp</a>` : `<a class="btn btn-wa btn-sm" href="${waLink(s.phone, studentMessage(s))}" target="_blank" rel="noopener">Send on WhatsApp again</a>`}
         ${subKeys(s).length ? `<button class="btn btn-sun btn-sm" type="button" data-act="renew">Renew +${monthDays()} days</button><a class="btn btn-line btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Payment reminder</a>` : ""}
         ${endingSoon(s) || endedLately(s) ? `<a class="btn btn-line btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Renewal reminder${remindedText(s) ? " ✓" : ""}</a>` : ""}
+        ${isInactive(s) && s.phone ? `<a class="btn btn-wa btn-sm" data-nudge="${s.uid}" href="${waLink(s.phone, nudgeMessage(s))}" target="_blank" rel="noopener">😴 Remind to study${nudgedText(s)}</a>` : ""}
         <button class="btn ${isSignup(s) ? "btn-sun" : "btn-line"} btn-sm" type="button" data-act="edit">${isSignup(s) ? "Give chapters (after payment)" : isOver(s) ? "Renew" : "Chapters & date"}</button>
         <button class="btn btn-line btn-sm" type="button" data-act="reading">Reading &amp; scores</button>
         <button class="btn btn-line btn-sm" type="button" data-act="days">📅 Day by day</button>
@@ -1386,6 +1564,12 @@ function renderStudents() {
 $("#stu-search").addEventListener("input", renderStudents);
 // The renewal reminder link opens WhatsApp; also note the date, so the overview shows who was reminded.
 document.addEventListener("click", e => {
+  const nb = e.target.closest("[data-nudge]");
+  if (nb) {
+    const s = students.find(x => x.uid === nb.dataset.nudge);
+    if (s) { s.nudgedAt = Timestamp.now(); updateDoc(doc(db, "users", s.uid), { nudgedAt: serverTimestamp() }).catch(() => {}); setTimeout(renderStudents, 300); }
+    return;
+  }
   const a = e.target.closest("[data-remind]");
   if (!a) return;
   const s = students.find(x => x.uid === a.dataset.remind);
@@ -2356,7 +2540,7 @@ const ckey = c => `${c.cls}-${c.n}`;
 const classesOf = () => [...cat.books].map(b => +b.cls).sort((a, b) => a - b);
 const fmtShort = f => ({ online: "Online", monthly: "Monthly", colour: "Colour", bw: "B/W" })[f];
 // A saved / not saved message, in Books & prices and in Chapters (whichever is open shows it).
-function catSay(t, cls = "good") { ["#cat-msg", "#chap-msg"].forEach(id => { const m = $(id); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }); }
+function catSay(t, cls = "good") { ["#cat-msg", "#chap-msg", "#site-msg"].forEach(id => { const m = $(id); m.className = "msg " + cls; m.textContent = t; m.hidden = false; }); }
 // Save a change to the catalog. The change is made on the latest saved catalog, read inside a transaction,
 // so a save from this page never undoes one made meanwhile from another tab or phone (for example a review
 // shown on the website). Only if Firestore accepts it does the page switch to it.

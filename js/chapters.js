@@ -503,3 +503,21 @@ function applyClassTheme(cls) {
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.setAttribute("content", CLASS_COLORS[k] || m.dataset.base || m.getAttribute("content"));
 }
+
+// ---------- board exams (Class 10 and 12) ----------
+// The date the board exams start, set in the admin panel (Website tab). Until then this default is used.
+const BOARD_DEFAULT = "2027-02-17";
+const hasBoards = cls => +cls === 10 || +cls === 12;
+function boardDate(cls) {
+  if (!hasBoards(cls)) return null;
+  const d = (SITE.boards || {})[cls] || BOARD_DEFAULT, t = new Date(d + "T09:00");
+  return isNaN(t) ? null : t;
+}
+// Whole days from today to the first paper (0 on the day itself); null when there is no date or it has passed.
+function daysToBoards(cls) {
+  const d = boardDate(cls);
+  if (!d) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const n = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - today) / 864e5);
+  return n >= 0 ? n : null;
+}

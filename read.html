@@ -79,6 +79,14 @@
 .lib-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 8px; }
 .lib-tools h2 { font-size: 1.35rem; }
 .lib-subj { margin-top: 8px; }
+/* Board exam countdown (Class 10, 12): days left, the pace, and the next five chapters. */
+.bcard { background: radial-gradient(circle at 95% 0%, rgba(255, 210, 74, .25), transparent 50%), var(--night); color: var(--night-fg); border: 0; display: grid; gap: 8px; }
+.bcard .bt { font: 800 1.2rem/1.3 var(--font-display); color: var(--sun); }
+.bcard .bt b { font-size: 1.7rem; }
+.bcard p { margin: 0; color: var(--night-muted); font-size: .92rem; }
+.bcard ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.bcard li button { border: 0; background: none; padding: 0; color: var(--night-fg); font: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(255,255,255,.35); }
+.bcard li small { color: var(--night-muted); margin-left: 6px; }
 .lib-subj:empty { display: none; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 .86rem var(--font-body); cursor: pointer; }
@@ -440,6 +448,7 @@
         </div>
       </div>
       <div id="continue"></div>
+      <div class="card bcard" id="bcard" hidden></div>
       <div id="promo-note" class="msg warn" hidden></div>
       <div id="news" class="news"></div>
       <div class="card rate" id="rate" hidden></div>
@@ -941,6 +950,9 @@ async function start(user) {
 
   me.loginId = me.promo ? `promo ${me.promo}` : loginId;
   readerTheme();
+  // The time they last opened the app (at most once an hour), for the admin's "not opened for 7+ days" list.
+  const seen = me.lastSeenAt && me.lastSeenAt.toMillis ? me.lastSeenAt.toMillis() : 0;
+  if (!me.promo && Date.now() - seen > 60 * 60e3) updateDoc(ref, { lastSeenAt: serverTimestamp() }).catch(() => {});
   // Log in with the WhatsApp number too: link it to this ID if no other ID has it.
   phoneLink = undefined; $("#acct-phone").hidden = true;
   linkPhone(user.uid, me.phone, loginId).then(o => { phoneLink = o; showPhoneLink(); });
@@ -1057,9 +1069,30 @@ function progress(k) {
   const pct = last > 1 ? Math.min(100, Math.round((last / total) * 100)) : 0;
   return { ready: true, total, last, pct, done: last >= total };
 }
+// Class 10 and 12 students: days to the board exams, the pace that finishes every chapter, and the next five
+// chapters: ones they have started first, then the ones not started, a subject at a time, in syllabus order.
+function renderBoardsCard() {
+  const box = $("#bcard"), cls = me && me.role !== "teacher" && !me.admin ? myClasses().find(hasBoards) : null, days = cls ? daysToBoards(cls) : null;
+  box.hidden = days === null;
+  if (days === null) return;
+  const main = CHAPTERS.filter(c => +c.cls === cls && !isPart(c) && kindOf(c) !== "special"), left = main.filter(c => !progress(chapterKey(c)).done);
+  const by = {}; left.forEach(c => (by[kindOf(c)] = by[kindOf(c)] || []).push(c));
+  Object.values(by).forEach(l => l.sort((a, b) => orderN(a) - orderN(b)));
+  const subs = Object.keys(by).sort((a, b) => KINDS[a].from - KINDS[b].from), pick = [];
+  const started = left.filter(c => (progress(chapterKey(c)).pct || 0) > 0).sort((a, b) => progress(chapterKey(b)).pct - progress(chapterKey(a)).pct);
+  started.slice(0, 2).forEach(c => pick.push(c));
+  for (let i = 0; pick.length < 5 && subs.some(k => by[k][i]); i++) subs.forEach(k => { const c = by[k][i]; if (c && pick.length < 5 && !pick.includes(c)) pick.push(c); });
+  const per = left.length && days ? Math.max(1, Math.floor(days / left.length)) : 0;
+  const when = boardDate(cls).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  box.innerHTML = `<div class="bt">⏳ ${days ? `<b>${days}</b> day${days === 1 ? "" : "s"} to your Boards` : "Boards start today. All the best!"}</div>
+    <p>${esc(clsName(cls))} board exams from ${when}. ${left.length ? `${left.length} chapter${left.length === 1 ? "" : "s"} still to finish${per ? `: one every <b style="color: var(--sun)">${per} day${per === 1 ? "" : "s"}</b> and you are done in time` : ""}.` : "You have finished every chapter. Now revise and take the quizzes!"}</p>
+    ${pick.length && days ? `<p><b style="color: var(--night-fg)">Read these 5 chapters next:</b></p><ol>${pick.map(c => { const k = chapterKey(c), pr = progress(k), open = access(k).open;
+      return `<li>${open ? `<button type="button" data-read="${k}">` : "<span>"}${esc(chNo(c))}: ${esc(c.short || c.title)}${open ? "</button>" : "</span>"}<small>${pr.pct ? `${pr.pct}% read` : open ? "not started" : "🔒 buy to read"}</small></li>`; }).join("")}</ol>` : ""}`;
+}
 async function renderLibrary() {
   show("v-library");
   showNews();
+  renderBoardsCard();
   const now = new Date(), h = now.getHours();
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
   $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, ${firstName()}`;
