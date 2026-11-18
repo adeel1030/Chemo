@@ -699,10 +699,14 @@ $("#logout-yes").addEventListener("click", () => { $("#logout-confirm").hidden =
 // ---------- sign up ----------
 // Anyone can make a free ID. It locks to this device at once, has no chapters, and shows the free sample of
 // the classes ticked here until Adeel Sir adds bought chapters to the same ID.
+// The class chosen on the website ("Aap kaun si class mein ho?") comes ticked, till the student ticks for themselves.
+let suTouched = false;
 function renderClassPicks() {
-  const picked = [...document.querySelectorAll("#su-cls input:checked")].map(i => i.value);
+  let picked = [...document.querySelectorAll("#su-cls input:checked")].map(i => i.value);
+  if (!suTouched && !picked.length) { try { const m = JSON.parse(localStorage.getItem("chemophile-me")); if (+m) picked = [String(+m)]; } catch (e) {} }
   $("#su-cls").innerHTML = classList().map(c => `<label><input type="checkbox" value="${c}"${picked.includes(String(c)) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
 }
+$("#su-cls").addEventListener("change", () => { suTouched = true; });
 renderClassPicks();
 if (configured) loadCatalog().then(() => { catalogTried = true; renderClassPicks(); });
 $("#signup-form").addEventListener("submit", async e => {

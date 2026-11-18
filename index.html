@@ -539,6 +539,34 @@ section.block { padding-block: 64px; }
 .end-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 500; }
 
 /* chapters shelf */
+/* The student's class: asked on the first visit, changed from the 🎓 button in the header. */
+.me-chip { flex: none; border: 1px solid rgba(255, 210, 74, .55); background: rgba(255, 210, 74, .12); color: var(--sun); border-radius: 999px; padding: 6px 12px; font: 700 .88rem var(--font-body); cursor: pointer; white-space: nowrap; }
+.me-chip:hover { background: rgba(255, 210, 74, .22); }
+@media (max-width: 440px) { .me-chip { padding: 5px 9px; font-size: .8rem; } .me-chip .lg { display: none; } }
+/* On a phone the header holds the logo, the class button, Login and Order: the big "Chemophile" is right below in the hero. */
+@media (max-width: 480px) { .site-head:has(.me-chip:not([hidden])) .brand > span { display: none; } .site-head .wrap { gap: 8px; } }
+.me-gate { border: 0; padding: 0; width: min(760px, calc(100% - 24px)); max-height: calc(100dvh - 24px); border-radius: 26px; background: linear-gradient(160deg, var(--night), var(--night-2, #23236b)); color: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.me-gate::backdrop { background: rgba(10, 10, 40, .72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.me-in { padding: 30px 26px 24px; text-align: center; overflow: auto; }
+.me-hi { font: 700 1rem var(--font-body); color: var(--sun); }
+.me-gate h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 5vw, 2.3rem); line-height: 1.15; margin-top: 4px; }
+.me-gate h2 span { color: var(--sun); }
+.me-sub { margin: 10px auto 0; max-width: 520px; color: rgba(255,255,255,.82); font-size: .98rem; }
+.me-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.me-card { border: 2px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #fff; border-radius: 20px; padding: 16px 10px 14px; cursor: pointer; display: grid; gap: 4px; justify-items: center; font: inherit; transition: transform .15s, border-color .15s, background .15s; }
+.me-card:hover, .me-card:focus-visible { transform: translateY(-3px); border-color: var(--sun); background: rgba(255, 210, 74, .1); outline: none; }
+.me-card[aria-pressed="true"] { border-color: var(--sun); background: rgba(255, 210, 74, .16); }
+.me-card small { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.7); }
+.me-card b { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; color: var(--sun); }
+.me-card .ics { font-size: 1.05rem; letter-spacing: 2px; min-height: 1.3em; }
+.me-card .n { font-size: .78rem; color: rgba(255,255,255,.75); }
+.me-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.me-more button { border: 1px solid rgba(255,255,255,.3); background: transparent; color: #fff; border-radius: 999px; padding: 8px 16px; font: 600 .9rem var(--font-body); cursor: pointer; }
+.me-more button:hover { border-color: var(--sun); color: var(--sun); }
+.me-foot { margin-top: 14px; font-size: .82rem; color: rgba(255,255,255,.6); }
+@media (max-width: 560px) { .me-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .me-in { padding: 24px 16px 18px; } .me-card b { font-size: 2.2rem; } }
+#samples-more { margin-top: 14px; text-align: center; }
+#samples-more .samples-grid { margin-top: 14px; text-align: left; }
 .subj-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px auto 0; }
 .subj-tabs:empty { display: none; }
 .subj-tabs button { border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: inherit; border-radius: 999px; padding: 6px 14px; font: 600 .9rem var(--font-body, inherit); cursor: pointer; }
@@ -929,6 +957,7 @@ body {
 <header class="site-head">
   <div class="wrap">
     <a class="brand" href="#top"><img src="assets/logo/icon-96.png" alt="" width="40" height="40"><span>Chemophile<small>by Adeel Sir · Class 9 to 12</small></span></a>
+    <button class="me-chip" id="me-chip" type="button" hidden aria-label="Change your class">🎓 <span id="me-chip-t"></span> <span aria-hidden="true">▾</span></button>
     <nav class="site-nav" aria-label="Main">
       <a href="#andar">Look inside</a>
       <a href="#chapters">Chapters</a>
@@ -941,20 +970,31 @@ body {
   </div>
 </header>
 
+<dialog class="me-gate night" id="me-gate" aria-labelledby="me-gate-h">
+  <div class="me-in">
+    <p class="me-hi">Namaste! 👋</p>
+    <h2 id="me-gate-h">Aap kaun si <span>class</span> mein ho?</h2>
+    <p class="me-sub">Bas ek tap. Poori website aapki class ke syllabus ke hisaab se ban jayegi: aapke chapters, aapke examples, aapka free sample.</p>
+    <div class="me-grid" id="me-grid"></div>
+    <div class="me-more" id="me-more"></div>
+    <p class="me-foot">Class baad mein kabhi bhi badal sakte ho: upar 🎓 button se.</p>
+  </div>
+</dialog>
+
 <main id="top">
   <section class="hero night">
-    <div class="chalk" aria-hidden="true"><span style="left: 3%; top: 30%">n = m / M</span><span style="left: 40%; top: 4%">E = hν</span><span style="left: 47%; top: 44%">pV = nRT</span><span style="left: 2%; top: 74%">pH = −log[H⁺]</span><span style="left: 56%; top: 95%">ΔG = ΔH − TΔS</span><span style="left: 86%; top: 5%">λ = h / mv</span><span style="left: 88%; top: 86%">K<sub>w</sub> = 10⁻¹⁴</span><span style="left: 30%; top: 60%">1s² 2s² 2p⁶</span><span style="left: 62%; top: 12%">Limiting reagent?</span></div>
+    <div class="chalk" id="chalk" aria-hidden="true"><span style="left: 3%; top: 30%">n = m / M</span><span style="left: 40%; top: 4%">E = hν</span><span style="left: 47%; top: 44%">pV = nRT</span><span style="left: 2%; top: 74%">pH = −log[H⁺]</span><span style="left: 56%; top: 95%">ΔG = ΔH − TΔS</span><span style="left: 86%; top: 5%">λ = h / mv</span><span style="left: 88%; top: 86%">K<sub>w</sub> = 10⁻¹⁴</span><span style="left: 30%; top: 60%">1s² 2s² 2p⁶</span><span style="left: 62%; top: 12%">Limiting reagent?</span></div>
     <div class="wrap">
       <div class="hero-copy">
-        <div class="cover-top"><span class="opill">Class 9 to 12 Chemistry</span><span class="opill">NCERT syllabus 2026-27 par based</span></div>
+        <div class="cover-top"><span class="opill" id="hero-pill">Class 9 to 12 Chemistry</span><span class="opill">NCERT syllabus 2026-27 par based</span></div>
         <p class="wordmark" aria-hidden="true">Chemophile</p>
         <span class="wpill">Hinglish booklets by Adeel Sir</span>
-        <p class="hook">Chemistry ab ratni nahi, samajh aayegi!</p>
+        <p class="hook" id="hero-hook">Chemistry ab ratni nahi, samajh aayegi!</p>
         <p class="hook-sub">Hinglish mein samjho, English mein likho.</p>
-        <span class="ytag">Class 9 · 10 · 11 · 12</span>
-        <h1>No more fear of Chemistry.</h1>
-        <p class="lede">Every concept starts with an everyday example, then a diagram, then the exam-ready answer. NCERT section-wise, for the board exam, with JEE/NEET extra boxes.</p>
-        <p class="hero-subj">🧪 <b>Chemistry ke specialist</b>, saath mein ⚡ Physics, 🧬 Biology aur 📐 Maths bhi: <a href="#subjects">dekho kya-kya hai →</a></p>
+        <span class="ytag" id="hero-ytag">Class 9 · 10 · 11 · 12</span>
+        <h1 id="hero-h1">No more fear of Chemistry.</h1>
+        <p class="lede" id="hero-lede">Every concept starts with an everyday example, then a diagram, then the exam-ready answer. NCERT section-wise, for the board exam, with JEE/NEET extra boxes.</p>
+        <p class="hero-subj" id="hero-subj">🧪 <b>Chemistry ke specialist</b>, saath mein ⚡ Physics, 🧬 Biology aur 📐 Maths bhi: <a href="#subjects">dekho kya-kya hai →</a></p>
         <div class="hero-actions">
           <a class="btn btn-sun" href="#free-sample">Read free</a>
           <a class="btn btn-ghost" href="#pack">Build your pack</a>
@@ -982,13 +1022,14 @@ body {
       <h2 class="sec-title">Read <span class="hl">free</span> first</h2>
       <p class="sec-intro">Real book pages, free. The sample books open with no login: flip through them like a book, or download the PDF. Free chapters open in the app after a free sign-up.</p>
       <div class="samples-grid" id="samples-grid"></div>
+      <div id="samples-more"></div>
       <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
     </div>
   </section>
 
   <section class="block" id="subjects">
     <div class="wrap">
-      <div class="eyebrow">Class 9 se 12 · ek hi andaaz, har subject</div>
+      <div class="eyebrow" id="subj-eyebrow">Class 9 se 12 · ek hi andaaz, har subject</div>
       <h2 class="sec-title">Specialist in <span class="hl">Chemistry</span>. Saath mein Physics, Biology aur Maths bhi.</h2>
       <p class="sec-intro">Chemophile ki pehchaan Chemistry hai: Adeel Sir ki asli speciality. Ab wahi tareeka baaki subjects mein bhi: pehle rozana ki misaal, phir saaf diagram, phir exam mein likhne wala jawab. Ek hi app, ek hi ID, aur Hinglish mein samajhne ka wahi maza. Science ab ratni nahi padegi.</p>
       <div class="subj-grid" id="subj-grid"></div>
@@ -1016,7 +1057,7 @@ body {
     <div class="wrap">
       <div class="eyebrow">Sound familiar?</div>
       <h2 class="sec-title">Chemistry was never hard. <span class="hl">The way it was taught</span> was.</h2>
-      <div class="pain">
+      <div class="pain" id="pain">
         <div><q>Read NCERT three times and still didn't get it.</q><p>In Chemophile every topic starts with <b>Adeel Sir's example</b>: a comb, a balloon, a TV, a cold drink. Understanding first, definition after.</p></div>
         <div><q>I know the concept but can't write it in the exam.</q><p>Every topic has an <b>"Exam mein aise likho"</b> box: the board answer in English, on ruled lines, ready to learn.</p></div>
         <div><q>Numericals scare me.</q><p><b>631 solved examples</b> across the 19 chapters of Class 11 and 12, step by step, then "Ab tumhari baari" to try it yourself.</p></div>
@@ -1178,6 +1219,7 @@ body {
       <div class="eyebrow">Common questions</div>
       <h2 class="sec-title"><span class="hl">Questions</span> and answers</h2>
       <div class="faq">
+        <details id="faq-me" hidden></details>
         <details><summary>Does it follow the NCERT and CBSE syllabus?</summary><p>Yes. Every chapter follows the NCERT section numbers, and the chapters match the CBSE 2026-27 syllabus, so it is easy to cross-check with your textbook.</p></details>
         <details><summary>Is it useful for JEE and NEET too?</summary><p>The main focus is the board exam and clear concepts. Every chapter also has "JEE/NEET extra" boxes covering advanced concepts.</p></details>
         <details><summary>If I study in Hinglish, how will I write the exam in English?</summary><p>The explanations are in Hinglish, but every topic has an "Exam mein aise likho" box with the full board answer in English.</p></details>
@@ -1224,8 +1266,8 @@ body {
 
   <section class="final night">
     <div class="wrap">
-      <h2>Ready to <span>understand</span> your next chapter?</h2>
-      <p>Start with the free sample. If you like it, build your pack and begin today.</p>
+      <h2 id="final-h">Ready to <span>understand</span> your next chapter?</h2>
+      <p id="final-p">Start with the free sample. If you like it, build your pack and begin today.</p>
       <div class="hero-actions" style="justify-content: center; margin-top: 6px">
         <a class="btn btn-sun" href="#pack">Build your pack</a>
         <a class="btn btn-ghost" href="read.html#signup">Sign up free</a>
@@ -1349,16 +1391,173 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 
+// ---------- the student's class ----------
+// The first visit asks "Aap kaun si class mein ho?"; from then on the whole page (hero, numbers, free reading,
+// subjects, examples, chapters, plans, pack, reviews, FAQ) is about that class. A link with ?class=10 (an ad, a
+// WhatsApp message) or a chapter link (#ch10-2) chooses the class itself. "all" = a teacher or parent who wants
+// every class. The choice stays on this phone and is changed from the 🎓 button in the header.
+const CLASSES = classList();
+const linkCls = +(new URLSearchParams(location.search).get("class") || (location.hash.match(/^#class-(\d+)$/) || [])[1] || 0);
+const ME_KEY = "chemophile-me";
+let me = (() => {
+  if (CLASSES.includes(linkCls)) { store.set(ME_KEY, linkCls); return linkCls; }
+  const saved = store.get(ME_KEY), ch = +((location.hash.match(/^#ch(\d+)-\d+$/) || [])[1] || 0);
+  if (saved === "all") return 0;
+  if (CLASSES.includes(+saved)) return +saved;
+  if (CLASSES.includes(ch)) return ch;
+  return null; // not asked yet: the page shows every class until the student answers
+})();
+const inMe = c => !me || +c.cls === me;
+const MINE = () => CHAPTERS.filter(inMe);
+const subjectsOf = k => [...new Set(CHAPTERS.filter(c => c.cls === k && !isPart(c)).map(kindOf))].filter(x => x !== "special").sort((a, b) => KINDS[a].from - KINDS[b].from);
+// Words for each school class, from its own syllabus. A pain point names a chapter ("need"); if that chapter is
+// no longer in the catalog the point is left out and a general one takes its place.
+const CLASS_COPY = {
+  9: { pill: "Class 9 Science", hook: "Class 9 Science ab ratni nahi, samajh aayegi!", h1: "No more fear of Class 9 Science.",
+    lede: "Atom ke andar ki journey, mixtures ko alag karna, motion, force aur energy, cell aur tissues: every concept starts with an everyday example, then a diagram, then the exam-ready answer. NCERT section-wise.",
+    chalk: ["v = u + at", "F = ma", "W = F × s", "n = m / M", "p⁺ n⁰ e⁻", "KE = ½mv²", "2, 8, 8", "Cell → Tissue → Organ", "Mixture ≠ Compound"],
+    pain: [["Atom, proton, electron: sab upar se nikal jaata hai.", "<b>Journey Inside the Atom</b> starts from things you can see at home, then every atom model as a clear labelled diagram, then the answer to write.", "9-8"],
+      ["Distance-time graph dekh ke dimaag ghoom jaata hai.", "<b>Describing Motion Around Us</b> reads every graph with a bus, a bike and a ball: what the slope means, step by step.", "9-204"],
+      ["NUM"],
+      ["Cell aur tissues ke diagrams yaad hi nahi hote.", "<b>Cell</b> and <b>Tissues in Action</b> draw every part in colour with labels, and the <b>\"Galti mat karna\"</b> box points out the labels students mix up.", "9-302"]] },
+  10: { pill: "Class 10 Science · Board year", hook: "Class 10 Boards: Science ab ratni nahi, samajh aayegi!", h1: "No more fear of Class 10 Science.",
+    lede: "Chemical reactions, acids and bases, metals, carbon compounds, light, electricity, life processes and heredity: every concept starts with an everyday example, then a diagram, then the board answer in English.",
+    chalk: ["V = IR", "1/f = 1/v + 1/u", "Zn + 2HCl → ZnCl₂ + H₂", "pH < 7", "P = VI", "R = ρl / A", "n = sin i / sin r", "CH₃COOH", "6CO₂ + 6H₂O → C₆H₁₂O₆"],
+    pain: [["Equation balance karne mein hamesha galti ho jaati hai.", "<b>Chemical Reactions and Equations</b> balances them step by step, and the <b>\"Galti mat karna\"</b> box shows the slips that cost marks.", "10-1"],
+      ["Ray diagrams aur mirror formula se darr lagta hai.", "<b>Light: Reflection and Refraction</b> draws every ray diagram with labels and makes the sign convention simple.", "10-209"],
+      ["NUM"],
+      ["Life Processes itna lamba hai, kahan se shuru karun?", "<b>Life Processes</b> comes in small topics, each with a labelled diagram and the board answer in English, ready to learn.", "10-305"]] },
+  11: { pill: "Class 11 Chemistry · Boards + JEE/NEET", hook: "Class 11: Chemistry ka foundation, ab pakka!", h1: "No more fear of Class 11 Chemistry.",
+    lede: "Mole concept, structure of atom, chemical bonding, thermodynamics, equilibrium, redox and organic basics: everyday example first, then a diagram, then the exam answer. With JEE/NEET extra boxes.",
+    pain: [["Mole concept samajh hi nahi aata.", "<b>Some Basic Concepts of Chemistry</b> starts with things you count every day, then moles, then limiting reagent, step by step.", "11-1"],
+      ["Hybridisation aur shapes yaad nahi rehte.", "<b>Chemical Bonding</b> draws every shape with labels, and an <b>Adeel Sir ka tip</b> box helps you remember it.", "11-4"],
+      ["NUM"],
+      ["Organic ka GOC sab mix ho jaata hai.", "<b>Organic Chemistry: Some Basic Principles</b> takes inductive effect, resonance and hyperconjugation one at a time, with <b>\"Galti mat karna\"</b> boxes.", "11-8"]] },
+  12: { pill: "Class 12 Chemistry · Boards + JEE/NEET", hook: "Class 12 Boards + JEE/NEET: Chemistry ab samajh aayegi!", h1: "No more fear of Class 12 Chemistry.",
+    lede: "Solutions, electrochemistry, kinetics, coordination compounds and the whole organic, from haloalkanes to amines and biomolecules: everyday example first, then a diagram, then the board answer. With JEE/NEET extra boxes.",
+    chalk: ["ΔT<sub>f</sub> = K<sub>f</sub>·m", "E = E° − (0.059/n) log Q", "t½ = 0.693 / k", "π = CRT", "[Co(NH₃)₆]³⁺", "R–X + OH⁻ → R–OH", "Λ<sub>m</sub> = κ / c", "SN1 or SN2?", "k = A e<sup>−Ea/RT</sup>"],
+    pain: [["Named reactions ratne padte hain.", "<b>Aldehydes, Ketones and Carboxylic Acids</b> explains every named reaction step by step, with the board answer in English.", "12-8"],
+      ["Nernst equation ke numericals mein atak jaata hoon.", "<b>Electrochemistry</b> solves the Nernst equation step by step, then gives you one to try.", "12-2"],
+      ["NUM"],
+      ["Coordination compounds ka naming aur isomerism confusing hai.", "<b>Coordination Compounds</b> takes IUPAC naming rule by rule, with <b>\"Galti mat karna\"</b> boxes for the common slips.", "12-5"]] }
+};
+// The page as written (every class), to come back to when "all" is chosen.
+const HERO0 = Object.fromEntries(["hero-pill", "hero-hook", "hero-ytag", "hero-h1", "hero-lede", "hero-subj", "chalk", "pain", "final-h", "final-p", "subj-eyebrow"].map(id => [id, (document.getElementById(id) || {}).innerHTML]));
+const CHALK_POS = [...document.querySelectorAll("#chalk span")].map(x => x.getAttribute("style"));
+const TITLE0 = document.title;
+const hasCh = k => CHAPTERS.some(c => `${c.cls}-${c.n}` === k) || UPCOMING.some(u => `${u.cls}-${u.n}` === k);
+const subjWords = list => list.map(k => `${KINDS[k].icon} ${KINDS[k].subject}`).join(list.length > 2 ? ", " : " aur ").replace(/, ([^,]*)$/, " aur $1");
+function heroCopy() {
+  const put = (id, html) => { const el = document.getElementById(id); if (el && html != null) el.innerHTML = html; };
+  Object.entries(HERO0).forEach(([id, html]) => put(id, html));
+  document.title = TITLE0;
+  if (!me) return;
+  const C = CLASS_COPY[me] || {}, name = clsName(me), subs = subjectsOf(me), others = subs.filter(k => k !== "chem");
+  put("hero-pill", esc(C.pill || name));
+  if (C.hook) put("hero-hook", esc(C.hook));
+  put("hero-ytag", esc(name));
+  put("hero-h1", esc(C.h1 || `No more fear of ${name}.`));
+  if (C.lede) put("hero-lede", esc(C.lede));
+  const later = [...new Set(UPCOMING.filter(u => u.cls === me).map(kindOf))].filter(k => k !== "special" && k !== "chem" && !others.includes(k));
+  if (!others.length && later.length) put("hero-subj", `🧪 <b>Chemistry ke specialist</b>: ${esc(name)} ki Chemistry ready, aur ${subjWords(later)} bhi jald aa rahi hai. <a href="#chapters">Chapters dekho →</a>`); else
+  put("hero-subj", others.length ? `🧪 <b>Chemistry ke specialist</b>, aur ${esc(name)} mein ${subjWords(others)} bhi: <a href="#subjects">dekho kya-kya hai →</a>`
+    : `🧪 <b>Chemistry ke specialist</b>: ${esc(name)} ki Chemistry, chapter by chapter. <a href="#chapters">Chapters dekho →</a>`);
+  if (C.chalk) put("chalk", C.chalk.map((t, i) => `<span style="${CHALK_POS[i % CHALK_POS.length]}">${t}</span>`).join(""));
+  put("subj-eyebrow", `${esc(name)} mein kya-kya hai`);
+  put("final-h", `Ready to <span>understand</span> your next ${esc(name)} chapter?`);
+  put("final-p", `Start with the free ${esc(name)} reading. If you like it, build your pack and begin today.`);
+  document.title = `Chemophile ${name}: ${C.pill ? C.pill.split(" · ")[0].replace(/^Class \d+ /, "") : "Chemistry"} in Hinglish | Adeel Sir`;
+}
+// The three covers in the hero: books of the student's class, a different subject each where it can.
+const FAN0 = [...document.querySelectorAll("#cover-fan img")].map(i => [i.dataset.cover, i.getAttribute("src")]);
+function heroFan() {
+  const imgs = [...document.querySelectorAll("#cover-fan img")];
+  let keys = FAN0.map(x => x[0]);
+  if (me) {
+    const withCover = CHAPTERS.filter(c => c.cls === me && !isPart(c) && coverOf(c)), picked = [];
+    ["chem", "phy", "bio", "maths", "special"].forEach(k => { const c = withCover.find(x => kindOf(x) === k); if (c && picked.length < 3) picked.push(c); });
+    withCover.forEach(c => { if (picked.length < 3 && !picked.includes(c)) picked.push(c); });
+    if (picked.length === 3) keys = [picked[1], picked[2], picked[0]].map(c => `${c.cls}-${c.n}`);
+  }
+  imgs.forEach((img, i) => {
+    img.dataset.cover = keys[i];
+    if (keys[i] === FAN0[i][0]) img.setAttribute("src", FAN0[i][1]);
+    const c = CHAPTERS.find(x => `${x.cls}-${x.n}` === keys[i]);
+    img.alt = i === 2 && c ? `Cover of Chemophile ${c.title}` : "";
+  });
+  heroCovers();
+}
+// "Sound familiar?": four worries of this class's students, each answered from a chapter of their own syllabus.
+function renderPain() {
+  const box = $("#pain"), C = CLASS_COPY[me];
+  if (!box) return;
+  if (!me || !C) { box.innerHTML = HERO0.pain; return; }
+  const list = MINE().filter(c => !isPart(c)), solved = list.reduce((a, c) => a + (parseInt(c.solved, 10) || 0), 0);
+  const generic = [["I know the concept but can't write it in the exam.", "Every topic has an <b>\"Exam mein aise likho\"</b> box: the board answer in English, on ruled lines, ready to learn."],
+    ["Studied everything and still lost marks.", "The <b>\"Galti mat karna\"</b> box points out the mistakes that cost the most marks, before the exam does."],
+    ["Read NCERT three times and still didn't get it.", "In Chemophile every topic starts with <b>Adeel Sir's example</b> from everyday life. Understanding first, definition after."]];
+  const items = C.pain.map(([q, p, need]) => q === "NUM"
+    ? ["Numericals se darr lagta hai.", solved ? `<b>${solved.toLocaleString("en-IN")} solved examples</b> across the ${list.length} ${esc(clsName(me))} chapters, step by step, then "Ab tumhari baari" to try it yourself.` : `Every numerical is solved step by step, then "Ab tumhari baari" to try it yourself.`]
+    : need && !hasCh(need) ? generic.shift() : [q, p]);
+  box.innerHTML = items.map(([q, p]) => `<div><q>${esc(q)}</q><p>${p}</p></div>`).join("");
+}
+// A first question in the FAQ: what this class has, subject by subject.
+function faqMe() {
+  const d = $("#faq-me");
+  if (!d) return;
+  d.hidden = !me;
+  if (!me) return;
+  const name = clsName(me), ready = CHAPTERS.filter(c => c.cls === me && !(isPart(c) && c.included !== false)), soon = UPCOMING.filter(u => u.cls === me);
+  const kinds = [...new Set([...ready, ...soon].map(kindOf))].sort((a, b) => KINDS[a].from - KINDS[b].from);
+  const head = k => k === "special" ? (isJeeCls(me) ? "🏆 JEE / NEET special" : "🎁 Bonus booklets") : `${KINDS[k].icon} ${KINDS[k].subject}`;
+  d.innerHTML = `<summary>What is there for ${esc(name)}?</summary><p>${ready.length} chapter${ready.length === 1 ? "" : "s"} ready${soon.length ? `, ${soon.length} coming soon` : ""}. Tap any chapter in "Chapters" above to see its topics.</p>
+    ${kinds.map(k => { const r = ready.filter(c => kindOf(c) === k), u = soon.filter(x => kindOf(x) === k);
+      return `<p><b>${head(k)}:</b> ${[...r.map(c => esc(nameOf(c))), ...u.map(x => esc(x.short || x.title) + " (soon)")].join(", ")}</p>`; }).join("")}`;
+}
+const meGate = $("#me-gate");
+function meChip() {
+  const b = $("#me-chip");
+  b.hidden = me === null;
+  $("#me-chip-t").innerHTML = me ? (CLASSES.length && !isUni(me) ? `<span class="lg">Class </span>${me}` : esc(clsName(me))) : "All classes";
+}
+function openGate() {
+  const school = CLASSES.filter(k => !isUni(k)), uni = CLASSES.filter(isUni);
+  $("#me-grid").innerHTML = school.map(k => {
+    const n = CHAPTERS.filter(c => c.cls === k && !isPart(c)).length, subs = subjectsOf(k);
+    return `<button class="me-card" type="button" data-me="${k}" aria-pressed="${me === k}"><small>Class</small><b>${k}</b>
+      <span class="ics" aria-hidden="true">${subs.map(s => KINDS[s].icon).join("")}</span><span class="n">${n ? `${n} chapters` : "Coming soon"}</span></button>`;
+  }).join("");
+  $("#me-more").innerHTML = uni.map(k => `<button type="button" data-me="${k}">🎓 ${esc(clsName(k))}</button>`).join("") +
+    `<button type="button" data-me="all">👩‍🏫 Teacher / parent hoon: sab classes dikhao</button>`;
+  meGate.showModal();
+  const cur = meGate.querySelector(`[data-me="${me || "all"}"]`) || meGate.querySelector("[data-me]");
+  if (cur) cur.focus();
+}
+meGate.addEventListener("click", e => {
+  const b = e.target.closest("[data-me]");
+  if (!b) { if (e.target === meGate && me !== null) meGate.close(); return; }
+  const v = b.dataset.me;
+  me = v === "all" ? 0 : +v;
+  store.set(ME_KEY, v === "all" ? "all" : me);
+  meGate.close();
+  personalize();
+  scrollTo({ top: 0, behavior: "smooth" });
+});
+// Esc on the first visit: show every class for now and ask again next time.
+meGate.addEventListener("cancel", () => { if (me === null) { me = 0; personalize(); } });
+$("#me-chip").addEventListener("click", openGate);
+
 // ---------- numbers strip ----------
-(function numbers() {
-  // Stat chips like the ones on every cover: the number in yellow, then what it counts.
-  const sum = f => CHAPTERS.reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0);
+function numbers() {
+  // Stat chips like the ones on every cover: the number in yellow, then what it counts (for the student's class).
+  const mine = MINE(), sum = f => mine.reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0);
+  const jee = !me || isJeeCls(me), bonus = mine.some(c => kindOf(c) === "special");
   const items = [
-    [CHAPTERS.filter(c => !isPart(c)).length, "chapters ready"], [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
-    [sum("practice") + "+", "practice questions"], [Object.keys(SAMPLE_BOOKS).length + CHAPTERS.filter(c => c.free).length, "free books aur chapters"],
-    ...(CHAPTERS.some(c => c.qbank) ? [[sum("qbank"), "question bank MCQs with solutions"]] : []),
-    ["", "JEE/NEET extra boxes"], ["", "QR simulations"], ["", "Board pattern test"]
-  ];
+    [mine.filter(c => !isPart(c)).length, me ? `${clsName(me)} chapters ready` : "chapters ready"], [sum("fig"), "figures aur diagrams"], [sum("solved"), "solved examples"],
+    [sum("practice") + "+", "practice questions"], [Object.keys(SAMPLE_BOOKS).filter(k => !me || +k === me).length + mine.filter(c => c.free).length, "free books aur chapters"],
+    ...(mine.some(c => c.qbank) ? [[sum("qbank"), "question bank MCQs with solutions"]] : []),
+    ["", jee ? "JEE/NEET extra boxes" : bonus ? "Bonus: mock test + quick revision" : "Exam mein aise likho boxes"], ["", "QR simulations"], ["", "Board pattern test"]
+  ].filter(([v]) => v === "" || parseInt(v, 10) > 0);
   $("#numbers").innerHTML = items.map(([v, l]) => `<span class="chip">${v !== "" ? `<b data-to="${parseInt(v, 10)}" data-suffix="${String(v).replace(/^\d+/, "")}">${v}</b> ` : ""}${l}</span>`).join("");
   // Numbers count up from zero the first time they come into view.
   const run = el => {
@@ -1370,7 +1569,8 @@ const store = {
     const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { io.unobserve(en.target); run(en.target); } }), { threshold: .6 });
     document.querySelectorAll("#numbers b[data-to]").forEach(b => { b.textContent = "0" + b.dataset.suffix; io.observe(b); });
   }
-})();
+}
+numbers();
 
 // ---------- 3D covers ----------
 (function tilt() {
@@ -1385,8 +1585,8 @@ const store = {
 })();
 
 // ---------- bento ----------
-(function bento() {
-  const sum = f => CHAPTERS.reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0);
+function bento() {
+  const sum = f => MINE().reduce((a, c) => a + (parseInt(c[f], 10) || 0), 0), jee = !me || isJeeCls(me);
   const T = [
     ["t1 w2 h2", "🗣️", "Hinglish mein samjho, English mein likho", "Every idea is explained the way you talk, and every topic gives the board answer in English.", ""],
     ["t2", "🖼️", "Diagrams", "On every page, in colour.", sum("fig") + "+"],
@@ -1395,11 +1595,12 @@ const store = {
     ["", "🏅", "Quiz + certificate", "Test yourself after each chapter and earn a certificate to share.", ""],
     ["t4 w2", "🔥", "Daily streaks", "15 minutes a day, a ring to fill, a streak to protect. Studying becomes a habit.", ""],
     ["", "📱", "Phone or laptop", "Turns like a real book. Zoom, bookmarks, night and dark mode.", ""],
-    ["", "🎯", "JEE/NEET extra", "Advanced boxes in every chapter, plus PhET simulations by QR.", ""]
+    jee ? ["", "🎯", "JEE/NEET extra", "Advanced boxes in every chapter, plus PhET simulations by QR.", ""] : ["", "🎁", "Bonus booklets", "Mock test and quick revision sheets for the exam, plus PhET simulations by QR.", ""]
   ];
   $("#bento").innerHTML = T.map(([cls, ic, h, p, big]) => `<div class="tile ${cls}">${cls.includes("t") ? '<span class="glow"></span>' : ""}<div class="ic" aria-hidden="true">${ic}</div>
     <div>${big ? `<div class="big">${big}</div>` : ""}<h3>${h}</h3><p>${p}</p></div></div>`).join("");
-})();
+}
+bento();
 
 // ---------- videos (YouTube links set in the admin panel) ----------
 (function videos() {
@@ -1421,8 +1622,8 @@ const store = {
 })();
 
 // ---------- reviews (real reviews, approved in the admin panel) ----------
-(function reviews() {
-  const list = (SITE.reviews || []).filter(r => r.text && r.stars);
+function reviews() {
+  const list = (SITE.reviews || []).filter(r => r.text && r.stars).sort((a, b) => (me && +b.cls === me) - (me && +a.cls === me));
   $("#reviews").hidden = !list.length;
   if (!list.length) return;
   const avg = list.reduce((a, r) => a + +r.stars, 0) / list.length, star = n => "★★★★★".slice(0, Math.round(n)) + "☆☆☆☆☆".slice(0, 5 - Math.round(n));
@@ -1434,7 +1635,8 @@ const store = {
   $("#rv-track").innerHTML = list.map(card).join("") + (many ? list.map(card).join("") : "");
   $("#rv-track").style.setProperty("--dur", `${Math.max(25, list.length * 7)}s`);
   if (!many) { $("#rv-track").style.animation = "none"; $("#rv-track").style.flexWrap = "wrap"; const st = document.querySelector(".rv-strip"); st.style.webkitMaskImage = st.style.maskImage = "none"; }
-})();
+}
+reviews();
 
 // ---------- pack state ----------
 // Free chapters are read after a free sign-up, so they never go in the pack.
@@ -1466,17 +1668,23 @@ document.querySelectorAll("#fmt-opts").forEach(box => {
 
 // ---------- shelf ----------
 // Every class that has a book. The shelf opens on the class in the link (?class=10) or the last one looked at.
-const CLASSES = classList();
-const linkCls = +(new URLSearchParams(location.search).get("class") || (location.hash.match(/^#class-(\d+)$/) || [])[1] || 0);
-let cls = [linkCls, +store.get("chemophile-class")].find(k => CLASSES.includes(k)) || CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
+let cls = [me, linkCls, +store.get("chemophile-class")].find(k => CLASSES.includes(k)) || CLASSES.find(k => CHAPTERS.some(c => c.cls === k)) || CLASSES[0];
 const freeChip = `<div class="price-row"><span class="price free-p"><b>FREE</b> full chapter</span></div>`;
 const readFree = `<a class="add-btn free-btn" href="read.html#signup">Read free →</a>`;
 // Free reading of every class: the free sample books (no login) and the free chapters (after a free sign-up).
 function renderSamples() {
-  const cards = [];
-  CLASSES.forEach(k => cards.push(...samplesOf(k)));
-  $("#samples-grid").innerHTML = cards.join("") || `<div class="sample-card soon-free"><div style="min-width:0"><h3>Free reading is coming soon</h3></div></div>`;
+  const mine = me ? samplesOf(me) : [], rest = CLASSES.filter(k => !me || k !== me).flatMap(samplesOf);
+  const soon = `<div class="sample-card soon-free"><div style="min-width:0"><h3>Free reading is coming soon</h3></div></div>`;
+  $("#samples-grid").innerHTML = (me && mine.length ? mine : rest).join("") || soon;
+  $("#samples-more").innerHTML = me && mine.length && rest.length ? `<button class="btn btn-line" type="button" id="more-samples" aria-expanded="false">Dusri classes ka free reading bhi dekho (${rest.length}) ▾</button>
+    <div class="samples-grid" hidden>${rest.join("")}</div>` : "";
 }
+document.addEventListener("click", e => {
+  const b = e.target.closest("#more-samples");
+  if (!b) return;
+  const g = b.nextElementSibling, open = g.hidden;
+  g.hidden = !open; b.setAttribute("aria-expanded", String(open));
+});
 function samplesOf(cls) {
   const b = SAMPLE_BOOKS[cls], free = CHAPTERS.filter(c => c.cls === cls && c.free), name = clsName(cls);
   const n = CHAPTERS.filter(c => c.cls === cls && !c.custom).length, cards = [];
@@ -1551,9 +1759,9 @@ const SUBJ_COPY = {
 function renderSubjects() {
   const box = $("#subj-grid");
   if (!box) return;
-  const all = [...CHAPTERS.filter(c => !(isPart(c) && c.included !== false)), ...UPCOMING];
+  const all = [...CHAPTERS.filter(c => !(isPart(c) && c.included !== false)), ...UPCOMING].filter(inMe);
   const subjOf = k => k === "special" ? "chem" : k;
-  const ids = ["chem", "phy", "bio", "maths", ...Object.keys(KINDS).filter(k => KINDS[k].custom)];
+  const ids = ["chem", "phy", "bio", "maths", ...Object.keys(KINDS).filter(k => KINDS[k].custom)].filter(id => !me || id === "chem" || all.some(x => subjOf(kindOf(x)) === id));
   box.innerHTML = ids.map(id => {
     const K = KINDS[id], mine = all.filter(x => subjOf(kindOf(x)) === id), ready = mine.filter(x => CHAPTERS.includes(x)).length, soon = mine.length - ready;
     const classes = [...new Set(mine.map(x => x.cls))].filter(c => !isUni(c)).sort((a, b) => a - b);
@@ -1561,7 +1769,7 @@ function renderSubjects() {
     const count = ready ? `<b>${ready}</b> chapter${ready > 1 ? "s" : ""} ready${soon ? ` · ${soon} coming soon` : ""}` : soon ? `<b>${soon}</b> chapter${soon > 1 ? "s" : ""} coming soon` : "Jald aa raha hai";
     return `<div class="subj-card${id === "chem" ? " star" : ""}">
       ${tag ? `<span class="tag">${tag}</span>` : ""}<span class="ic" aria-hidden="true">${K.icon}</span><h3>${esc(K.subject)}</h3><p>${line}</p>
-      <span class="count">${count}${classes.length ? ` · Class ${classes.join(", ")}` : ""}</span>
+      <span class="count">${count}${classes.length && !me ? ` · Class ${classes.join(", ")}` : ""}</span>
       ${mine.length ? `<button class="go" type="button" data-subj-go="${id}" data-cls="${classes[0] || ""}">Chapters dekho →</button>` : ""}
     </div>`;
   }).join("");
@@ -1638,7 +1846,7 @@ document.querySelector(".tabs").addEventListener("click", e => {
 
 // ---------- pack builder ----------
 function renderPick() {
-  $("#pick-list").innerHTML = CLASSES.map(k => {
+  $("#pick-list").innerHTML = (me ? [me, ...CLASSES.filter(k => k !== me)] : CLASSES).map(k => {
     const list = BUYABLE.filter(c => c.cls === k);
     if (!list.length) return "";
     const all = list.every(c => pack.has(key(c)));
@@ -1740,7 +1948,8 @@ $("#pay-box").addEventListener("click", async e => {
 function renderPlans() {
   // "From" is the lowest price of a real chapter of a book; small extras (a mock test, a revision sheet) don't count.
   const from = f => { const low = list => { const ps = list.map(c => priceOf(c, f)).filter(Boolean); return ps.length ? Math.min(...ps) : null; };
-    return low(CHAPTERS.filter(c => kindOf(c) === "chem" && !isPart(c))) || low(CHAPTERS); };
+    return (me && (low(CHAPTERS.filter(c => c.cls === me && kindOf(c) === "chem" && !isPart(c))) || low(CHAPTERS.filter(c => c.cls === me && !isPart(c)))))
+      || low(CHAPTERS.filter(c => kindOf(c) === "chem" && !isPart(c))) || low(CHAPTERS); };
   const paper = ["colour", "bw"].find(f => FORMATS[f].on);
   const year = onlineDays() === 365 ? "1 full year" : `${onlineDays()} days`;
   const cards = [];
@@ -1787,7 +1996,8 @@ $("#plan-cards").addEventListener("click", e => {
 // ---------- combos and the offer banner (set in the admin panel) ----------
 function renderCombos() {
   $("#combos").hidden = !COMBOS.length;
-  $("#combo-list").innerHTML = COMBOS.map(x => {
+  const mineFirst = x => me && x.chapters.some(k => +String(k).split("-")[0] === me) ? 0 : 1;
+  $("#combo-list").innerHTML = [...COMBOS].sort((a, b) => mineFirst(a) - mineFirst(b)).map(x => {
     const chs = x.chapters.map(k => CHAPTERS.find(c => key(c) === k)).filter(Boolean);
     const classes = [...new Set(chs.map(c => c.cls))].map(k => clsName(k)).join(" + ");
     const buys = FORMAT_IDS.filter(f => FORMATS[f].on && (x.price || {})[f] > 0).map(f => {
@@ -2003,6 +2213,13 @@ $("#copy-phone").addEventListener("click", () => {
 
 // ---------- start ----------
 renderShelf(); renderSamples(); renderPick(); renderSummary(); renderCombos(); renderOffer();
+heroCopy(); heroFan(); renderPain(); faqMe(); meChip();
+function personalize() {
+  if (me) { cls = me; subj = "all"; store.set("chemophile-class", me); saveSiteUI({ subj: null }); }
+  heroCopy(); heroFan(); numbers(); bento(); renderSamples(); renderSubjects(); renderPain();
+  renderShelf(); renderPick(); renderPlans(); renderCombos(); reviews(); faqMe(); meChip();
+}
+if (me === null) openGate();
 const m = location.hash.match(/^#ch(\d+)-(\d+)$/);
 if (m) openSheet(`${m[1]}-${m[2]}`);
 window.openSample = openSample;
