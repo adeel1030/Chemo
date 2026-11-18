@@ -520,6 +520,10 @@ section.block { padding-block: 64px; }
 .end-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 500; }
 
 /* chapters shelf */
+.subj-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px auto 0; }
+.subj-tabs:empty { display: none; }
+.subj-tabs button { border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: inherit; border-radius: 999px; padding: 6px 14px; font: 600 .9rem var(--font-body, inherit); cursor: pointer; }
+.subj-tabs button[aria-pressed="true"] { background: var(--sun, #ffd24a); color: #2a2100; border-color: transparent; }
 .tabs { display: inline-flex; flex-wrap: wrap; justify-content: center; max-width: 100%; gap: 4px; padding: 4px; border-radius: 28px; background: var(--surface); border: 1px solid var(--line); margin-top: 24px; }
 .tabs button { font: 700 1rem var(--font-body); border: 0; background: none; color: var(--muted); padding: 10px 20px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 @media (max-width: 600px) { .tabs button { padding: 9px 14px; font-size: .95rem; } }
@@ -1069,6 +1073,7 @@ body {
       <div class="eyebrow">Every chapter of the CBSE 2026-27 syllabus</div>
       <h2 class="sec-title">Choose your <span class="hl">chapters</span></h2>
       <div class="tabs" role="tablist" aria-label="Class" id="cls-tabs"></div>
+      <div class="subj-tabs" id="subj-tabs" role="group" aria-label="Subject"></div>
       <p class="shelf-note" id="shelf-note"></p>
       <div class="shelf" id="shelf" role="tabpanel"></div>
 
@@ -1452,7 +1457,7 @@ function samplesOf(cls) {
 }
 function setClass(k, opts = {}) {
   if (!CLASSES.includes(k)) return;
-  cls = k; store.set("chemophile-class", k); renderShelf();
+  cls = k; subj = "all"; store.set("chemophile-class", k); renderShelf();
   if (opts.scroll) $(opts.scroll).scrollIntoView({ behavior: "smooth", block: "start" });
 }
 // Chapters added in the admin panel have no cover picture yet, so draw one.
@@ -1483,10 +1488,18 @@ const SHELF_BONUS = ["🎁 Bonus booklets", "Is class ke saath extra: bonus chap
 const extraOf = c => CHAPTERS.find(x => isPart(x) && x.cls === c.cls && baseN(x.n) === +c.n);
 const extraChips = c => { const x = !isPart(c) && extraOf(c);
   return [x && x.included !== false ? `<span class="xchip">🎯 + JEE/NEET extra topics</span>` : "", c.qbank ? `<span class="xchip">📝 ${c.qbank}-question bank</span>` : ""].join(""); };
+// The subject buttons under the class tabs (when the class has two or more subjects).
+let subj = "all";
+const subjLabel = k => k === "special" ? (isJeeCls(cls) ? "🏆 JEE / NEET" : "🎁 Bonus") : `${KINDS[k].icon} ${KINDS[k].subject}`;
 function renderShelf() {
   const ready = CHAPTERS.filter(c => c.cls === cls && !(isPart(c) && c.included !== false));
   const soon = UPCOMING.filter(u => u.cls === cls);
-  const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => orderN(a.c || a.u) - orderN(b.c || b.u));
+  const every = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => orderN(a.c || a.u) - orderN(b.c || b.u));
+  const subjects = [...new Set(every.map(x => kindOf(x.c || x.u)))].sort((a, b) => KINDS[a].from - KINDS[b].from);
+  if (!subjects.includes(subj)) subj = "all";
+  $("#subj-tabs").innerHTML = subjects.length > 1 ? [["all", "All subjects"], ...subjects.map(k => [k, subjLabel(k)])]
+    .map(([v, l]) => `<button type="button" data-subj="${v}" aria-pressed="${subj === v}">${esc(l)}</button>`).join("") : "";
+  const items = every.filter(x => subj === "all" || kindOf(x.c || x.u) === subj);
   const kinds = [...new Set(items.map(x => kindOf(x.c || x.u)))];
   const many = kinds.some(k => k !== "chem" && k !== "special");
   let lastKind = null;
@@ -1528,6 +1541,7 @@ function renderShelf() {
     + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} ${k === "special" && !isJeeCls(cls) ? "booklet" : "chapter"}${n > 1 ? "s" : ""}`).join(", ")}.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
+$("#subj-tabs").addEventListener("click", e => { const b = e.target.closest("[data-subj]"); if (b) { subj = b.dataset.subj; renderShelf(); } });
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
   const ready = CHAPTERS.filter(c => c.cls === k && !isPart(c)).length;
   return `<button type="button" role="tab" aria-controls="shelf" aria-selected="${k === cls}" data-cls="${k}">${esc(clsName(k))} <small>${ready ? `${ready} ready` : "coming soon"}</small></button>`;

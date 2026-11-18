@@ -78,6 +78,8 @@
 .bar.done i { background: var(--good); }
 .lib-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 8px; }
 .lib-tools h2 { font-size: 1.35rem; }
+.lib-subj { margin-top: 8px; }
+.lib-subj:empty { display: none; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 .86rem var(--font-body); cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--night); border-color: var(--night); color: var(--sun); }
@@ -450,6 +452,7 @@
         <div class="msg" id="redeem-msg" role="status" hidden></div>
       </div>
       <div class="lib-tools"><h2>My chapters</h2><div class="chips" id="lib-chips" role="group" aria-label="Show class"></div></div>
+      <div class="chips lib-subj" id="lib-subj" role="group" aria-label="Show subject"></div>
       <div class="tsearch"><input id="tsearch" type="search" autocomplete="off" placeholder="🔎 Search a topic: molarity, Hund's rule, pH…" aria-label="Search a topic in your chapters"><div class="tresults" id="tresults" hidden></div></div>
       <div id="lib"></div>
       <div class="card myread" id="myread" hidden></div>
@@ -966,7 +969,10 @@ $("#news").addEventListener("click", e => {
 
 // ---------- library ----------
 const chapterInfo = new Map();
-let libCls = "all";
+let libCls = "all", libKind = "all";
+// A subject's name on its button: "🧪 Chemistry", "📐 Maths", "🏆 JEE / NEET" ("🎁 Bonus" outside Class 11, 12).
+const kindChip = (k, classes) => k === "special" ? (classes.some(isJeeCls) ? "🏆 JEE / NEET" : "🎁 Bonus") : `${KINDS[k].icon} ${KINDS[k].subject}`;
+const keyKind = k => kindOf({ n: +String(k).split("-")[1] });
 // "Neha Gupta" → "Neha", but "Mr Verma" → "Mr Verma".
 const firstName = () => {
   const w = (me.name || "").trim().split(/\s+/).filter(Boolean);
@@ -1095,6 +1101,11 @@ async function renderLibrary() {
   if (!classes.includes(Number(libCls))) libCls = "all";
   $("#lib-chips").innerHTML = classes.length > 1 ? [["all", "All"], ...classes.map(c => [String(c), esc(clsName(c))])]
     .map(([v, l]) => `<button class="chip" type="button" data-cls="${v}" aria-pressed="${libCls === v}">${l}</button>`).join("") : "";
+  // Subjects of the chapters shown: a button each when there are two or more.
+  const inCls = keys.filter(k => libCls === "all" || k.startsWith(libCls + "-")), kinds = [...new Set(inCls.map(keyKind))].sort((a, b) => KINDS[a].from - KINDS[b].from);
+  if (!kinds.includes(libKind)) libKind = "all";
+  $("#lib-subj").innerHTML = kinds.length > 1 ? [["all", "All subjects"], ...kinds.map(k => [k, kindChip(k, classes.filter(c => libCls === "all" || String(c) === libCls))])]
+    .map(([v, l]) => `<button class="chip" type="button" data-kind="${v}" aria-pressed="${libKind === v}">${esc(l)}</button>`).join("") : "";
   const card = k => {
     const c = findChapter(k) || {}, info = chapterInfo.get(k), pr = progress(k), ac = access(k);
     const [cls, n] = k.split("-");
@@ -1120,8 +1131,8 @@ async function renderLibrary() {
   };
   $("#lib").innerHTML = !keys.length ? `<div class="card">There are no chapters in your account yet. Please contact Adeel Sir.</div>`
     : classes.filter(cls => libCls === "all" || String(cls) === libCls).map(cls => {
-      const list = keys.filter(k => k.startsWith(cls + "-"));
-      return `${classes.length > 1 && libCls === "all" ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(card).join("")}</div>`;
+      const list = keys.filter(k => k.startsWith(cls + "-") && (libKind === "all" || keyKind(k) === libKind));
+      return list.length ? `${classes.length > 1 && libCls === "all" ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(card).join("")}</div>` : "";
     }).join("");
 
   const rows = me.admin ? [["Logged in as", "Adeel Sir (admin)"]] : [
@@ -1149,6 +1160,7 @@ async function renderLibrary() {
 }
 $("#v-library").addEventListener("click", e => { if (e.target.closest("#lib-retry")) renderLibrary(); });
 $("#lib-chips").addEventListener("click", e => { const b = e.target.closest("[data-cls]"); if (b) { libCls = b.dataset.cls; renderLibrary(); } });
+$("#lib-subj").addEventListener("click", e => { const b = e.target.closest("[data-kind]"); if (b) { libKind = b.dataset.kind; renderLibrary(); } });
 $("#logout-2").addEventListener("click", () => $("#logout").click());
 $("#v-library").addEventListener("click", e => {
   const b = e.target.closest("[data-read]");
@@ -1207,7 +1219,7 @@ function renderFree() {
   const what = classes.map(clsName).join(" + ");
   $("#upsell").innerHTML = unlockCard();
   $(".lib-tools h2").textContent = "Chapters you can unlock";
-  $("#lib-chips").innerHTML = "";
+  $("#lib-chips").innerHTML = ""; $("#lib-subj").innerHTML = "";
   $("#lib").innerHTML = classes.map(cls => {
     const list = CHAPTERS.filter(c => c.cls === cls);
     return list.length ? `${classes.length > 1 ? `<div class="lib-group">${esc(clsName(cls))}</div>` : ""}<div class="lib">${list.map(c => `<div class="card book locked">

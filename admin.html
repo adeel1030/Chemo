@@ -600,6 +600,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <div class="card stack" id="cat-ch">
         <div class="cat-top">
           <div class="field"><label for="cat-cls">Class or book</label><select id="cat-cls"></select></div>
+          <div class="field" data-kind-f><label for="cat-kind">Subject</label><select id="cat-kind" data-kind-sel></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="cat-book-name"></span></div>
         </div>
         <div class="ch-list" id="cat-list"></div>
@@ -615,11 +616,13 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <p class="cat-sub">Tick what the website should sell. The name and note show on the order form.</p>
         <div id="cat-formats"></div>
         <div><button class="btn btn-sun" type="button" data-cat="save-fmt">Save</button></div>
-        <div class="cat-fill"><b>Same price for many chapters</b>
+        <div class="cat-fill"><b>Same price or MRP for many chapters</b>
           <div class="cat-row">
+            <div class="field sm"><label for="fill-what">Fill</label><select id="fill-what"><option value="price">Price</option><option value="mrp">MRP</option></select></div>
             <div class="field"><label for="fill-f">Way to buy</label><select id="fill-f"></select></div>
             <div class="field"><label for="fill-cls">Chapters of</label><select id="fill-cls"></select></div>
-            <div class="field sm"><label for="fill-v">Price ₹</label><input id="fill-v" type="number" min="1" inputmode="numeric"></div>
+            <div class="field"><label for="fill-kind">Subject</label><select id="fill-kind"></select></div>
+            <div class="field sm"><label for="fill-v" id="fill-v-l">Price ₹</label><input id="fill-v" type="number" min="0" inputmode="numeric"></div>
             <button class="btn btn-line btn-sm" type="button" data-cat="fill">Fill and save</button>
           </div>
         </div>
@@ -703,6 +706,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <div class="card">
         <div class="cat-top">
           <div class="field"><label for="rd-cls">Class or book</label><select id="rd-cls"></select></div>
+          <div class="field" data-kind-f><label for="rd-kind">Subject</label><select id="rd-kind" data-kind-sel></select></div>
           <div class="field"><label for="rd-q">Find a chapter</label><input id="rd-q" type="search" autocomplete="off" placeholder="e.g. mole, atom, 12-3"></div>
         </div>
       </div>
@@ -716,6 +720,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <div class="card stack">
         <div class="cat-top">
           <div class="field"><label for="chap-cls">Class or book</label><select id="chap-cls"></select></div>
+          <div class="field" data-kind-f><label for="chap-kind">Subject</label><select id="chap-kind" data-kind-sel></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="chap-book-name"></span></div>
           <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="bulk-up">⬆ Upload many PDFs</button><button class="btn btn-line btn-sm" type="button" data-chap="subjects">📚 Subjects</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
         </div>
@@ -2357,7 +2362,8 @@ function renderCatalog() {
   }).join("");
   const book = cat.books.find(b => +b.cls === catCls);
   $("#cat-book-name").textContent = book ? `Book: ${book.name}` : "";
-  const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => +c.cls === catCls).sort((a, b) => orderN(a[0]) - orderN(b[0]));
+  const shown = new Set(bySubject("cat", cat.chapters.filter(c => +c.cls === catCls), catCls));
+  const list = cat.chapters.map((c, i) => [c, i]).filter(([c]) => shown.has(c)).sort((a, b) => orderN(a[0]) - orderN(b[0]));
   $("#cat-list").innerHTML = list.length ? list.map(([c, i]) => `<button class="ch-item" type="button" data-edit-ch="${i}">
       <span class="no">${keyText(ckey(c)).split("-")[1]}</span>
       <span class="nm">${esc(c.title)}<small>${c.pages ? c.pages + " pages · " : ""}${c.soon ? "Coming soon on the website" : "Live on the website"}</small></span>
@@ -2378,7 +2384,11 @@ function renderCatalog() {
     ${f === "online" || f === "monthly" ? `<div class="cat-row" style="grid-column: 2 / -1"><div class="field sm"><label>${f === "online" ? "Valid for (days)" : "Days paid for"}</label><input type="number" min="1" max="3660" inputmode="numeric" data-k="days" value="${numVal(cat.formats[f].days || (f === "online" ? 365 : 30))}"></div></div>` : ""}
   </div>`).join("");
   $("#fill-f").innerHTML = FORMAT_IDS.map(f => `<option value="${f}">${esc(cat.formats[f].label)}</option>`).join("");
+  const fc = $("#fill-cls").value || "all", fk = $("#fill-kind").value || "all";
   $("#fill-cls").innerHTML = `<option value="all">Every class</option>` + classes.map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("");
+  $("#fill-cls").value = classes.includes(+fc) ? fc : "all";
+  $("#fill-kind").innerHTML = `<option value="all">Every subject</option>` + Object.keys(KINDS).map(k => `<option value="${k}">${esc(k === "special" ? "JEE / NEET special and Bonus" : KINDS[k].subject + (k === "chem" ? " (the book)" : ""))}</option>`).join("");
+  $("#fill-kind").value = KINDS[fk] ? fk : "all";
   $("#of-on").checked = !!cat.offer.on; $("#of-text").value = cat.offer.text || ""; $("#of-until").value = cat.offer.until || "";
   $("#rf-on").checked = !!cat.referral.on; $("#rf-days").value = cat.referral.days || 30;
   renderSiteLists();
@@ -2393,7 +2403,8 @@ $("#cat-tabs").addEventListener("click", e => {
   ["ch", "combo", "fmt", "offer", "pay", "vid", "rev"].forEach(t => { $("#cat-" + t).hidden = t !== b.dataset.ctab; });
   $("#cat-msg").hidden = true;
 });
-$("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; renderCatalog(); });
+$("#fill-what").addEventListener("change", () => { $("#fill-v-l").textContent = $("#fill-what").value === "mrp" ? "MRP ₹ (0 = none)" : "Price ₹"; });
+$("#cat-cls").addEventListener("change", () => { catCls = +$("#cat-cls").value; kindPick.chap = kindPick.cat = "all"; renderCatalog(); });
 
 // ---------- website videos and reviews (catalog.site) ----------
 let reviewsIn = [];
@@ -2534,6 +2545,21 @@ const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n ===
 // What a new chapter can be (its number range says it; see KINDS in js/chapters.js).
 // Class 11 and 12 have JEE / NEET special chapters; in every other class the same slot is a "Bonus" booklet.
 const kindOpts = cls => Object.entries(KINDS).map(([k, K]) => [k, k === "chem" ? "Chemistry chapter (the book)" : k === "special" ? (isJeeCls(cls) ? "JEE / NEET special chapter" : "Bonus booklet (bonus chapter, mock test, revision sheet)") : `${K.subject} chapter`]);
+// The Subject drop-down beside a class drop-down: "All subjects" and each subject the class has (with how many
+// chapters). It hides itself when the class has one subject. Returns the chosen subject's chapters.
+const kindPick = { cat: "all", chap: "all", rd: "all" };
+function bySubject(which, list, cls) {
+  const sel = $(`#${which}-kind`), kinds = [...new Set(list.map(kindOf))].sort((a, b) => KINDS[a].from - KINDS[b].from);
+  if (kindPick[which] !== "all" && !kinds.includes(kindPick[which])) kindPick[which] = "all";
+  sel.innerHTML = `<option value="all">All subjects (${list.length})</option>` + kinds.map(k => `<option value="${k}"${k === kindPick[which] ? " selected" : ""}>${esc(kindHead(k, cls))} (${list.filter(c => kindOf(c) === k).length})</option>`).join("");
+  sel.closest("[data-kind-f]").hidden = kinds.length < 2;
+  return kindPick[which] === "all" ? list : list.filter(c => kindOf(c) === kindPick[which]);
+}
+document.addEventListener("change", e => {
+  const sel = e.target.closest("[data-kind-sel]"); if (!sel) return;
+  const which = sel.id.split("-")[0]; kindPick[which] = sel.value;
+  if (which === "cat") renderCatalog(); if (which === "chap") { openK = null; chapFilter = "all"; renderChapRows(); } if (which === "rd") renderShelf();
+});
 // The heading of a kind's section: "🧪 Chemistry", "📐 Maths", "🎁 Bonus booklets" (special chapters outside Class 11, 12) …
 const kindHead = (kind, cls) => kind === "special" && !isJeeCls(cls) ? "🎁 Bonus booklets" : KINDS[kind].head;
 const kindNoLabel = (cls, kind) => (kind === "special" && !isJeeCls(cls) ? "Bonus" : KINDS[kind].label.replace(" Ch", "")) + " no.";
@@ -2710,13 +2736,17 @@ $("#t-catalog").addEventListener("click", async e => {
       }, "Ways to buy saved.");
     }
     if (act === "fill") {
-      const f = $("#fill-f").value, cls = $("#fill-cls").value, v = Math.round(+$("#fill-v").value);
-      if (!(v > 0)) throw new Error("Write the price to fill in.");
-      let n = 0;
+      const what = $("#fill-what").value, f = $("#fill-f").value, cls = $("#fill-cls").value, kind = $("#fill-kind").value, raw = $("#fill-v").value.trim(), v = Math.round(+raw);
+      // A price must be above 0; an MRP of 0 (or empty) takes the MRP away.
+      if (what === "price" && !(v > 0)) throw new Error("Write the price to fill in.");
+      if (what === "mrp" && !(v >= 0)) throw new Error("Write the MRP to fill in (0 removes it).");
+      const pick = c => (cls === "all" || +c.cls === +cls) && (kind === "all" || kindOf(c) === kind) && !(isPart(c) && c.included !== false);
+      const n = cat.chapters.filter(pick).length;
+      if (!n) throw new Error("No chapter matches that class and subject.");
       await commit(next => {
-        next.chapters.forEach(c => { if (cls === "all" || +c.cls === +cls) { c.price = c.price || {}; c.price[f] = v; n++; } });
-        if (!next.formats[f].on) next.formats[f].on = true;
-      }, `₹${v} filled in for ${cls === "all" ? "every chapter" : "every " + clsName(cls) + " chapter"} (${cat.formats[f].label}).`);
+        next.chapters.forEach(c => { if (!pick(c)) return; if (what === "price") { c.price = c.price || {}; c.price[f] = v; } else { c.mrp = c.mrp || {}; c.mrp[f] = v || null; } });
+        if (what === "price" && !next.formats[f].on) next.formats[f].on = true;
+      }, `${what === "price" ? "Price" : "MRP"} ${what === "mrp" && !v ? "removed" : "₹" + v} for ${n} chapter${n > 1 ? "s" : ""}: ${cls === "all" ? "every class" : clsName(cls)}${kind === "all" ? "" : ", " + (KINDS[kind].subject)} (${cat.formats[f].label}).`);
     }
     if (act === "save-offer") {
       const on = $("#of-on").checked, text = $("#of-text").value.trim(), until = $("#of-until").value;
@@ -2780,7 +2810,7 @@ function renderChapRows() {
     const list = chapsOf(c), up = list.filter(x => uploaded.get(chapterKey(x))).length;
     return `<option value="${c}"${c === catCls ? " selected" : ""}>${esc(clsName(c))}${isUni(c) ? " · university" : ""} (${up} of ${list.length} uploaded)</option>`;
   }).join("");
-  const book = cat.books.find(b => +b.cls === catCls), all = chapsOf(catCls);
+  const book = cat.books.find(b => +b.cls === catCls), all = bySubject("chap", chapsOf(catCls), catCls);
   $("#chap-book-name").textContent = book ? `Book: ${book.name}` : "";
   if (!all.some(chapHas[chapFilter])) chapFilter = "all";
   $("#chap-filters").innerHTML = CHAP_FILTERS.map(([v, l]) => [v, l, all.filter(chapHas[v]).length]).filter(([v, , n]) => v === "all" || n)
@@ -2792,7 +2822,7 @@ function renderChapRows() {
   $("#chap-rows").innerHTML = list.length ? list.map((c, i) => `${!i || kindOf(list[i - 1]) !== kindOf(c) ? head(c) : ""}${chapRow(c, chapterKey(c), uploaded.get(chapterKey(c)))}`).join("")
     : `<div class="card"><p class="hint">${all.length ? "No chapter like that in this class." : `No chapters in ${esc(clsName(catCls))} yet. Tap <b>+ Add chapter</b> above.`}</p></div>`;
 }
-$("#chap-cls").addEventListener("change", () => { catCls = +$("#chap-cls").value; openK = null; chapFilter = "all"; renderCatalog(); });
+$("#chap-cls").addEventListener("change", () => { catCls = +$("#chap-cls").value; openK = null; chapFilter = "all"; kindPick.chap = kindPick.cat = "all"; renderCatalog(); });
 $("#chap-filters").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (b) { chapFilter = b.dataset.f; renderChapRows(); } });
 
 // ---------- book covers ----------
@@ -3317,7 +3347,7 @@ function renderShelf() {
   if (!classes.includes(rdCls)) rdCls = classes.includes(catCls) ? catCls : classes[0];
   $("#rd-cls").innerHTML = classes.map(c => `<option value="${c}"${c === rdCls ? " selected" : ""}>${esc(clsName(c))} (${chapsOf(c).filter(x => uploaded.get(chapterKey(x))).length} to read)</option>`).join("");
   const q = $("#rd-q").value.trim().toLowerCase();
-  const list = q ? classes.flatMap(chapsOf).filter(c => `${chapterKey(c)} ${keyText(chapterKey(c))} ${clsName(c.cls)} ${chNo(c)} ${c.title} ${c.short || ""}`.toLowerCase().includes(q)) : chapsOf(rdCls);
+  const list = q ? classes.flatMap(chapsOf).filter(c => `${chapterKey(c)} ${keyText(chapterKey(c))} ${clsName(c.cls)} ${chNo(c)} ${c.title} ${c.short || ""}`.toLowerCase().includes(q)) : bySubject("rd", chapsOf(rdCls), rdCls);
   const kinds = new Set(list.map(kindOf));
   $("#rd-shelf").innerHTML = list.length ? list.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k), lp = lastPage(k);
@@ -3328,7 +3358,7 @@ function renderShelf() {
       <small>${u ? `${u.pageCount} pages${lp > 1 ? ` · you were on p. ${lp}` : ""}` : "PDF not uploaded yet"}</small></button>`;
   }).join("") : `<p class="hint">${q ? "No chapter matches that." : "No chapters in this class yet."}</p>`;
 }
-$("#rd-cls").addEventListener("change", () => { rdCls = +$("#rd-cls").value; renderShelf(); });
+$("#rd-cls").addEventListener("change", () => { rdCls = +$("#rd-cls").value; kindPick.rd = "all"; renderShelf(); });
 $("#rd-q").addEventListener("input", renderShelf);
 $("#rd-shelf").addEventListener("click", e => { const b = e.target.closest("[data-rd]"); if (b && !b.disabled) openAdminBook(b.dataset.rd); });
 async function openAdminBook(k, page) {
