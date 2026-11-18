@@ -2,7 +2,7 @@
 // Our own files: always try the network first (so a new version shows at once), fall back to the copy
 // saved last time when offline. Versioned libraries from CDNs: saved copy first. Firebase data
 // (Firestore, login) is never touched here, so book pages are never stored on the phone by this file.
-const CACHE = "chemophile-v2";
+const CACHE = "chemophile-v3";
 const SHELL = [
   "read.html", "admin.html", "css/app.css", "js/chapters.js", "js/fb.js", "js/flipbook.js", "js/install.js",
   "js/firebase-config.js", "js/theme.js", "assets/logo/icon-192.png", "assets/logo/icon-512.png", "assets/logo/icon-96.png"
@@ -19,7 +19,8 @@ self.addEventListener("fetch", e => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== "GET") return;
   if (url.origin === location.origin) {
-    e.respondWith(fetch(req).then(res => {
+    // "no-cache": always ask the server whether the file changed, so a new version is never mixed with an old one.
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req, { ignoreSearch: true }).then(hit => hit || (req.mode === "navigate" ? caches.match("read.html") : Response.error()))));

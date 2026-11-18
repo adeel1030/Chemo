@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemo Admin">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/app.css?v=20261118b">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
 body { background: var(--paper); }
@@ -734,14 +734,14 @@ textarea:focus { border-color: var(--accent); outline: none; }
   </div>
 </main>
 
-<script src="js/chapters.js"></script>
+<script src="js/chapters.js?v=20261118b"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118b";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
@@ -3092,13 +3092,13 @@ function subjectsDialog() {
   const list = (cat.subjects || []), used = id => cat.chapters.filter(c => kindOf(c) === id).length;
   openDialog("Subjects", `
     <p class="cat-sub">A class can have chapters of several subjects; each shows in its own section on the website. When you add a chapter, choose its subject in "What is it?".</p>
-    <div class="ch-list">${Object.entries(KINDS).map(([k, K]) => `<div class="ch-item" style="cursor: default"><span class="no">${K.icon}</span>
+    <div class="ch-list">${Object.entries(KINDS).map(([k, K]) => `<div class="ch-item" style="cursor: default"><span class="no">${K.icon || "📘"}</span>
       <span class="nm">${esc(k === "special" ? "JEE / NEET special (Bonus in Class 9, 10)" : k === "chem" ? "Chemistry (the book)" : K.subject)}<small>Prompt key: ${k === "chem" ? "11-1" : `11-${esc(K.key)}1`} · chapters ${K.from + 1}–${K.from + 99}${K.custom ? ` · ${used(k)} chapter${used(k) === 1 ? "" : "s"}` : " · built in"}</small></span>
       ${K.custom && !used(k) ? `<button class="btn btn-line btn-sm" type="button" data-subj-del="${k}">Remove</button>` : ""}</div>`).join("")}</div>
     ${list.length < SUBJECT_FROMS.length ? `<div><b>Add a subject</b></div>
     <div class="cat-row">
       <div class="field"><label for="d-sname">Name</label><input id="d-sname" maxlength="20" placeholder="English"></div>
-      <div class="field sm"><label for="d-skey">Key letters</label><input id="d-skey" maxlength="4" placeholder="E" autocapitalize="characters"><span class="hint">For the prompt: 9-E1</span></div>
+      <div class="field sm"><label for="d-skey">Key (9-E1)</label><input id="d-skey" maxlength="4" placeholder="E" autocapitalize="characters"></div>
       <div class="field sm"><label for="d-sicon">Icon</label><input id="d-sicon" maxlength="4" value="📘"></div>
     </div>` : `<p class="cat-sub">All ${SUBJECT_FROMS.length} extra subjects are in use.</p>`}`,
     list.length < SUBJECT_FROMS.length ? async () => {
@@ -3308,7 +3308,7 @@ $("#chap-rows").addEventListener("click", e => { const b = e.target.closest("[da
 let rdCls = null, bookLibs = null;
 const loadScript = src => new Promise((ok, no) => { const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = () => no(new Error("The book viewer could not load. Check the internet and try again.")); document.head.append(t); });
 const bookLib = () => bookLibs || (bookLibs = (window.St ? Promise.resolve() : loadScript("https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"))
-  .then(() => window.Flipbook ? null : loadScript("js/flipbook.js")).catch(ex => { bookLibs = null; throw ex; }));
+  .then(() => window.Flipbook ? null : loadScript("js/flipbook.js?v=" + (document.querySelector('script[src*="chapters.js?v="]') || { src: "?v=1" }).src.split("?v=")[1])).catch(ex => { bookLibs = null; throw ex; }));
 const lastPageKey = k => `chemophile-admin-last-${k}`;
 const lastPage = k => { try { return +localStorage.getItem(lastPageKey(k)) || 0; } catch (e) { return 0; } };
 function renderShelf() {
