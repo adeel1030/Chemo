@@ -1970,13 +1970,33 @@ function parseInfo(text) {
   return { info, quiz: quiz ? quiz.join("\n") : null, errs, warns };
 }
 // One chapter's text (with or without its ### line) or many chapters → [{ k, info, qs, warns }] and errors.
+// The chapter in a heading: "11-1", "12-S7", "9-P1", "11-1X", or in words: "Class 12 Chapter 7", "Class 12 Special 3",
+// "Class 9 Physics 2", "Class 9 Biology 1", "Class 10 Bonus 1".
+function headKey(head) {
+  const h = String(head || "").replace(/[*_`]/g, " ");
+  const m = h.match(/(?:class|cls)?\s*(\d{1,3})\s*(?:th)?\b[^\d\n]*?\b(chapter|ch|special|spl|bonus|physics|phy|biology|bio)\.?\s*(?:no\.?)?\s*-?\s*(\d{1,2})\b\s*(x\b|extra)?/i);
+  if (m) {
+    const w = m[2].toLowerCase(), code = /^(special|spl|bonus)$/.test(w) ? "S" : /^ph/.test(w) ? "P" : /^bio/.test(w) ? "Bio" : "";
+    return parseKey(`${m[1]}-${code}${m[3]}${m[4] ? "X" : ""}`);
+  }
+  return parseKey(h);
+}
+// AI answers often dress the heading up ("**### 12-7**", "## 12-7", "### Class 12 Chapter 7"): make each one "### key".
+function tidyHeads(text) {
+  return String(text || "").replace(/\r/g, "").split("\n").map(l => {
+    const m = l.match(/^\s*[>*_`]*\s*#{1,6}\s*(.+?)\s*[*_`]*\s*$/);
+    if (!m) return l;
+    const k = headKey(m[1]);
+    return k ? `### ${k}` : l;
+  }).join("\n");
+}
 function bulkParse(text, only) {
-  const ok = [], errs = [], src = text.replace(/\r/g, "");
+  const ok = [], errs = [], src = tidyHeads(text);
   const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
   parts.forEach(part => {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
     // "11-1" is Class 11 Chapter 1; 11-S1 a JEE/NEET special, 9-P1 Physics, 9-Bio1 Biology, 11-1X extra topics.
-    const k = parseKey(head) || head.split(/\s+/)[0];
+    const k = headKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}. Change the ### line, or paste it in ${keyText(k)}.`); return; }
     // A chapter not in the book list yet is added from this text (its class must be there already).
     let isNew = false;
@@ -3171,11 +3191,11 @@ function parseQB(text) {
 }
 // One chapter's text (with or without its ### line), or many chapters → [{ k, qs }] and errors.
 function qbParse(text, only) {
-  const ok = [], errs = [], src = text.replace(/\r/g, "");
+  const ok = [], errs = [], src = tidyHeads(text);
   const parts = /^\s*###/m.test(src) ? src.split(/^\s*###\s*/m).slice(1).map(x => x.trim()).filter(Boolean) : only && src.trim() ? [only + "\n" + src] : [];
   parts.forEach(part => {
     const nl = part.indexOf("\n"), head = (nl < 0 ? part : part.slice(0, nl)).trim(), body = nl < 0 ? "" : part.slice(nl + 1);
-    const k = parseKey(head) || head.split(/\s+/)[0];
+    const k = headKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}.`); return; }
     if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${keyText(k)} yet. Add it first with + Add chapter.`); return; }
     const r = parseQB(body);
