@@ -1459,7 +1459,7 @@ function setClass(k, opts = {}) {
 function madeCover(c) {
   return `<div class="soon-cover made-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(bookPart(c.cls))}</span>
-      <span class="f"><span>${isPart(c) ? "🎯" : ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(c)] || numIn(c)}</span></span>
+      <span class="f"><span>${isPart(c) ? "🎯" : kindOf(c) !== "chem" ? KINDS[kindOf(c)].icon : numIn(c)}</span></span>
       <span class="c">${chNo(c)}</span><span class="t">${esc(c.title)}</span>${isExtraBook(c) ? `<span class="rib">Bonus</span>` : isBonus(c) || isPart(c) ? `<span class="rib">JEE · NEET</span>` : ""}<span class="bar"></span>
     </div>`;
 }
@@ -1469,18 +1469,14 @@ function soonCover(u) {
   if (img) return `<div class="soon-cover" style="padding: 0"><img src="${img}" alt="" width="360" height="509" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; box-shadow: none"><span class="rib">Coming soon</span></div>`;
   return `<div class="soon-cover night">
       <span class="w">Chemophile</span><span class="p">${esc(bookPart(u.cls))}</span>
-      <span class="f"><span>${u.f || ({ special: "🏆", phy: "⚡", bio: "🧬" })[kindOf(u)] || ""}</span></span>
+      <span class="f"><span>${u.f || (kindOf(u) !== "chem" ? KINDS[kindOf(u)].icon : "")}</span></span>
       <span class="c">${chNo(u)}</span><span class="t">${esc(u.title)}</span>
       <span class="rib">Coming soon</span><span class="bar"></span>
     </div>`;
 }
-// Shelf sections of a class: its Chemistry book, then JEE/NEET specials, then Physics and Biology (Class 9, 10).
-const SHELF_GROUPS = {
-  chem: ["🧪 Chemistry", ""],
-  special: ["🏆 JEE / NEET special chapters", "JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho."],
-  phy: ["⚡ Physics", "Physics bhi Hinglish mein: rozana ki cheezon se samjho, exam ke liye English mein likho."],
-  bio: ["🧬 Biology", "Biology bhi Hinglish mein: diagrams ke saath, aasaan bhasha mein."]
-};
+// Shelf sections of a class: its Chemistry book, then JEE/NEET specials, then Physics, Biology, Maths and any
+// subject added in the admin panel (each kind's heading and line come from KINDS in js/chapters.js).
+const shelfGroup = kind => [KINDS[kind].head, kind === "chem" ? "" : KINDS[kind].note || ""];
 // Classes without JEE / NEET (9, 10, university books): the same section holds the class's bonus booklets.
 const SHELF_BONUS = ["🎁 Bonus booklets", "Is class ke saath extra: bonus chapters, mock tests aur quick revision, competition exams ke point of view se."];
 // A chapter's JEE/NEET extra topics: shown on the chapter's own card when included, as a card when sold on their own.
@@ -1492,10 +1488,10 @@ function renderShelf() {
   const soon = UPCOMING.filter(u => u.cls === cls);
   const items = [...ready.map(c => ({ c })), ...soon.map(u => ({ u }))].sort((a, b) => orderN(a.c || a.u) - orderN(b.c || b.u));
   const kinds = [...new Set(items.map(x => kindOf(x.c || x.u)))];
-  const many = kinds.some(k => k === "phy" || k === "bio");
+  const many = kinds.some(k => k !== "chem" && k !== "special");
   let lastKind = null;
   $("#shelf").innerHTML = items.map(({ c, u }) => {
-    const kind = kindOf(c || u), grp = kind === "special" && !isJeeCls(cls) ? SHELF_BONUS : SHELF_GROUPS[kind];
+    const kind = kindOf(c || u), grp = kind === "special" && !isJeeCls(cls) ? SHELF_BONUS : shelfGroup(kind);
     const head = kind !== lastKind && (kind !== "chem" || many) ? `<div class="shelf-head${lastKind ? "" : " first"}"><h3>${grp[0]}</h3>${grp[1] ? `<p>${grp[1]}</p>` : ""}</div>` : "";
     lastKind = kind;
     if (c) {
@@ -1524,8 +1520,8 @@ function renderShelf() {
   }).join("") || `<div class="shelf-head"><h3>${esc(clsName(cls))}: books coming soon</h3><p>${SAMPLE_BOOKS[cls] ? `The free sample is ready: <a href="#free-sample">read it now →</a> ` : ""}Adeel Sir is writing the books now. <a href="${wa(`Hello Adeel Sir, please tell me when the Chemophile ${clsName(cls)} books are ready.`)}" target="_blank" rel="noopener">Get a WhatsApp message when they're ready →</a></p></div>`;
   const book = PART[cls] ? bookName(cls) : clsName(cls);
   const count = kind => [ready.filter(c => kindOf(c) === kind && !isPart(c)).length, soon.filter(u => kindOf(u) === kind).length];
-  const [mainReady, mainSoon] = count("chem"), extra = ["special", "phy", "bio"].map(k => [k, count(k)[0] + count(k)[1]]).filter(([, n]) => n);
-  const names = { special: isJeeCls(cls) ? "JEE/NEET special" : "bonus", phy: "Physics", bio: "Biology" };
+  const [mainReady, mainSoon] = count("chem"), extra = Object.keys(KINDS).filter(k => k !== "chem").map(k => [k, count(k)[0] + count(k)[1]]).filter(([, n]) => n);
+  const names = Object.fromEntries(Object.entries(KINDS).map(([k, K]) => [k, k === "special" ? (isJeeCls(cls) ? "JEE/NEET special" : "bonus") : K.subject]));
   $("#shelf-note").textContent = (mainReady
     ? `${book}: ${mainSoon ? `${mainReady} chapters ready, ${mainSoon} coming soon.` : mainReady === 1 ? "1 chapter is ready." : `all ${mainReady} chapters are ready.`}`
     : mainSoon ? `${book}: all ${mainSoon} chapters are coming soon. Tap "Notify me" under the ones you want.` : `${book}.`)

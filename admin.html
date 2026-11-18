@@ -717,7 +717,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
         <div class="cat-top">
           <div class="field"><label for="chap-cls">Class or book</label><select id="chap-cls"></select></div>
           <div class="cat-bookname"><span class="cat-sub" id="chap-book-name"></span></div>
-          <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="bulk-up">⬆ Upload many PDFs</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
+          <div class="actions"><button class="btn btn-sun btn-sm" type="button" data-chap="new-ch">+ Add chapter</button><button class="btn btn-line btn-sm" type="button" data-chap="bulk-up">⬆ Upload many PDFs</button><button class="btn btn-line btn-sm" type="button" data-chap="subjects">📚 Subjects</button><button class="btn btn-line btn-sm" type="button" data-chap="edit-class">Edit class</button><button class="btn btn-line btn-sm" type="button" data-chap="new-class">+ Add class or university book</button></div>
         </div>
         <div class="meter" aria-hidden="true"><i id="chap-meter" style="width: 0"></i></div>
         <div class="chips" id="chap-filters" role="group" aria-label="Show"></div>
@@ -1974,9 +1974,12 @@ function parseInfo(text) {
 // "Class 9 Physics 2", "Class 9 Biology 1", "Class 10 Bonus 1".
 function headKey(head) {
   const h = String(head || "").replace(/[*_`]/g, " ");
-  const m = h.match(/(?:class|cls)?\s*(\d{1,3})\s*(?:th)?\b[^\d\n]*?\b(chapter|ch|special|spl|bonus|physics|phy|biology|bio)\.?\s*(?:no\.?)?\s*-?\s*(\d{1,2})\b\s*(x\b|extra)?/i);
+  const custom = Object.values(KINDS).filter(K => K.custom).map(K => K.subject.toLowerCase().replace(/[^a-z ]/g, "")).filter(Boolean);
+  const words = ["chapter", "ch", "special", "spl", "bonus", "physics", "phy", "biology", "bio", "mathematics", "maths", "math", ...custom].join("|");
+  const m = h.match(new RegExp(`(?:class|cls)?\\s*(\\d{1,3})\\s*(?:th)?\\b[^\\d\\n]*?\\b(${words})\\.?\\s*(?:no\\.?)?\\s*-?\\s*(\\d{1,2})\\b\\s*(x\\b|extra)?`, "i"));
   if (m) {
-    const w = m[2].toLowerCase(), code = /^(special|spl|bonus)$/.test(w) ? "S" : /^ph/.test(w) ? "P" : /^bio/.test(w) ? "Bio" : "";
+    const w = m[2].toLowerCase(), K = Object.values(KINDS).find(K => K.custom && K.subject.toLowerCase().replace(/[^a-z ]/g, "") === w);
+    const code = K ? K.key : /^(special|spl|bonus)$/.test(w) ? "S" : /^ph/.test(w) ? "P" : /^bio/.test(w) ? "Bio" : /^math/.test(w) ? "M" : "";
     return parseKey(`${m[1]}-${code}${m[3]}${m[4] ? "X" : ""}`);
   }
   return parseKey(h);
@@ -2530,7 +2533,9 @@ function readPrices(old = {}, oldMrp = {}) {
 const isBaseChapter = c => STATIC_CHAPTERS.some(x => x.cls === +c.cls && x.n === +c.n);
 // What a new chapter can be (its number range says it; see KINDS in js/chapters.js).
 // Class 11 and 12 have JEE / NEET special chapters; in every other class the same slot is a "Bonus" booklet.
-const kindOpts = cls => [["chem", "Chemistry chapter (the book)"], ["special", isJeeCls(cls) ? "JEE / NEET special chapter" : "Bonus booklet (bonus chapter, mock test, revision sheet)"], ["phy", "Physics chapter"], ["bio", "Biology chapter"]];
+const kindOpts = cls => Object.entries(KINDS).map(([k, K]) => [k, k === "chem" ? "Chemistry chapter (the book)" : k === "special" ? (isJeeCls(cls) ? "JEE / NEET special chapter" : "Bonus booklet (bonus chapter, mock test, revision sheet)") : `${K.subject} chapter`]);
+// The heading of a kind's section: "🧪 Chemistry", "📐 Maths", "🎁 Bonus booklets" (special chapters outside Class 11, 12) …
+const kindHead = (kind, cls) => kind === "special" && !isJeeCls(cls) ? "🎁 Bonus booklets" : KINDS[kind].head;
 const kindNoLabel = (cls, kind) => (kind === "special" && !isJeeCls(cls) ? "Bonus" : KINDS[kind].label.replace(" Ch", "")) + " no.";
 const nextN = (cls, kind) => Math.max(KINDS[kind].from, ...cat.chapters.filter(x => +x.cls === +cls && !isPart(x) && kindOf(x) === kind).map(x => +x.n)) + 1;
 // One dialog for every chapter: a book chapter, a JEE/NEET special, a Physics or Biology chapter, or the
@@ -2783,7 +2788,7 @@ function renderChapRows() {
   const up = all.filter(c => uploaded.get(chapterKey(c))).length;
   $("#chap-meter").style.width = (all.length ? Math.round(up / all.length * 100) : 0) + "%";
   const list = all.filter(chapHas[chapFilter]), kinds = new Set(all.map(kindOf));
-  const head = c => kinds.size > 1 ? `<h2 class="cls-head">${({ chem: "🧪 Chemistry", special: isJeeCls(catCls) ? "🏆 JEE / NEET special chapters" : "🎁 Bonus booklets", phy: "⚡ Physics", bio: "🧬 Biology" })[kindOf(c)]}</h2>` : "";
+  const head = c => kinds.size > 1 ? `<h2 class="cls-head">${kindHead(kindOf(c), catCls)}</h2>` : "";
   $("#chap-rows").innerHTML = list.length ? list.map((c, i) => `${!i || kindOf(list[i - 1]) !== kindOf(c) ? head(c) : ""}${chapRow(c, chapterKey(c), uploaded.get(chapterKey(c)))}`).join("")
     : `<div class="card"><p class="hint">${all.length ? "No chapter like that in this class." : `No chapters in ${esc(clsName(catCls))} yet. Tap <b>+ Add chapter</b> above.`}</p></div>`;
 }
@@ -3077,7 +3082,45 @@ function bulkUploadDialog() {
   });
   list.addEventListener("change", sync);
 }
-$("#t-chapters").addEventListener("click", e => { if (e.target.closest('[data-chap="bulk-up"]')) bulkUploadDialog(); });
+$("#t-chapters").addEventListener("click", e => { if (e.target.closest('[data-chap="bulk-up"]')) bulkUploadDialog(); if (e.target.closest('[data-chap="subjects"]')) subjectsDialog(); });
+// ---------- subjects ----------
+// Chemistry (the book), JEE/NEET special, Physics, Biology and Maths are built in. Up to five more subjects can be
+// added (English, Computer …): each gets its own 100 chapter numbers (501–599, 601–699 …) and prompt letters (9-E1).
+const SUBJECT_FROMS = [500, 600, 700, 800, 900];
+const RESERVED_KEYS = ["", "s", "b", "j", "p", "bio", "m", "x"];
+function subjectsDialog() {
+  const list = (cat.subjects || []), used = id => cat.chapters.filter(c => kindOf(c) === id).length;
+  openDialog("Subjects", `
+    <p class="cat-sub">A class can have chapters of several subjects; each shows in its own section on the website. When you add a chapter, choose its subject in "What is it?".</p>
+    <div class="ch-list">${Object.entries(KINDS).map(([k, K]) => `<div class="ch-item" style="cursor: default"><span class="no">${K.icon}</span>
+      <span class="nm">${esc(k === "special" ? "JEE / NEET special (Bonus in Class 9, 10)" : k === "chem" ? "Chemistry (the book)" : K.subject)}<small>Prompt key: ${k === "chem" ? "11-1" : `11-${esc(K.key)}1`} · chapters ${K.from + 1}–${K.from + 99}${K.custom ? ` · ${used(k)} chapter${used(k) === 1 ? "" : "s"}` : " · built in"}</small></span>
+      ${K.custom && !used(k) ? `<button class="btn btn-line btn-sm" type="button" data-subj-del="${k}">Remove</button>` : ""}</div>`).join("")}</div>
+    ${list.length < SUBJECT_FROMS.length ? `<div><b>Add a subject</b></div>
+    <div class="cat-row">
+      <div class="field"><label for="d-sname">Name</label><input id="d-sname" maxlength="20" placeholder="English"></div>
+      <div class="field sm"><label for="d-skey">Key letters</label><input id="d-skey" maxlength="4" placeholder="E" autocapitalize="characters"><span class="hint">For the prompt: 9-E1</span></div>
+      <div class="field sm"><label for="d-sicon">Icon</label><input id="d-sicon" maxlength="4" value="📘"></div>
+    </div>` : `<p class="cat-sub">All ${SUBJECT_FROMS.length} extra subjects are in use.</p>`}`,
+    list.length < SUBJECT_FROMS.length ? async () => {
+      const name = val("d-sname"), key = val("d-skey").replace(/[^a-z]/gi, ""), icon = val("d-sicon") || "📘";
+      if (name.length < 2) throw new Error("Write the subject's name.");
+      if (!key) throw new Error("Write its key letters (letters only), e.g. E for English.");
+      if (RESERVED_KEYS.includes(key.toLowerCase()) || Object.values(KINDS).some(K => K.key.toLowerCase() === key.toLowerCase())) throw new Error(`The letters ${key} are already used. Choose others.`);
+      if (Object.values(KINDS).some(K => K.subject.toLowerCase() === name.toLowerCase())) throw new Error(`${name} is already a subject.`);
+      await commit(next => {
+        next.subjects = next.subjects || [];
+        const from = SUBJECT_FROMS.find(f => !next.subjects.some(x => +x.from === f));
+        if (!from) return "All extra subjects are in use.";
+        next.subjects.push({ id: "sub" + from, name, key: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(), icon, from });
+      }, `Subject added: ${name}. Add its chapters with + Add chapter (What is it? → ${name} chapter); its prompt key is like 9-${key}1.`);
+      renderChapRows();
+    } : null, null, { saveLabel: "Add subject" });
+  dlg.querySelectorAll("[data-subj-del]").forEach(b => b.addEventListener("click", async () => {
+    const id = b.dataset.subjDel;
+    try { await commit(next => { if (next.chapters.some(c => kindOf(c) === id)) return "This subject has chapters: remove them first."; next.subjects = (next.subjects || []).filter(x => x.id !== id); }, "Subject removed."); dlg.close(); }
+    catch (ex) { dlgErr(saveError(ex)); }
+  }));
+}
 
 // ---------- chapter quizzes ----------
 // Written as plain text (easy to type on a phone or paste from notes), saved as quizzes/{chapter}.
@@ -3278,7 +3321,7 @@ function renderShelf() {
   const kinds = new Set(list.map(kindOf));
   $("#rd-shelf").innerHTML = list.length ? list.map((c, i) => {
     const k = chapterKey(c), u = uploaded.get(k), lp = lastPage(k);
-    const head = !q && kinds.size > 1 && (!i || kindOf(list[i - 1]) !== kindOf(c)) ? `<h2 class="rd-head">${({ chem: "🧪 Chemistry", special: isJeeCls(c.cls) ? "🏆 JEE / NEET special chapters" : "🎁 Bonus booklets", phy: "⚡ Physics", bio: "🧬 Biology" })[kindOf(c)]}</h2>` : "";
+    const head = !q && kinds.size > 1 && (!i || kindOf(list[i - 1]) !== kindOf(c)) ? `<h2 class="rd-head">${kindHead(kindOf(c), c.cls)}</h2>` : "";
     return `${head}<button class="rd-book" type="button" data-rd="${k}"${u ? "" : " disabled"}>
       <span class="cv">${coverOf(c) ? `<img src="${coverOf(c)}" alt="" loading="lazy" width="360" height="509">` : esc(chShort(c))}</span>
       <b>${q ? esc(clsName(c.cls)) + " · " : ""}${chNo(c)}: ${esc(c.short || c.title)}</b>

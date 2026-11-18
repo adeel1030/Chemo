@@ -69,15 +69,30 @@ const isUni = cls => +cls > 100;
 //   101–199  JEE / NEET special chapters               "JEE/NEET Special 1" (11-S1)
 //   201–299  Physics chapters (Class 9 and 10)         "Physics Ch 1"       (9-P1)
 //   301–399  Biology chapters (Class 9 and 10)         "Biology Ch 1"       (9-Bio1)
+//   401–499  Maths chapters                            "Maths Ch 1"         (11-M1)
+//   501–999  subjects the admin adds (catalog.subjects), 100 numbers each, e.g. English "English Ch 1" (9-E1)
 //   1000+n   the JEE / NEET extra topics of chapter n, its own PDF   "Chapter 1 · JEE/NEET extra" (11-1X)
 const BONUS_FROM = 100, PART_FROM = 1000;
-const KINDS = { chem: { from: 0, label: "Chapter", short: "Ch", key: "", subject: "Chemistry" },
-  special: { from: 100, label: "JEE/NEET Special", short: "Special", key: "S", subject: "Chemistry" },
-  phy: { from: 200, label: "Physics Ch", short: "Phy", key: "P", subject: "Physics" },
-  bio: { from: 300, label: "Biology Ch", short: "Bio", key: "Bio", subject: "Biology" } };
+// Each kind: its number range (from), names, prompt key letters, icon, and the heading and line of its shelf.
+const KINDS = { chem: { from: 0, label: "Chapter", short: "Ch", key: "", subject: "Chemistry", icon: "🧪", head: "🧪 Chemistry" },
+  special: { from: 100, label: "JEE/NEET Special", short: "Special", key: "S", subject: "Chemistry", icon: "🏆", head: "🏆 JEE / NEET special chapters",
+    note: "JEE Main, JEE Advanced aur NEET ke point of view se: advanced concepts, tricks, PYQs aur extra practice. Isi class ke saath padho." },
+  phy: { from: 200, label: "Physics Ch", short: "Phy", key: "P", subject: "Physics", icon: "⚡", head: "⚡ Physics", note: "Physics bhi Hinglish mein: rozana ki cheezon se samjho, exam ke liye English mein likho." },
+  bio: { from: 300, label: "Biology Ch", short: "Bio", key: "Bio", subject: "Biology", icon: "🧬", head: "🧬 Biology", note: "Biology bhi Hinglish mein: diagrams ke saath, aasaan bhasha mein." },
+  maths: { from: 400, label: "Maths Ch", short: "Maths", key: "M", subject: "Maths", icon: "📐", head: "📐 Maths", note: "Maths bhi Hinglish mein: har step samjhaya hua, solved examples ke saath." } };
+const BUILT_IN_KINDS = Object.keys(KINDS);
+// Subjects added by the admin (catalog.subjects: [{ id, name, key, icon, from }]) become kinds too.
+function setSubjects(list) {
+  Object.keys(KINDS).forEach(k => { if (!BUILT_IN_KINDS.includes(k)) delete KINDS[k]; });
+  (list || []).forEach(x => {
+    if (!x || !x.id || !(+x.from >= 500 && +x.from <= 900) || KINDS[x.id]) return;
+    const name = String(x.name || x.id), icon = x.icon || "📘";
+    KINDS[x.id] = { from: +x.from, label: `${name} Ch`, short: name.length > 8 ? String(x.key || name.slice(0, 4)) : name, key: String(x.key || ""), subject: name, icon, head: `${icon} ${name}`, note: `${name} bhi Hinglish mein, aasaan bhasha mein.`, custom: true };
+  });
+}
 const isPart = c => +(c && c.n) >= PART_FROM;
 const baseN = n => +n % PART_FROM;
-const kindOf = c => { const n = baseN(c && c.n); return n > 300 ? "bio" : n > 200 ? "phy" : n > 100 ? "special" : "chem"; };
+const kindOf = c => { const n = baseN(c && c.n); let best = "chem", from = -1; for (const [k, K] of Object.entries(KINDS)) if (n > K.from && K.from > from) { best = k; from = K.from; } return best; };
 const isBonus = c => kindOf(c) === "special";
 const numIn = c => baseN(c.n) - KINDS[kindOf(c)].from;
 // Only Class 11 and 12 have JEE / NEET. In every other class (9, 10, a university book) the same
@@ -94,12 +109,15 @@ const bookPart = cls => String(PART[cls] || clsName(cls)).replace(/^chemophile\s
 // Chapters in reading order: by kind and number, with a chapter's extra topics right after it.
 const orderN = c => baseN(c.n) * 2 + (isPart(c) ? 1 : 0);
 const parentKey = k => { const [c, n] = String(k).split("-"); return +n >= PART_FROM ? `${c}-${+n % PART_FROM}` : null; };
-// "11-1", "11-S1" (or the older 11-B1), "9-P2", "9-Bio3", "11-1X" → the chapter key; and back again.
+// "11-1", "11-S1" (or the older 11-B1), "9-P2", "9-Bio3", "11-M1", "11-1X" → the chapter key; and back again.
+// The letters are each kind's key (B and J also mean the special chapters).
 function parseKey(text) {
-  const m = String(text).match(/(\d+)\s*[-–.:]\s*(bio|s|b|j|p)?\s*(\d+)\s*(x|extra)?/i);
+  const m = String(text).match(/(\d+)\s*[-–.:]\s*([a-z]{1,6})?\s*(\d+)\s*(x|extra)?(?![a-z0-9])/i);
   if (!m) return null;
-  const kind = (m[2] || "").toLowerCase(), from = kind === "bio" ? 300 : kind === "p" ? 200 : kind ? 100 : 0;
-  const n = +m[3] < 100 || from ? from + +m[3] : +m[3];
+  const letters = (m[2] || "").toLowerCase(), alias = { b: "s", j: "s" };
+  const K = letters ? Object.values(KINDS).find(x => x.key && x.key.toLowerCase() === (alias[letters] || letters)) : KINDS.chem;
+  if (!K) return null;
+  const from = K.from, n = +m[3] < 100 || from ? from + +m[3] : +m[3];
   return `${+m[1]}-${n + (m[4] ? PART_FROM : 0)}`;
 }
 const keyText = k => { const [cl, n] = String(k).split("-"), c = { cls: +cl, n: +n }, K = KINDS[kindOf(c)]; return `${cl}-${isExtraBook(c) ? "B" : K.key}${numIn(c)}${isPart(c) ? "X" : ""}`; };
@@ -374,6 +392,7 @@ function defaultCatalog() {
 }
 function applyCatalog(cat) {
   if (!cat || !Array.isArray(cat.chapters)) return false;
+  setSubjects(cat.subjects);
   const base = new Map(STATIC_CHAPTERS.map(c => [keyOf(c), c]));
   Object.keys(PART).forEach(k => delete PART[k]);
   Object.keys(CLASS_LABEL).forEach(k => delete CLASS_LABEL[k]);

@@ -59,6 +59,7 @@ CHAPTER KEYS
 - JEE / NEET special chapters: <class>-S<number>. Class 11 Special 1 is 11-S1.
 - Bonus booklets of Class 9 and 10: <class>-B<number>. Class 9 Bonus 1 is 9-B1.
 - Physics and Biology (Class 9 and 10): 9-P1 is Class 9 Physics chapter 1, 10-Bio2 is Class 10 Biology chapter 2.
+- Maths (any class): 11-M1 is Class 11 Maths chapter 1. Other subjects use the letters I give you (for example English 9-E1).
 - The JEE / NEET extra topics of a chapter: add X. The extra topics of Class 11 Chapter 1 are 11-1X.
 Class 11 (Part 1): 11-1 Some Basic Concepts · 11-2 Structure of Atom · 11-3 Classification of Elements · 11-4 Chemical Bonding · 11-5 Thermodynamics · 11-6 Equilibrium · 11-7 Redox Reactions · 11-8 Organic Chemistry: Basic Principles · 11-9 Hydrocarbons
 Class 12 (Part 2): 12-1 Solutions · 12-2 Electrochemistry · 12-3 Chemical Kinetics · 12-4 d- and f-Block · 12-5 Coordination Compounds · 12-6 Haloalkanes and Haloarenes · 12-7 Alcohols, Phenols and Ethers · 12-8 Aldehydes, Ketones and Carboxylic Acids · 12-9 Amines · 12-10 Biomolecules
