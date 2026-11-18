@@ -625,6 +625,8 @@ if (!configured) {
     if (busy) return;
     if (!user) {
       stopWatching();
+      // Logged out: the next reader on this tab starts fresh.
+      try { sessionStorage.removeItem(READ_UI); } catch (e) {} libCls = "all"; libKind = "all"; uiRestored = false;
       me = null; newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
       if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
@@ -969,7 +971,23 @@ $("#news").addEventListener("click", e => {
 
 // ---------- library ----------
 const chapterInfo = new Map();
-let libCls = "all", libKind = "all";
+// A refresh comes back to the same place: the class and subject chosen, the scroll position, and the book that
+// was open at its page (kept for this tab in sessionStorage).
+try { history.scrollRestoration = "manual"; } catch (e) {}
+const READ_UI = "chemophile-read-ui";
+const readUI = () => { try { return JSON.parse(sessionStorage.getItem(READ_UI)) || {}; } catch (e) { return {}; } };
+const saveReadUI = part => { try { sessionStorage.setItem(READ_UI, JSON.stringify(Object.assign(readUI(), part))); } catch (e) {} };
+let readScrollT = null, uiRestored = false;
+addEventListener("scroll", () => { if (!uiRestored || book) return; clearTimeout(readScrollT); readScrollT = setTimeout(() => saveReadUI({ y: Math.round(scrollY) }), 200); }, { passive: true });
+function restoreReadUI(keys) {
+  if (uiRestored) return;
+  uiRestored = true;
+  const ui = readUI(), b = ui.book;
+  if (b && b.sample && SAMPLE_BOOKS[b.sample]) return openSampleBook(b.sample, b.page);
+  if (b && b.k && keys.includes(b.k) && access(b.k).open && progress(b.k).ready) return openBook(b.k, b.page);
+  if (ui.y > 0) { let n = 0; const put = () => { scrollTo(0, ui.y); if (Math.abs(scrollY - ui.y) > 40 && ++n < 10) setTimeout(put, 250); }; requestAnimationFrame(put); }
+}
+let libCls = readUI().cls || "all", libKind = readUI().kind || "all";
 // A subject's name on its button: "🧪 Chemistry", "📐 Maths", "🏆 JEE / NEET" ("🎁 Bonus" outside Class 11, 12).
 const kindChip = (k, classes) => k === "special" ? (classes.some(isJeeCls) ? "🏆 JEE / NEET" : "🎁 Bonus") : `${KINDS[k].icon} ${KINDS[k].subject}`;
 const keyKind = k => kindOf({ n: +String(k).split("-")[1] });
@@ -1152,15 +1170,16 @@ async function renderLibrary() {
   renderMyReading(keys); renderMyQuiz(keys);
   // "View chapter" in the admin panel (or a shared link) opens one chapter directly: read.html#open=11-1
   const link = /^#open=(\d+-\d+)$/.exec(location.hash);
-  if (link) { history.replaceState(null, "", location.pathname + location.search); if (keys.includes(link[1]) && access(link[1]).open && progress(link[1]).ready) openBook(link[1]); }
+  if (link) { uiRestored = true; history.replaceState(null, "", location.pathname + location.search); if (keys.includes(link[1]) && access(link[1]).open && progress(link[1]).ready) openBook(link[1]); }
+  restoreReadUI(keys);
   searchKeys = keys; renderStreak(); renderDoubts(); showTour(); renderRate(keys); renderBadges(keys);
   renderRefer();
   if (!loadErr) pageCache.keepOnly(r => auth.currentUser && r.uid === auth.currentUser.uid && keys.includes(r.ch) && access(r.ch).open && r.ver === chapterVer(r.ch));
   $("#help-wa").href = wa(`Hello Adeel Sir, I need help with my Chemophile online book (${me.promo ? "promo " + me.promo : "ID " + me.loginId}).`);
 }
 $("#v-library").addEventListener("click", e => { if (e.target.closest("#lib-retry")) renderLibrary(); });
-$("#lib-chips").addEventListener("click", e => { const b = e.target.closest("[data-cls]"); if (b) { libCls = b.dataset.cls; renderLibrary(); } });
-$("#lib-subj").addEventListener("click", e => { const b = e.target.closest("[data-kind]"); if (b) { libKind = b.dataset.kind; renderLibrary(); } });
+$("#lib-chips").addEventListener("click", e => { const b = e.target.closest("[data-cls]"); if (b) { libCls = b.dataset.cls; saveReadUI({ cls: libCls }); renderLibrary(); } });
+$("#lib-subj").addEventListener("click", e => { const b = e.target.closest("[data-kind]"); if (b) { libKind = b.dataset.kind; saveReadUI({ kind: libKind }); renderLibrary(); } });
 $("#logout-2").addEventListener("click", () => $("#logout").click());
 $("#v-library").addEventListener("click", e => {
   const b = e.target.closest("[data-read]");
@@ -1229,7 +1248,7 @@ function renderFree() {
         <div class="meta">🔒 Unlock to read</div></div></div>`).join("")}</div>` : "";
   }).join("") || `<div class="card">Chapters for ${esc(what)} are coming soon.</div>`;
   $("#myread").hidden = true; $("#refer").hidden = true;
-  searchKeys = chs.map(chapterKey); renderStreak(); renderDoubts(); showTour(); renderRate([]);
+  searchKeys = chs.map(chapterKey); renderStreak(); renderDoubts(); showTour(); renderRate([]); restoreReadUI([]);
   const rows = [["Name", me.name || "-"], ["Login ID", me.loginId], ["WhatsApp", me.phone || "-"], ...(me.role ? [["I am a", me.role === "teacher" ? "Teacher" : "Student"]] : []),
     ...(me.school ? [["School", me.school + (me.city ? ", " + me.city : "")]] : []), ["Class", what], ["This device", me.deviceInfo || "This phone"], ["Plan", "Free sample (nothing bought yet)"]];
   $("#acct").innerHTML = rows.map(([t, d]) => `<div><dt>${t}</dt><dd>${esc(d)}</dd></div>`).join("");
@@ -1238,11 +1257,14 @@ function renderFree() {
 }
 // The free sample opens in the same book viewer, straight from the website's sample pages.
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.alt = ""; i.onload = () => res(i); i.onerror = rej; i.src = src; });
-function openSampleBook(k) {
+function openSampleBook(k, page) {
   const b = SAMPLE_BOOKS[k];
   if (!b) return;
+  saveReadUI({ book: { sample: k, page: page || 1 } });
   new Flipbook({
-    title: `${clsName(k)} free sample`, pageCount: b.pages,
+    title: `${clsName(k)} free sample`, pageCount: b.pages, start: page || 1,
+    onPage: n => saveReadUI({ book: { sample: k, page: n } }),
+    onClose: () => saveReadUI({ book: null }),
     toc: b.toc ? b.toc.map(([t, n]) => [esc(t), n]) : CHAPTERS.filter(c => c.cls === k && !c.custom).map(c => [`${chShort(c)} · ${esc(c.short || c.title)}`, 2 * c.n + 2]),
     loadPage: n => loadImg(sampleImg(k, n))
   }).open();
@@ -2128,11 +2150,11 @@ function openBook(k, page) {
     onDoubt: me.admin ? null : n => openDoubt(k, n),
     guard: !me.admin,
     toc: (c.topics || []).map(([name, sec, start]) => [name, start]),
-    onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); },
+    onPage: n => { store.set(`chemophile-last-${k}`, n); pageSeen(n); saveReadUI({ book: { k, page: n } }); },
     // Bookmarks: kept on this phone at once, and in Firebase (users/{uid}/marks/{chapter}) so they survive.
     marks: localMarks(k),
     onMarks: list => saveMarks(k, list),
-    onClose: () => { stopTracking(); book = null; renderLibrary(); },
+    onClose: () => { stopTracking(); book = null; saveReadUI({ book: null }); renderLibrary(); },
     loadPage: async n => {
       const ver = chapterVer(k), kept = await pageCache.get(k, ver, n);
       if (kept) return drawPage(kept);

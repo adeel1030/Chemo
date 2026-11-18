@@ -821,24 +821,55 @@ else onAuthStateChanged(auth, async user => {
   $("#who").textContent = user.email;
   $("#logout").hidden = false;
   show("v-admin");
+  // After a refresh: the same section, class, subject, filters and chapter as before (see ADMIN_UI).
+  const ui = adminUI();
+  applyAdminUI(ui);
   // The catalog decides which classes and chapters exist, so it comes first.
   const saved = await loadCatalog();
   startCatalog(saved);
+  if (TABS.includes(ui.tab)) go(ui.tab, true);
+  const ct = ui.ctab && document.querySelector(`#cat-tabs [data-ctab="${ui.ctab}"]`); if (ct) ct.click();
+  uiReady = true;
   // Load each part on its own, so one failure doesn't hide the rest, and say exactly what Firebase answered.
   const fails = [];
-  const run = (name, load, onFail) => load().catch(ex => {
+  const loading = [];
+  const run = (name, load, onFail) => loading[loading.push(load().catch(ex => {
     console.error(name, ex);
     fails.push(`${name}: ${why(ex)}`);
     const m = $("#load-err"); m.innerHTML = fails.map(esc).join("<br>") + `<br><button class="btn btn-line btn-sm" type="button" onclick="location.reload()" style="margin-top: 8px">Reload</button>`; m.hidden = false;
     if (onFail) onFail(ex);
-  });
+  })) - 1];
   run("Students", loadStudents);
   run("Promo codes", loadPromos);
   run("Chapters", loadChapters, ex => { $("#chap-rows").innerHTML = `<p class="msg bad">Couldn't check which chapters are uploaded. ${esc(why(ex))}</p>`; });
   run("Announcements", loadNews, ex => { $("#news").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
   run("Reviews", loadReviewsIn);
   run("Doubts", loadDoubts, ex => { $("#doubts").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
+  // Once the lists are drawn, back to where the page was scrolled.
+  Promise.allSettled(loading).then(() => { const y = (ui.scroll || {})[ui.tab]; if (y > 0 && TABS.includes(ui.tab)) { let n = 0; const put = () => { scrollTo(0, y); if (Math.abs(scrollY - y) > 40 && ++n < 8) setTimeout(put, 250); }; requestAnimationFrame(put); } });
 });
+// ---------- coming back after a refresh ----------
+// The open section, Books & prices tab, class and subject, chapter filter and open chapter, Read books class,
+// Activity view, and each section's scroll position, kept for this browser tab (sessionStorage).
+const ADMIN_UI = "chemophile-admin-ui";
+let uiReady = false, curTab = "t-home";
+try { history.scrollRestoration = "manual"; } catch (e) {}
+function adminUI() { try { return JSON.parse(sessionStorage.getItem(ADMIN_UI)) || {}; } catch (e) { return {}; } }
+function saveAdminUI(part) { try { sessionStorage.setItem(ADMIN_UI, JSON.stringify(Object.assign(adminUI(), part))); } catch (e) {} }
+function applyAdminUI(ui) {
+  if (ui.catCls != null) catCls = ui.catCls;
+  if (ui.kind) Object.assign(kindPick, ui.kind);
+  if (ui.chapFilter) chapFilter = ui.chapFilter;
+  if (ui.openK) openK = ui.openK;
+  if (ui.rdCls != null) rdCls = ui.rdCls;
+  if (ui.act) { actMode = ui.act.mode || actMode; actUid = ui.act.uid || null; if (ui.act.date) $("#act-date").value = ui.act.date; if (ui.act.range) $("#act-range").value = ui.act.range; }
+}
+const snapshotUI = () => { if (!uiReady) return; const ct = document.querySelector('#cat-tabs [aria-selected="true"]');
+  saveAdminUI({ tab: curTab, ctab: ct && ct.dataset.ctab, catCls, kind: Object.assign({}, kindPick), chapFilter, openK, rdCls, act: { mode: actMode, uid: actUid, date: $("#act-date").value, range: $("#act-range").value } }); };
+document.addEventListener("click", () => setTimeout(snapshotUI));
+document.addEventListener("change", () => setTimeout(snapshotUI));
+let adminScrollT = null;
+addEventListener("scroll", () => { if (!uiReady) return; clearTimeout(adminScrollT); adminScrollT = setTimeout(() => saveAdminUI({ scroll: Object.assign({}, adminUI().scroll, { [curTab]: Math.round(scrollY) }) }), 200); }, { passive: true });
 // Firestore error codes, in words the admin can act on. Nothing is deleted in any of these cases.
 function why(ex) {
   const c = ex && ex.code;
@@ -856,7 +887,7 @@ $("#login-form").addEventListener("submit", async e => {
   catch (ex) { err.textContent = "Wrong email or password."; err.hidden = false; }
   $("#login-btn").disabled = false;
 });
-$("#logout").addEventListener("click", () => signOut(auth));
+$("#logout").addEventListener("click", () => { uiReady = false; try { sessionStorage.removeItem(ADMIN_UI); } catch (e) {} signOut(auth); });
 
 // ---------- overview ----------
 let studentsLoaded = false, promosLoaded = false, chaptersLoaded = false;
@@ -942,7 +973,8 @@ function renderCharts() {
 
 // ---------- navigation ----------
 const TABS = ["t-home", "t-students", "t-activity", "t-promos", "t-chapters", "t-read", "t-doubts", "t-news", "t-catalog"];
-function go(tab) {
+function go(tab, keep) {
+  curTab = tab;
   document.querySelectorAll(".nav-btn[data-tab]").forEach(x => { if (x.dataset.tab === tab) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
   TABS.forEach(t => { $("#" + t).hidden = t !== tab; });
   // On a phone, "More" lights up when the open section is one of its own.
@@ -951,7 +983,8 @@ function go(tab) {
   $("#side").classList.remove("more-open"); $("#more-btn").setAttribute("aria-expanded", "false");
   if (tab === "t-activity") renderActivity();
   if (tab === "t-read") renderShelf();
-  window.scrollTo(0, 0);
+  if (!keep) window.scrollTo(0, 0);
+  if (uiReady) saveAdminUI({ tab });
 }
 $("#more-btn").addEventListener("click", () => { const open = $("#side").classList.toggle("more-open"); $("#more-btn").setAttribute("aria-expanded", String(open)); });
 document.addEventListener("click", e => { if (!e.target.closest("#side")) { $("#side").classList.remove("more-open"); $("#more-btn").setAttribute("aria-expanded", "false"); } });

@@ -1280,7 +1280,25 @@ function heroCovers() {
     if (u && img.getAttribute("src") !== u) img.src = u;
   });
 }
-loadSiteCatalog().finally(() => { heroCovers(); boot(); });
+// A refresh comes back to the same place: the scroll position of this tab (and the class and subject chosen).
+try { history.scrollRestoration = "manual"; } catch (e) {}
+const SITE_UI = "chemophile-site-ui";
+const siteUI = () => { try { return JSON.parse(sessionStorage.getItem(SITE_UI)) || {}; } catch (e) { return {}; } };
+const saveSiteUI = part => { try { sessionStorage.setItem(SITE_UI, JSON.stringify(Object.assign(siteUI(), part))); } catch (e) {} };
+let scrollTimer = null;
+addEventListener("scroll", () => { clearTimeout(scrollTimer); scrollTimer = setTimeout(() => saveSiteUI({ y: Math.round(scrollY) }), 200); }, { passive: true });
+addEventListener("pagehide", () => saveSiteUI({ y: Math.round(scrollY) }));
+function restoreSiteScroll() {
+  const y = siteUI().y;
+  if (!(y > 0) || location.hash) return;
+  // The page grows as covers, reviews and videos load: set the place again until it holds, unless the reader moved.
+  let tries = 0, moved = false;
+  const stop = () => { moved = true; };
+  addEventListener("wheel", stop, { once: true, passive: true }); addEventListener("touchstart", stop, { once: true, passive: true });
+  const put = () => { if (moved) return; scrollTo(0, y); if (Math.abs(scrollY - y) > 40 && ++tries < 12) setTimeout(put, 250); };
+  requestAnimationFrame(put);
+}
+loadSiteCatalog().finally(() => { heroCovers(); boot(); restoreSiteScroll(); });
 
 function boot() {
 const TOPIC_COLORS = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6", "--t7", "--t8", "--t9", "--t10"];
@@ -1489,7 +1507,7 @@ const extraOf = c => CHAPTERS.find(x => isPart(x) && x.cls === c.cls && baseN(x.
 const extraChips = c => { const x = !isPart(c) && extraOf(c);
   return [x && x.included !== false ? `<span class="xchip">🎯 + JEE/NEET extra topics</span>` : "", c.qbank ? `<span class="xchip">📝 ${c.qbank}-question bank</span>` : ""].join(""); };
 // The subject buttons under the class tabs (when the class has two or more subjects).
-let subj = "all";
+let subj = (siteUI().subj && siteUI().subj.cls === cls && siteUI().subj.k) || "all";
 const subjLabel = k => k === "special" ? (isJeeCls(cls) ? "🏆 JEE / NEET" : "🎁 Bonus") : `${KINDS[k].icon} ${KINDS[k].subject}`;
 function renderShelf() {
   const ready = CHAPTERS.filter(c => c.cls === cls && !(isPart(c) && c.included !== false));
@@ -1541,7 +1559,7 @@ function renderShelf() {
     + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} ${k === "special" && !isJeeCls(cls) ? "booklet" : "chapter"}${n > 1 ? "s" : ""}`).join(", ")}.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
-$("#subj-tabs").addEventListener("click", e => { const b = e.target.closest("[data-subj]"); if (b) { subj = b.dataset.subj; renderShelf(); } });
+$("#subj-tabs").addEventListener("click", e => { const b = e.target.closest("[data-subj]"); if (b) { subj = b.dataset.subj; saveSiteUI({ subj: { cls, k: subj } }); renderShelf(); } });
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
   const ready = CHAPTERS.filter(c => c.cls === k && !isPart(c)).length;
   return `<button type="button" role="tab" aria-controls="shelf" aria-selected="${k === cls}" data-cls="${k}">${esc(clsName(k))} <small>${ready ? `${ready} ready` : "coming soon"}</small></button>`;
