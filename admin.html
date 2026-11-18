@@ -293,6 +293,7 @@ button.sc-row:hover { background: var(--paper); }
 .sc-row .m { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); }
 .sc-h { font: 700 1rem var(--font-display); margin: 6px 0 0; }
 .info-pv { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; display: grid; gap: 6px; }
+.info-pv .new-ch { background: color-mix(in srgb, var(--good) 10%, transparent); border-radius: 10px; padding: 8px 10px; }
 .info-pv .pills { display: flex; flex-wrap: wrap; gap: 4px; }
 .hl-pv, .t-pv { margin: 0; padding-left: 20px; font-size: .86rem; display: grid; gap: 2px; }
 .hl-pv { list-style: none; padding-left: 0; }
@@ -1977,8 +1978,17 @@ function bulkParse(text, only) {
     // "11-1" is Class 11 Chapter 1; 11-S1 a JEE/NEET special, 9-P1 Physics, 9-Bio1 Biology, 11-1X extra topics.
     const k = parseKey(head) || head.split(/\s+/)[0];
     if (only && k !== only) { errs.push(`This text is for ${keyText(k)}, not ${keyText(only)}. Change the ### line, or paste it in ${keyText(k)}.`); return; }
-    if (!findChapter(k)) { errs.push(`"### ${head}": no chapter ${keyText(k)} yet. Add it first with + Add chapter.`); return; }
+    // A chapter not in the book list yet is added from this text (its class must be there already).
+    let isNew = false;
+    if (!findChapter(k)) {
+      const [cl, nn] = String(k).split("-").map(Number);
+      if (!/^\d+-\d+$/.test(k)) { errs.push(`"### ${head}": can't read the chapter key. Write it like 11-1, 11-S1, 9-P1 or 11-1X.`); return; }
+      if (!cat || !cat.books.some(b => +b.cls === cl)) { errs.push(`"### ${head}": ${clsName(cl)} is not added yet. Add the class first (Chapters → + Add class or university book), then paste again.`); return; }
+      if (isPart({ n: nn }) && !findChapter(`${cl}-${baseN(nn)}`)) { errs.push(`"### ${head}": these are the extra topics of ${keyText(`${cl}-${baseN(nn)}`)}, which is not added yet. Add that chapter first.`); return; }
+      isNew = true;
+    }
     const p = parseInfo(body), e = (p.errs || []).map(x => `${k}: ${x}`);
+    if (isNew && !(p.info && p.info.title)) e.push(`${keyText(k)} is a new chapter: its text needs a "Title:" line.`);
     let qs = null;
     if (p.quiz != null) {
       const r = parseQuiz(p.quiz);
@@ -1990,17 +2000,18 @@ function bulkParse(text, only) {
     const u = uploaded.get(k);
     const warns = (p.warns || []).slice();
     if (p.info && p.info.pages && u && u.pageCount && u.pageCount !== p.info.pages) warns.push(`Pages: ${p.info.pages} here, but the uploaded PDF has ${u.pageCount}. Check that it is the same booklet.`);
-    if (e.length) e.forEach(x => errs.push(x)); else ok.push({ k, info: p.info, qs, warns });
+    if (e.length) e.forEach(x => errs.push(x)); else ok.push({ k, info: p.info, qs, warns, isNew });
   });
   return { ok, errs };
 }
 // What will be saved, so the admin can check it before saving.
-function infoPreview({ k, info, qs, warns }) {
-  const c = findChapter(k), t = (info && info.topics) || [];
+function infoPreview({ k, info, qs, warns, isNew }, skip) {
+  const [cl, nn] = String(k).split("-").map(Number), c = findChapter(k) || { cls: cl, n: nn, title: "" }, t = (info && info.topics) || [];
   const chips = info ? [[info.pages, "pages"], [t.length || null, "topics"], [info.fig, "figures"], [info.solved, "solved"], [info.practice, "practice Qs"]]
     .filter(([v]) => v != null && v !== "").map(([v, l]) => `<span class="pill">${esc(v)} ${l}</span>`).join("") : "";
   return `<div class="info-pv">
-    <b>${esc(clsName(c.cls))} · ${chNo(c)}: ${info && info.title ? esc(info.title) : esc(c.title)}</b>${info && info.title && info.title !== c.title ? ` <span class="cat-sub">(was: ${esc(c.title)})</span>` : ""}
+    <b>${esc(clsName(c.cls))} · ${chNo(c)}: ${info && info.title ? esc(info.title) : esc(c.title)}</b>${!isNew && info && info.title && info.title !== c.title ? ` <span class="cat-sub">(was: ${esc(c.title)})</span>` : ""}
+    ${isNew ? `<label class="cat-check new-ch"><input type="checkbox" data-newch="${k}"${skip && skip.has(k) ? "" : " checked"}> <span>🆕 <b>Not in the book list yet: add it as a new chapter</b> (${esc(keyText(k))}). It starts as Coming soon on the website; then upload its PDF, set its price and make it Live.</span></label>` : ""}
     ${info && info.tag ? `<p class="cat-sub">“${esc(info.tag)}”</p>` : ""}
     <div class="pills">${chips}${info && info.qr ? `<span class="pill">${esc(info.qr)}</span>` : ""}${qs ? `<span class="pill good">Quiz: ${qs.length} Qs</span>` : ""}</div>
     ${info && info.highlights ? `<ul class="hl-pv">${info.highlights.map(h => `<li>★ ${h}</li>`).join("")}</ul>` : ""}
@@ -2009,14 +2020,21 @@ function infoPreview({ k, info, qs, warns }) {
   </div>`;
 }
 async function saveInfo(list) {
-  const withInfo = list.filter(x => x.info && Object.keys(x.info).length);
+  const withInfo = list.filter(x => x.info && Object.keys(x.info).length), fresh = list.filter(x => x.isNew);
+  // The extra topics of a chapter open for whoever has the chapter (the rules read chapters/{key}.included).
+  for (const { k } of fresh) if (isPart({ n: +k.split("-")[1] })) await setDoc(doc(db, "chapters", k), { included: true }, { merge: true });
   if (withInfo.length) await commit(next => {
+    for (const { k, info } of fresh) {
+      if (next.chapters.some(x => ckey(x) === k)) continue;
+      const [cl, nn] = k.split("-").map(Number);
+      next.chapters.push(Object.assign({ cls: cl, n: nn, title: info.title, short: "", tag: "", pages: null, soon: true, price: {}, mrp: {}, topics: [] }, isPart({ n: nn }) ? { included: true } : {}));
+    }
     for (const { k, info } of withInfo) {
       const c = next.chapters.find(x => ckey(x) === k);
       if (!c) return `No chapter ${keyText(k)} yet. Add it first with + Add chapter.`;
       Object.assign(c, info);
     }
-  }, `Chapter info saved: ${withInfo.map(x => x.k).join(", ")}. The website shows it now.`);
+  }, `${fresh.length ? `New chapter${fresh.length > 1 ? "s" : ""} added: ${fresh.map(x => keyText(x.k)).join(", ")}. ` : ""}Chapter info saved: ${withInfo.map(x => x.k).join(", ")}. The website shows it now.`);
   for (const { k, qs } of list) {
     if (!qs || !qs.length) continue;
     await setDoc(doc(db, "quizzes", k), { qs, updatedAt: serverTimestamp() });
@@ -2024,7 +2042,7 @@ async function saveInfo(list) {
     chInfo.set(k, Object.assign({}, chInfo.get(k), { quiz: qs.length }));
   }
   await loadChapters();
-  catSay(`Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`);
+  catSay(`${fresh.length ? `🆕 Added: ${fresh.map(x => keyText(x.k)).join(", ")} (Coming soon: upload the PDF, set the price, then make it Live). ` : ""}Saved: ${list.map(x => `${x.k}${x.info ? " info" : ""}${x.qs && x.qs.length ? ` + ${x.qs.length}-question quiz` : ""}`).join(", ")}.`);
 }
 // The prompt to give the AI chat with the PDF, with the chapter key filled in.
 async function copyPrompt(btn, k) {
@@ -2057,13 +2075,17 @@ function infoDialog(k) {
       const { ok, errs } = bulkParse(val("d-info"), k);
       if (errs.length) throw new Error("Fix these first: " + errs.slice(0, 3).join(" "));
       if (!ok.length) throw new Error(k ? "Paste the AI's answer first." : "Nothing to save. Start each chapter with ### 11-1.");
+      const left = ok.filter(x => x.isNew && skip.has(x.k));
+      if (left.length) throw new Error(`${left.map(x => keyText(x.k)).join(", ")} ${left.length > 1 ? "are" : "is"} not in the book list. Tick "add it as a new chapter", or remove ${left.length > 1 ? "their" : "its"} text.`);
       await saveInfo(ok);
     }, null, { saveLabel: "Save" });
+  const skip = new Set();
   const box = dlg.querySelector("#d-info"), out = dlg.querySelector("#d-info-check"), check = () => {
-    const { ok, errs } = bulkParse(box.value, k);
+    const { ok, errs } = bulkParse(box.value, k), n = ok.filter(x => x.isNew).length;
     out.innerHTML = (errs.length ? `<p class="cat-sub" style="color: var(--bad)">${errs.slice(0, 6).map(esc).join("<br>")}</p>` : "") +
-      (ok.length ? `<p class="cat-sub">✓ Ready to save:</p>${ok.map(infoPreview).join("")}` : "");
+      (ok.length ? `<p class="cat-sub">✓ Ready to save${n ? ` (${n} new chapter${n > 1 ? "s" : ""} will be added)` : ""}:</p>${ok.map(x => infoPreview(x, skip)).join("")}` : "");
   };
+  out.addEventListener("change", e => { const c = e.target.closest("[data-newch]"); if (c) { if (c.checked) skip.delete(c.dataset.newch); else skip.add(c.dataset.newch); } });
   box.addEventListener("input", check);
   dlg.querySelector("#d-info-file").addEventListener("change", async e => {
     const texts = await Promise.all([...e.target.files].map(f => withKey(f, k)));
