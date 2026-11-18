@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chemophile by Adeel Sir | Class 9, 10, 11 &amp; 12 Chemistry in Hinglish (NCERT, CBSE 2026-27)</title>
-<meta name="description" content="Chemistry ab ratni nahi, samajh aayegi! Adeel Sir's Hinglish booklets for Class 9, 10, 11 &amp; 12: NCERT section-wise, 800+ diagrams, 631 solved examples, board answers in English. Read online or paperback. Free sample.">
+<meta name="description" content="Chemistry ab ratni nahi, samajh aayegi! Adeel Sir's Hinglish booklets for Class 9, 10, 11 &amp; 12: NCERT section-wise, 800+ diagrams, 631 solved examples, board answers in English. Chemistry specialist, plus Physics, Biology and Maths. Read online or paperback. Free sample.">
 <link rel="canonical" href="https://chemophile.maproductsindia.com/">
 <meta name="author" content="Mohd Adeel Khan (Adeel Sir)">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="assets/logo/apple-touch-icon.png">
 <meta name="theme-color" content="#22215f">
 <meta property="og:title" content="Chemophile by Adeel Sir: Chemistry samajh aayegi, ratni nahi padegi">
-<meta property="og:description" content="Class 9 to 12 Chemistry in easy Hinglish: everyday examples, 800+ diagrams, 631 solved examples and English board answers. Free sample inside!">
+<meta property="og:description" content="Class 9 to 12 Chemistry in easy Hinglish, by a Chemistry specialist, plus Physics, Biology and Maths: everyday examples, 800+ diagrams, 631 solved examples and English board answers. Free sample inside!">
 <meta property="og:image" content="https://chemophile.maproductsindia.com/assets/logo/og.png">
 <meta property="og:url" content="https://chemophile.maproductsindia.com/">
 <meta property="og:site_name" content="Chemophile">
@@ -402,6 +402,25 @@ p { margin: 0; }
 @keyframes floaty { 0%, 100% { transform: translate(0, 0) rotate(0); } 33% { transform: translate(14px, -22px) rotate(12deg); } 66% { transform: translate(-12px, 10px) rotate(-8deg); } }
 @media (prefers-reduced-motion: reduce) { .atoms span { animation: none; } .fan3d { transform: none; } }
 /* Bento grid: the reasons, in tiles of different sizes. */
+/* Subjects: Chemistry first (the speciality), then the others, each with live chapter counts. */
+.hero-subj { margin-top: 10px; font-size: .98rem; opacity: .95; }
+.hero-subj a { color: var(--sun); font-weight: 700; }
+.subj-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+.subj-card { border-radius: 22px; padding: 20px; display: grid; gap: 10px; align-content: start; background: var(--surface); border: 1px solid var(--line); color: var(--fg); position: relative; overflow: hidden; }
+.subj-card .ic { font-size: 2.2rem; line-height: 1; }
+.subj-card h3 { font-size: 1.25rem; }
+.subj-card p { font-size: .92rem; color: var(--muted); }
+.subj-card .tag { justify-self: start; font: 700 .72rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 3px 10px; background: var(--sun); color: var(--sun-ink); }
+.subj-card.star { background: linear-gradient(135deg, var(--night), var(--night-2)); color: #fff; border: 0; grid-row: span 1; }
+.subj-card.star p { color: rgba(255,255,255,.82); }
+.subj-card .count { font-size: .85rem; font-weight: 600; }
+.subj-card .count b { color: var(--accent); }
+.subj-card.star .count b { color: var(--sun); }
+.subj-card .go { justify-self: start; border: 0; background: none; padding: 0; font: 700 .9rem var(--font-body); color: var(--accent); cursor: pointer; text-decoration: underline; }
+.subj-card.star .go { color: var(--sun); }
+.subj-foot { margin-top: 18px; font-size: .95rem; color: var(--muted); text-align: center; }
+@media (max-width: 860px) { .subj-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .subj-card.star { grid-column: span 2; } }
+@media (max-width: 480px) { .subj-grid { grid-template-columns: minmax(0, 1fr); } .subj-card.star { grid-column: auto; } }
 .bento { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(150px, auto); gap: 14px; margin-top: 26px; }
 .tile { border-radius: 22px; padding: 20px; display: grid; align-content: space-between; gap: 10px; position: relative; overflow: hidden; color: var(--fg); background: var(--surface); border: 1px solid var(--line); transition: transform .25s ease, box-shadow .25s ease; }
 .tile:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(20,18,70,.14); }
@@ -935,6 +954,7 @@ body {
         <span class="ytag">Class 9 · 10 · 11 · 12</span>
         <h1>No more fear of Chemistry.</h1>
         <p class="lede">Every concept starts with an everyday example, then a diagram, then the exam-ready answer. NCERT section-wise, for the board exam, with JEE/NEET extra boxes.</p>
+        <p class="hero-subj">🧪 <b>Chemistry ke specialist</b>, saath mein ⚡ Physics, 🧬 Biology aur 📐 Maths bhi: <a href="#subjects">dekho kya-kya hai →</a></p>
         <div class="hero-actions">
           <a class="btn btn-sun" href="#free-sample">Read free</a>
           <a class="btn btn-ghost" href="#pack">Build your pack</a>
@@ -963,6 +983,16 @@ body {
       <p class="sec-intro">Real book pages, free. The sample books open with no login: flip through them like a book, or download the PDF. Free chapters open in the app after a free sign-up.</p>
       <div class="samples-grid" id="samples-grid"></div>
       <div class="signup-cta"><div><b>Keep the sample in your own library</b><span>Sign up free, tick your class, and read it any time in the app. Buy chapters whenever you're ready: they open on the same ID.</span></div><a class="btn btn-sun" href="read.html#signup">Sign up free</a></div>
+    </div>
+  </section>
+
+  <section class="block" id="subjects">
+    <div class="wrap">
+      <div class="eyebrow">Class 9 se 12 · ek hi andaaz, har subject</div>
+      <h2 class="sec-title">Specialist in <span class="hl">Chemistry</span>. Saath mein Physics, Biology aur Maths bhi.</h2>
+      <p class="sec-intro">Chemophile ki pehchaan Chemistry hai: Adeel Sir ki asli speciality. Ab wahi tareeka baaki subjects mein bhi: pehle rozana ki misaal, phir saaf diagram, phir exam mein likhne wala jawab. Ek hi app, ek hi ID, aur Hinglish mein samajhne ka wahi maza. Science ab ratni nahi padegi.</p>
+      <div class="subj-grid" id="subj-grid"></div>
+      <p class="subj-foot">Har subject mein: <b>NCERT section-wise</b> topics · <b>Hinglish</b> mein samjho, <b>English</b> mein likho · board pattern ke jawab · quiz aur question bank. Ek ID par saare subjects padho.</p>
     </div>
   </section>
 
@@ -1509,6 +1539,41 @@ const extraChips = c => { const x = !isPart(c) && extraOf(c);
 // The subject buttons under the class tabs (when the class has two or more subjects).
 let subj = (siteUI().subj && siteUI().subj.cls === cls && siteUI().subj.k) || "all";
 const subjLabel = k => k === "special" ? (isJeeCls(cls) ? "🏆 JEE / NEET" : "🎁 Bonus") : `${KINDS[k].icon} ${KINDS[k].subject}`;
+// ---------- subjects section ----------
+// Chemistry is the speciality; Physics, Biology, Maths (and any subject added in the admin panel) follow.
+// Counts come from the live catalog, so a subject still being written says so instead of claiming chapters.
+const SUBJ_COPY = {
+  chem: ["Hamari speciality", "Mole concept se organic reactions tak: har topic ek misaal se shuru, diagram ke saath, aur board answer ready. JEE/NEET ke extra boxes bhi."],
+  phy: ["", "Motion, force, electricity aur light: rozana ki cheezon se samjho, formula ka matlab pakdo, numericals step by step."],
+  bio: ["", "Cell se human body tak: saaf labelled diagrams, aasaan Hinglish, aur NEET ke kaam ke points."],
+  maths: ["", "Har sawaal ka har step: kyun aur kaise, dono. Solved examples ke saath, darr nahi lagega."]
+};
+function renderSubjects() {
+  const box = $("#subj-grid");
+  if (!box) return;
+  const all = [...CHAPTERS.filter(c => !(isPart(c) && c.included !== false)), ...UPCOMING];
+  const subjOf = k => k === "special" ? "chem" : k;
+  const ids = ["chem", "phy", "bio", "maths", ...Object.keys(KINDS).filter(k => KINDS[k].custom)];
+  box.innerHTML = ids.map(id => {
+    const K = KINDS[id], mine = all.filter(x => subjOf(kindOf(x)) === id), ready = mine.filter(x => CHAPTERS.includes(x)).length, soon = mine.length - ready;
+    const classes = [...new Set(mine.map(x => x.cls))].filter(c => !isUni(c)).sort((a, b) => a - b);
+    const [tag, line] = SUBJ_COPY[id] || ["", `${K.subject} bhi Hinglish mein: aasaan bhasha, saaf diagrams aur exam ke jawab.`];
+    const count = ready ? `<b>${ready}</b> chapter${ready > 1 ? "s" : ""} ready${soon ? ` · ${soon} coming soon` : ""}` : soon ? `<b>${soon}</b> chapter${soon > 1 ? "s" : ""} coming soon` : "Jald aa raha hai";
+    return `<div class="subj-card${id === "chem" ? " star" : ""}">
+      ${tag ? `<span class="tag">${tag}</span>` : ""}<span class="ic" aria-hidden="true">${K.icon}</span><h3>${esc(K.subject)}</h3><p>${line}</p>
+      <span class="count">${count}${classes.length ? ` · Class ${classes.join(", ")}` : ""}</span>
+      ${mine.length ? `<button class="go" type="button" data-subj-go="${id}" data-cls="${classes[0] || ""}">Chapters dekho →</button>` : ""}
+    </div>`;
+  }).join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-subj-go]");
+  if (!b) return;
+  const k = b.dataset.subjGo, c = +b.dataset.cls;
+  if (c && CLASSES.includes(c)) { cls = c; store.set("chemophile-class", c); }
+  subj = k; renderShelf();
+  document.querySelector("#chapters").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 function renderShelf() {
   const ready = CHAPTERS.filter(c => c.cls === cls && !(isPart(c) && c.included !== false));
   const soon = UPCOMING.filter(u => u.cls === cls);
@@ -1559,6 +1624,7 @@ function renderShelf() {
     + (extra.length ? ` Plus ${extra.map(([k, n]) => `${n} ${names[k]} ${k === "special" && !isJeeCls(cls) ? "booklet" : "chapter"}${n > 1 ? "s" : ""}`).join(", ")}.` : "");
   document.querySelectorAll("#cls-tabs button").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.cls === cls)));
 }
+renderSubjects();
 $("#subj-tabs").addEventListener("click", e => { const b = e.target.closest("[data-subj]"); if (b) { subj = b.dataset.subj; saveSiteUI({ subj: { cls, k: subj } }); renderShelf(); } });
 $("#cls-tabs").innerHTML = CLASSES.map(k => {
   const ready = CHAPTERS.filter(c => c.cls === k && !isPart(c)).length;
