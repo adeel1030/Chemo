@@ -397,6 +397,19 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .site-tbl th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .site-tbl td b { color: var(--accent); }
 .site-tbl .bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--accent); opacity: .7; vertical-align: middle; margin-left: 6px; }
+/* Students grouped by school, class or teacher */
+.stu-group { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); margin-bottom: 10px; }
+.stu-group > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; font-weight: 700; }
+.stu-group > summary::-webkit-details-marker { display: none; }
+.stu-group > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+.stu-group[open] > summary::before { transform: rotate(90deg); }
+.stu-group > summary .hint { font-weight: 500; }
+.stu-group > summary .spacer { flex: 1; }
+.stu-group > .students { padding: 0 10px 10px; }
+.teach-pick { display: grid; gap: 4px; max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
+.teach-pick label { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: .92rem; }
+.teach-pick label:hover { background: var(--paper); }
+.teach-pick small { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -513,9 +526,10 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </details>
 
       <div class="card">
-        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button><button class="btn btn-line btn-sm" type="button" id="leak-check" title="Find whose copy a leaked screenshot or photo came from">🔍 Check a leaked page</button></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button><button class="btn btn-line btn-sm" type="button" id="stu-teach" title="Choose a teacher and tick the students who study with them">👩‍🏫 Put students under a teacher</button><button class="btn btn-line btn-sm" type="button" id="leak-check" title="Find whose copy a leaked screenshot or photo came from">🔍 Check a leaked page</button></div>
         <div class="list-tools">
-          <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID or phone" aria-label="Search students"></div>
+          <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID, phone or school" aria-label="Search students"></div>
+          <div class="field"><select id="stu-group" aria-label="Group students"><option value="">No groups</option><option value="school">🏫 Group by school</option><option value="class">📚 Group by class</option><option value="teacher">👩‍🏫 Group by teacher</option></select></div>
           <div class="chips" id="stu-filters" role="group" aria-label="Show"></div>
         </div>
         <div class="students" id="students"></div>
@@ -921,6 +935,7 @@ function applyAdminUI(ui) {
   if (ui.chapFilter) chapFilter = ui.chapFilter;
   if (ui.openK) openK = ui.openK;
   if (ui.rdCls != null) rdCls = ui.rdCls;
+  if (ui.stuGroup) { stuGroup = ui.stuGroup; $("#stu-group").value = stuGroup; }
   if (ui.act) { actMode = ui.act.mode || actMode; actUid = ui.act.uid || null; if (ui.act.date) $("#act-date").value = ui.act.date; if (ui.act.range) $("#act-range").value = ui.act.range; }
 }
 const snapshotUI = () => { if (!uiReady) return; const ct = document.querySelector('#cat-tabs [aria-selected="true"]');
@@ -1488,13 +1503,109 @@ const FILTERS = [
 ];
 let stuFilter = "all";
 const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+// ---------- groups: school, class, teacher ----------
+// Schools are matched without caring about capitals, dots or spaces ("K.V. Delhi" = "kv delhi" = "KVDelhi"); the
+// group takes the spelling most students used. A student can be put under one teacher (users/{uid}.teacherUid),
+// a teacher being any ID that signed up as a teacher.
+let stuGroup = "";
+const schoolKey = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+// The spelling most students used for a school (with capitals preferred when it is a tie).
+const schoolName = k => { const m = new Map(); students.forEach(s => { if (schoolKey(s.school) === k) { const t = s.school.trim(); m.set(t, (m.get(t) || 0) + 1); } });
+  return [...m].sort((a, b) => b[1] - a[1] || (/[A-Z]/.test(b[0]) - /[A-Z]/.test(a[0])))[0][0]; };
+const clsList = s => (Array.isArray(s.classes) ? s.classes : []).map(Number);
+const teachers = () => students.filter(s => s.role === "teacher").sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+const teacherOf = s => s.teacherUid ? students.find(x => x.uid === s.teacherUid) || null : null;
+const studentsOf = t => students.filter(s => s.teacherUid === t.uid);
+function groupsOf(list) {
+  const map = new Map(), add = (k, label, s, extra = {}) => { if (!map.has(k)) map.set(k, Object.assign({ k, label, list: [] }, extra)); map.get(k).list.push(s); };
+  if (stuGroup === "school") {
+    list.forEach(s => { const k = schoolKey(s.school); k ? add(k, "🏫 " + schoolName(k), s, { city: s.city || "" }) : add("~", "🏫 School not given", s); });
+    return [...map.values()].sort((a, b) => (a.k === "~") - (b.k === "~") || b.list.length - a.list.length || a.label.localeCompare(b.label));
+  }
+  if (stuGroup === "class") {
+    list.forEach(s => { const c = clsList(s); if (c.length) c.forEach(k => add(String(k), "📚 " + clsName(k), s, { n: k })); else add("~", "📚 Class not given", s, { n: 1e9 }); });
+    return [...map.values()].sort((a, b) => a.n - b.n);
+  }
+  // teacher: each teacher with their students (the teacher's own card first), then students under no teacher
+  const ts = teachers();
+  ts.forEach(t => { if (list.includes(t) || list.some(s => s.teacherUid === t.uid)) map.set(t.uid, { k: t.uid, label: `👩‍🏫 ${t.name}`, teacher: t, list: [] }); });
+  list.forEach(s => {
+    if (s.role === "teacher" && map.has(s.uid)) map.get(s.uid).list.unshift(s);
+    else if (s.teacherUid && map.has(s.teacherUid)) map.get(s.teacherUid).list.push(s);
+    else add("~", "No teacher yet", s);
+  });
+  return [...map.values()].sort((a, b) => (a.k === "~") - (b.k === "~") || a.label.localeCompare(b.label));
+}
+function groupHead(g) {
+  const n = g.list.filter(s => s.role !== "teacher").length, t = g.teacher, cls = [...new Set(g.list.flatMap(clsList))].sort((a, b) => a - b);
+  const bought = g.list.filter(s => s.role !== "teacher" && !isSignup(s) && !s.promo).length;
+  return `<summary>${esc(g.label)}<span class="pill">${n} student${n === 1 ? "" : "s"}</span>${bought ? `<span class="pill good">${bought} bought</span>` : ""}
+    <span class="hint">${esc([stuGroup === "school" ? g.city : "", stuGroup !== "class" && cls.length ? cls.map(clsName).join(", ") : "", t && t.school ? t.school : ""].filter(Boolean).join(" · "))}</span>
+    <span class="spacer"></span>${t ? `<button class="btn btn-line btn-sm" type="button" data-teach="${t.uid}">+ Add students</button>` : ""}</summary>`;
+}
+// Put students under a teacher: choose the teacher, narrow by school or class, tick the students.
+function teachDialog(uid) {
+  const ts = teachers();
+  if (!ts.length) { openDialog("Put students under a teacher", `<p class="cat-sub">No teacher has signed up yet. A teacher signs up in the reader and chooses "Teacher"; then they show here.</p>`, null); return; }
+  const t0 = ts.find(t => t.uid === uid) || ts[0];
+  const schools = [...new Set(students.filter(s => s.role !== "teacher" && schoolKey(s.school)).map(s => schoolKey(s.school)))].map(k => [k, schoolName(k)]).sort((a, b) => a[1].localeCompare(b[1]));
+  const classes = [...new Set(students.flatMap(clsList))].sort((a, b) => a - b);
+  openDialog("Put students under a teacher", `
+    <div class="field"><label for="tp-t">Teacher</label><select id="tp-t">${ts.map(t => `<option value="${t.uid}"${t === t0 ? " selected" : ""}>${esc(t.name)}${t.school ? " · " + esc(t.school) : ""}${t.teacher === "verified" ? " ✓" : ""}</option>`).join("")}</select></div>
+    <div class="grid2">
+      <div class="field"><label for="tp-school">School</label><select id="tp-school"><option value="">Every school</option>${schools.map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join("")}</select></div>
+      <div class="field"><label for="tp-cls">Class</label><select id="tp-cls"><option value="">Every class</option>${classes.map(c => `<option value="${c}">${esc(clsName(c))}</option>`).join("")}</select></div>
+    </div>
+    <div class="field search"><input id="tp-q" type="search" placeholder="Search a student by name, ID or phone" aria-label="Search students"></div>
+    <div class="section-title" style="margin: 0"><span class="hint" id="tp-n"></span><span><button class="btn btn-line btn-sm" type="button" id="tp-all">Tick all shown</button> <button class="btn btn-line btn-sm" type="button" id="tp-none">Untick all shown</button></span></div>
+    <div class="teach-pick" id="tp-list"></div>
+    <p class="hint" style="margin: 0">Ticked = under this teacher. A student can be under one teacher; ticking one who is under another teacher moves them here.</p>`,
+    async () => {
+      const tid = $("#tp-t").value, want = new Set(picked.get(tid)), b = writeBatch(db); let n = 0;
+      students.forEach(s => {
+        if (s.role === "teacher") return;
+        const now = s.teacherUid === tid, will = want.has(s.uid);
+        if (now !== will) { b.update(doc(db, "users", s.uid), { teacherUid: will ? tid : null }); n++; }
+      });
+      if (!n) return;
+      await b.commit();
+      students.forEach(s => { if (s.role === "teacher") return; if (want.has(s.uid)) s.teacherUid = tid; else if (s.teacherUid === tid) s.teacherUid = null; });
+      const t = students.find(x => x.uid === tid);
+      if (!stuGroup) { stuGroup = "teacher"; $("#stu-group").value = "teacher"; }
+      renderStudents();
+      $("#stu-count").textContent += ` · saved: ${studentsOf(t).length} under ${t.name}`;
+    }, null, { saveLabel: "Save" });
+  // The ticks of each teacher are kept while switching teachers in the dialog, and saved for the one shown.
+  const picked = new Map(ts.map(t => [t.uid, new Set(studentsOf(t).map(s => s.uid))]));
+  const shown = () => {
+    const sk = $("#tp-school").value, c = +$("#tp-cls").value, q = $("#tp-q").value.trim().toLowerCase();
+    return students.filter(s => s.role !== "teacher" && (!sk || schoolKey(s.school) === sk) && (!c || clsList(s).includes(c))
+      && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
+  };
+  const draw = () => {
+    const tid = $("#tp-t").value, set = picked.get(tid), list = shown();
+    $("#tp-list").innerHTML = list.length ? list.map(s => { const other = s.teacherUid && s.teacherUid !== tid && students.find(x => x.uid === s.teacherUid);
+      return `<label><input type="checkbox" value="${s.uid}"${set.has(s.uid) ? " checked" : ""}><span>${esc(s.name)} <small>${esc([clsList(s).map(clsName).join(" + "), s.school, s.loginId].filter(Boolean).join(" · "))}${other ? ` · now under ${esc(other.name)}` : ""}</small></span></label>`; }).join("")
+      : `<p class="hint" style="padding: 8px">No student matches.</p>`;
+    $("#tp-n").textContent = `${set.size} ticked · ${list.length} shown`;
+  };
+  dlg.querySelector("#tp-list").addEventListener("change", e => { const set = picked.get($("#tp-t").value); if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value); $("#tp-n").textContent = `${set.size} ticked · ${shown().length} shown`; });
+  ["#tp-t", "#tp-school", "#tp-cls"].forEach(id => dlg.querySelector(id).addEventListener("change", draw));
+  dlg.querySelector("#tp-q").addEventListener("input", draw);
+  dlg.querySelector("#tp-all").addEventListener("click", () => { const set = picked.get($("#tp-t").value); shown().forEach(s => set.add(s.uid)); draw(); });
+  dlg.querySelector("#tp-none").addEventListener("click", () => { const set = picked.get($("#tp-t").value); shown().forEach(s => set.delete(s.uid)); draw(); });
+  draw();
+}
+$("#stu-teach").addEventListener("click", () => teachDialog());
+$("#stu-group").addEventListener("change", () => { stuGroup = $("#stu-group").value; saveAdminUI({ stuGroup }); renderStudents(); });
+$("#students").addEventListener("click", e => { const b = e.target.closest("[data-teach]"); if (b) { e.preventDefault(); teachDialog(b.dataset.teach); } });
 function renderStudents() {
   const q = $("#stu-search").value.trim().toLowerCase();
   const test = FILTERS.find(f => f[0] === stuFilter)[2];
   const list = students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone, s.school, s.city].some(v => (v || "").toLowerCase().includes(q))));
   $("#stu-count").textContent = `(${students.length})`;
   $("#stu-filters").innerHTML = FILTERS.map(([k, label, f]) => `<button class="chip" type="button" data-filter="${k}" aria-pressed="${k === stuFilter}">${label} <b>${students.filter(f).length}</b></button>`).join("");
-  $("#students").innerHTML = list.length ? list.map(s => `
+  const card = s => `
     <div class="stu" data-uid="${s.uid}">
       <div class="stu-top">
         <div class="avatar${s.active === false ? " off" : s.promo ? " promo" : ""}" aria-hidden="true">${esc(initials(s.name))}</div>
@@ -1510,7 +1621,8 @@ function renderStudents() {
           ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
           ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
           ${streakOf(s) >= 2 ? `<span class="pill good">🔥 ${streakOf(s)}-day streak</span>` : ""}
-          ${s.role === "teacher" ? `<span class="pill">${s.teacher === "verified" ? "✓ Verified teacher" : "Teacher"}</span>` : ""}
+          ${s.role === "teacher" ? `<span class="pill">${s.teacher === "verified" ? "✓ Verified teacher" : "Teacher"} · ${studentsOf(s).length} student${studentsOf(s).length === 1 ? "" : "s"}</span>` : ""}
+          ${teacherOf(s) ? `<span class="pill">👩‍🏫 ${esc(teacherOf(s).name)}</span>` : ""}
         </div>
       </div>
       ${s.school || s.city ? `<div class="sub">🏫 ${esc([s.school, s.city].filter(Boolean).join(", "))}${(s.classes || []).length ? ` · ${esc(classesText(s))}` : ""}</div>` : ""}
@@ -1530,6 +1642,7 @@ function renderStudents() {
         <button class="btn btn-line btn-sm" type="button" data-act="days">📅 Day by day</button>
         ${s.phone ? `<a class="btn btn-line btn-sm" data-askrev="${s.uid}" href="${waLink(s.phone, reviewAsk(s))}" target="_blank" rel="noopener">⭐ Ask for review${s.reviewAskedAt ? " ✓" : ""}</a>` : ""}
         <button class="btn btn-line btn-sm" type="button" data-act="details">Edit details</button>
+        ${s.role === "teacher" ? `<button class="btn btn-line btn-sm" type="button" data-teach="${s.uid}">👩‍🏫 Their students</button>` : `<button class="btn btn-line btn-sm" type="button" data-act="teacher">👩‍🏫 ${teacherOf(s) ? "Change teacher" : "Put under a teacher"}</button>`}
         <button class="btn btn-line btn-sm" type="button" data-act="give">Free access</button>
         ${s.deviceId && !s.promo ? `<button class="btn btn-line btn-sm" type="button" data-act="reset">Device reset</button>` : ""}
         <span class="spacer"></span>
@@ -1558,7 +1671,15 @@ function renderStudents() {
         <div class="actions" style="margin-top: 10px"><button class="btn btn-sun btn-sm" type="button" data-act="save">Save</button><button class="btn btn-line btn-sm" type="button" data-act="cancel">Cancel</button></div>
       </div>
       <div class="msg" role="status" hidden></div>
-    </div>`).join("") : `<p class="empty">${students.length ? "No students match this search." : "No students yet. Create the first ID above."}</p>`;
+     </div>`;
+  const empty = `<p class="empty">${students.length ? "No students match this search." : "No students yet. Create the first ID above."}</p>`;
+  if (!list.length) $("#students").innerHTML = empty;
+  else if (!stuGroup) $("#students").innerHTML = list.map(card).join("");
+  else {
+    // Groups open on a search, or when there are only a few of them.
+    const gs = groupsOf(list), open = q || gs.length <= 3;
+    $("#students").innerHTML = gs.map(g => `<details class="stu-group"${open ? " open" : ""}>${groupHead(g)}<div class="students">${g.list.map(card).join("")}</div></details>`).join("");
+  }
   renderDash();
 }
 $("#stu-search").addEventListener("input", renderStudents);
@@ -1608,12 +1729,12 @@ document.addEventListener("click", e => {
 // Passwords are never put in it.
 const shownStudents = () => {
   const q = $("#stu-search").value.trim().toLowerCase(), test = FILTERS.find(f => f[0] === stuFilter)[2];
-  return students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
+  return students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone, s.school, s.city].some(v => (v || "").toLowerCase().includes(q))));
 };
 const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
 function studentsCsv(list) {
   const head = ["Name", "WhatsApp", "Login ID", "Promo code", "Class", "Plan", "Chapters bought", "Access until", "Monthly plan chapters", "Monthly paid till",
-    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent", "I am", "School", "City", "Free access", "Reading streak (days)", "Days read"];
+    "Status", "Logged in", "Device", "Last read", "Joined", "Device resets (12 months)", "Other-device tries", "Referral code", "Referred by", "Friends referred", "Renewal reminder sent", "I am", "School", "City", "Free access", "Reading streak (days)", "Days read", "Teacher", "Last opened"];
   const rows = list.map(s => {
     const plan = s.promo ? "Promo" : isSignup(s) ? "Signed up (not bought)" : [(s.chapters || []).length && "Bought", subKeys(s).length && "Monthly"].filter(Boolean).join(" + ") || "-";
     const status = s.active === false ? "Blocked" : isOver(s) ? "Expired" : subOver(s) && !subLive(s).length && !(s.chapters || []).length ? "Monthly unpaid" : "Active";
@@ -1621,7 +1742,7 @@ function studentsCsv(list) {
     return [s.name, s.phone, s.promo ? "" : s.loginId, s.promo || "", classesText(s), plan, (s.chapters || []).map(chName).join("; "), (s.chapters || []).length ? (s.expiresAt ? dmy(s.expiresAt) : "No end date") : "",
       subKeys(s).map(chName).join("; "), subKeys(s).length ? dmy(subEnd(s)) : "", status, s.deviceId ? "Yes" : "No", s.deviceInfo || "", dmy(lastRead(s)), dmy(s.createdAt),
       resetsThisYear(s) || "", s.attempts || "", s.promo ? "" : refCodeOf(s.uid), by ? `${by.name} (${by.loginId})` : "", s.referrals || "", dmy(s.remindedAt), s.role || "", s.school || "", s.city || "",
-      grantsOf(s).map(g => `${chName(g.ch)} till ${dmy(g.till)}`).join("; "), streakOf(s) || "", (s.readDays || []).length || ""];
+      grantsOf(s).map(g => `${chName(g.ch)} till ${dmy(g.till)}`).join("; "), streakOf(s) || "", (s.readDays || []).length || "", s.role === "teacher" ? `${studentsOf(s).length} students` : (teacherOf(s) || {}).name || "", dmy(lastOpen(s))];
   });
   // Quote every cell; a cell starting with = + - @ is kept as text so a spreadsheet never runs it as a formula.
   const cell = v => { let t = String(v ?? ""); if (/^[=+\-@]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
@@ -1690,6 +1811,13 @@ $("#students").addEventListener("click", async e => {
       m.innerHTML = `Renewed till <b>${fmtDate(till)}</b>. <a href="${waLink(s.phone, text)}" target="_blank" rel="noopener">Tell ${esc((s.name || "").split(" ")[0])} on WhatsApp</a>`;
     }
     if (b.dataset.act === "details") return detailsDialog(s);
+    if (b.dataset.act === "teacher") {
+      const ts = teachers();
+      if (!ts.length) return note("No teacher has signed up yet. A teacher signs up in the reader and chooses Teacher.", "warn");
+      return openDialog(`Teacher of ${s.name}`, `<div class="field"><label for="ot-t">Teacher</label><select id="ot-t"><option value="">No teacher</option>${ts.map(t => `<option value="${t.uid}"${t.uid === s.teacherUid ? " selected" : ""}>${esc(t.name)}${t.school ? " · " + esc(t.school) : ""}</option>`).join("")}</select></div>
+        <p class="hint" style="margin: 0">${esc(s.name)}: ${esc([classesText(s), s.school].filter(Boolean).join(" · ") || "no class or school given")}</p>`,
+        async () => { const v = $("#ot-t").value || null; await updateDoc(ref, { teacherUid: v }); s.teacherUid = v; renderStudents(); }, null, { saveLabel: "Save" });
+    }
     if (b.dataset.act === "give") return giveDialog(s);
     if (b.dataset.act === "ungrant") {
       if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to remove"; return; }
