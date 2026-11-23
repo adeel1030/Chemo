@@ -1507,7 +1507,7 @@ const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).
 // Schools are matched without caring about capitals, dots or spaces ("K.V. Delhi" = "kv delhi" = "KVDelhi"); the
 // group takes the spelling most students used. A student can be put under one teacher (users/{uid}.teacherUid),
 // a teacher being any ID that signed up as a teacher.
-let stuGroup = "";
+let stuGroup = "", lastGroups = [];
 const schoolKey = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 // The spelling most students used for a school (with capitals preferred when it is a tie).
 const schoolName = k => { const m = new Map(); students.forEach(s => { if (schoolKey(s.school) === k) { const t = s.school.trim(); m.set(t, (m.get(t) || 0) + 1); } });
@@ -1541,7 +1541,7 @@ function groupHead(g) {
   const bought = g.list.filter(s => s.role !== "teacher" && !isSignup(s) && !s.promo).length;
   return `<summary>${esc(g.label)}<span class="pill">${n} student${n === 1 ? "" : "s"}</span>${bought ? `<span class="pill good">${bought} bought</span>` : ""}
     <span class="hint">${esc([stuGroup === "school" ? g.city : "", stuGroup !== "class" && cls.length ? cls.map(clsName).join(", ") : "", t && t.school ? t.school : ""].filter(Boolean).join(" · "))}</span>
-    <span class="spacer"></span>${t ? `<button class="btn btn-line btn-sm" type="button" data-teach="${t.uid}">+ Add students</button>` : ""}</summary>`;
+    <span class="spacer"></span>${(stuGroup === "school" || t) && g.k !== "~" && n ? `<button class="btn btn-line btn-sm" type="button" data-gpromo="${esc(g.k)}">🎟 Promo code to all</button>` : ""}${t ? `<button class="btn btn-line btn-sm" type="button" data-teach="${t.uid}">+ Add students</button>` : ""}</summary>`;
 }
 // Put students under a teacher: choose the teacher, narrow by school or class, tick the students.
 function teachDialog(uid) {
@@ -1598,7 +1598,41 @@ function teachDialog(uid) {
 }
 $("#stu-teach").addEventListener("click", () => teachDialog());
 $("#stu-group").addEventListener("change", () => { stuGroup = $("#stu-group").value; saveAdminUI({ stuGroup }); renderStudents(); });
-$("#students").addEventListener("click", e => { const b = e.target.closest("[data-teach]"); if (b) { e.preventDefault(); teachDialog(b.dataset.teach); } });
+$("#students").addEventListener("click", e => {
+  const b = e.target.closest("[data-teach]"); if (b) { e.preventDefault(); teachDialog(b.dataset.teach); return; }
+  const p = e.target.closest("[data-gpromo]"); if (p) { e.preventDefault(); const g = lastGroups.find(x => x.k === p.dataset.gpromo); if (g) groupPromoDialog(g); }
+});
+// One promo code for a whole school (or all of a teacher's students) in one go: each of them gets the code's
+// chapters on their own ID till the code's last date, as if they had typed the code. The code's used places go
+// up by the number of students who did not have it yet. Promo-code-only accounts and blocked IDs are left out.
+function groupPromoDialog(g) {
+  const who = g.list.filter(s => s.role !== "teacher" && !s.promo && s.active !== false);
+  const live = promos.filter(p => ["active", "full"].includes(promoState(p)));
+  const title = `Promo code for ${g.label.replace(/^\S+\s/, "")}`;
+  if (!live.length) { openDialog(title, `<p class="cat-sub">There is no live promo code. Make one in Promo codes first (choose its chapters and last date), then come back here.</p>`, null); return; }
+  const info = p => { const has = who.filter(s => grantsOf(s).some(x => x.code === p.code)).length, add = who.length - has, left = p.maxUses - (p.used || 0);
+    return `<p class="cat-sub"><b>${esc(p.code)}</b>: ${esc(bookSummary(p.chapters || []))}, till ${fmtDate(p.expiresAt)}. ${who.length} student${who.length === 1 ? "" : "s"}${has ? ` (${has} already have it)` : ""}. Places: ${p.used || 0} of ${p.maxUses} used${add > left ? ` · <b style="color: var(--bad)">${add} more than the ${left} places left: the code will go over its limit</b>` : ""}.</p>`; };
+  openDialog(title, `
+    <div class="field"><label for="gp-code">Promo code</label><select id="gp-code">${live.map(p => `<option value="${esc(p.code)}">${esc(p.code)} · ${esc(bookSummary(p.chapters || []))}</option>`).join("")}</select></div>
+    <div id="gp-info">${info(live[0])}</div>
+    <p class="hint" style="margin: 0">${who.map(s => esc(s.name)).join(", ") || "No student to give it to."}</p>`,
+    async () => {
+      const p = promos.find(x => x.code === $("#gp-code").value);
+      if (!who.length) throw new Error("No student in this group can get it (blocked IDs and promo-code accounts are left out).");
+      if (!(p.chapters || []).length) throw new Error("This code has no chapters.");
+      const fresh = who.filter(s => !grantsOf(s).some(x => x.code === p.code)), till = p.expiresAt;
+      await writeAll([
+        ...who.flatMap(s => p.chapters.map(k => w => w.set(doc(db, "users", s.uid, "grants", k), { till, code: p.code, at: serverTimestamp() }))),
+        ...who.map(s => w => w.update(doc(db, "users", s.uid), { grantsAt: serverTimestamp() })),
+        ...(fresh.length ? [w => w.update(doc(db, "promos", p.code), { used: increment(fresh.length) })] : [])
+      ]);
+      who.forEach(s => { s.grants = [...grantsOf(s).filter(x => !p.chapters.includes(x.ch)), ...p.chapters.map(k => ({ ch: k, till, code: p.code }))]; });
+      p.used = (p.used || 0) + fresh.length;
+      renderStudents(); renderPromos();
+      $("#stu-count").textContent += ` · code ${p.code} given to ${who.length} student${who.length === 1 ? "" : "s"} of ${g.label.replace(/^\S+\s/, "")}`;
+    }, null, { saveLabel: `Give to ${who.length} student${who.length === 1 ? "" : "s"}` });
+  dlg.querySelector("#gp-code").addEventListener("change", e => { $("#gp-info").innerHTML = info(live.find(p => p.code === e.target.value)); });
+}
 function renderStudents() {
   const q = $("#stu-search").value.trim().toLowerCase();
   const test = FILTERS.find(f => f[0] === stuFilter)[2];
@@ -1678,6 +1712,7 @@ function renderStudents() {
   else {
     // Groups open on a search, or when there are only a few of them.
     const gs = groupsOf(list), open = q || gs.length <= 3;
+    lastGroups = gs;
     $("#students").innerHTML = gs.map(g => `<details class="stu-group"${open ? " open" : ""}>${groupHead(g)}<div class="students">${g.list.map(card).join("")}</div></details>`).join("");
   }
   renderDash();

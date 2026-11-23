@@ -14,6 +14,8 @@ service cloud.firestore {
     function redemptionPath(code, uid) { return /databases/$(database)/documents/promos/$(code)/redemptions/$(uid); }
     function grantPath(uid, ch) { return /databases/$(database)/documents/users/$(uid)/grants/$(ch); }
     function phonePath(phone) { return /databases/$(database)/documents/phones/$(phone); }
+    // A teacher sees the students the admin put under them (users/{uid}.teacherUid = the teacher's uid).
+    function isTeacherOf(uid) { return signedIn() && get(userPath(uid)).data.get('teacherUid', null) == request.auth.uid; }
 
     // Can the signed-in student open this chapter now? Their ID is active and locked to a device, and either
     // the chapter is one they bought (until the ID's end date, if it has one), or one on their monthly plan
@@ -89,7 +91,8 @@ service cloud.firestore {
 
     // One document per student: name, phone, chapters bought, and the device the ID is locked to.
     match /users/{uid} {
-      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid)
+        || (signedIn() && resource.data.teacherUid == request.auth.uid);
       // Every reader signs up with their own login ID (a promo code is used after that, on the same ID).
       allow create: if isAdmin() || validSelfSignup(uid);
       allow delete: if isAdmin();
@@ -161,7 +164,7 @@ service cloud.firestore {
       // Reading record, one document per chapter: last page, highest page, pages seen, minutes, times opened.
       // The student keeps their own; the admin can read it.
       match /reading/{ch} {
-        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid) || isTeacherOf(uid);
         allow write: if signedIn() && request.auth.uid == uid
           && request.resource.data.keys().hasOnly(['last', 'max', 'seen', 'minutes', 'opens', 'total', 'updatedAt'])
           && request.resource.data.seen is list && request.resource.data.seen.size() <= 2000
@@ -173,7 +176,7 @@ service cloud.firestore {
       // Quiz score, one document per chapter ({chapter}-qb for question bank practice): best, last, number
       // of questions, tries, and hist (the scores of the last few tries). The admin can read it.
       match /quiz/{ch} {
-        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+        allow read: if isAdmin() || (signedIn() && request.auth.uid == uid) || isTeacherOf(uid);
         allow write: if signedIn() && request.auth.uid == uid
           && request.resource.data.keys().hasOnly(['best', 'last', 'total', 'tries', 'at', 'hist'])
           && request.resource.data.best is number && request.resource.data.last is number

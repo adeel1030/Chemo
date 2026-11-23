@@ -79,6 +79,22 @@
 .lib-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 8px; }
 .lib-tools h2 { font-size: 1.35rem; }
 .lib-subj { margin-top: 8px; }
+/* A teacher's students: reading and quiz scores of each. */
+.tstu { display: grid; gap: 10px; }
+.tstu .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tstu .head h2 { font-size: 1.15rem; margin-right: auto; }
+.ts-row { border: 1px solid var(--line); border-radius: 12px; }
+.ts-row > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 10px 12px; }
+.ts-row > summary::-webkit-details-marker { display: none; }
+.ts-row .nm { font-weight: 700; }
+.ts-row .sub { font-size: .82rem; color: var(--muted); grid-column: 1 / -1; }
+.ts-row .score { font: 800 1rem var(--font-display); color: var(--accent); text-align: right; }
+.ts-row .score small { display: block; font: 500 .7rem var(--font-body); color: var(--muted); }
+.ts-row .sleep { color: var(--bad); font-weight: 600; }
+.ts-ch { padding: 0 12px 10px; display: grid; gap: 6px; }
+.ts-ch div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; font-size: .86rem; border-top: 1px dashed var(--line); padding-top: 6px; }
+.ts-ch .bar { grid-column: 1 / -1; height: 6px; margin: 0; }
+.ts-ch .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
 /* Board exam countdown (Class 10, 12): days left, the pace, and the next five chapters. */
 .bcard { background: radial-gradient(circle at 95% 0%, rgba(255, 210, 74, .25), transparent 50%), var(--night); color: var(--night-fg); border: 0; display: grid; gap: 8px; }
 .bcard .bt { font: 800 1.2rem/1.3 var(--font-display); color: var(--sun); }
@@ -453,6 +469,7 @@
       <div id="news" class="news"></div>
       <div class="card rate" id="rate" hidden></div>
       <div class="card teach" id="teach" hidden></div>
+      <div class="card tstu" id="tstu" hidden></div>
       <div id="upsell"></div>
       <div class="card redeem" id="redeem" hidden>
         <h2 style="font-size: 1.15rem">Have a promo code?</h2>
@@ -645,7 +662,7 @@ if (!configured) {
       stopWatching();
       // Logged out: the next reader on this tab starts fresh.
       try { sessionStorage.removeItem(READ_UI); } catch (e) {} libCls = "all"; libKind = "all"; uiRestored = false;
-      me = null; readerTheme(); newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
+      me = null; myStudents = null; readerTheme(); newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
       if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
       return;
@@ -1089,9 +1106,64 @@ function renderBoardsCard() {
     ${pick.length && days ? `<p><b style="color: var(--night-fg)">Read these 5 chapters next:</b></p><ol>${pick.map(c => { const k = chapterKey(c), pr = progress(k), open = access(k).open;
       return `<li>${open ? `<button type="button" data-read="${k}">` : "<span>"}${esc(chNo(c))}: ${esc(c.short || c.title)}${open ? "</button>" : "</span>"}<small>${pr.pct ? `${pr.pct}% read` : open ? "not started" : "🔒 buy to read"}</small></li>`; }).join("")}</ol>` : ""}`;
 }
+// ---------- a teacher's students ----------
+// Adeel Sir puts students under a teacher in the admin panel. The teacher then sees, for each of them: when
+// they last opened the app, how much of each chapter they read and for how long, and their quiz scores.
+let myStudents = null, tsCls = "all";
+async function loadMyStudents() {
+  const q = await getDocs(query(collection(db, "users"), where("teacherUid", "==", auth.currentUser.uid)));
+  myStudents = await Promise.all(q.docs.map(async d => {
+    const s = { uid: d.id, ...d.data() };
+    const [r, z] = await Promise.all([getDocs(collection(db, "users", d.id, "reading")).catch(() => ({ docs: [] })), getDocs(collection(db, "users", d.id, "quiz")).catch(() => ({ docs: [] }))]);
+    s.reading = r.docs.map(x => ({ ch: x.id, ...x.data() })); s.quiz = z.docs.map(x => ({ ch: x.id, ...x.data() }));
+    return s;
+  }));
+  myStudents.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+}
+function renderMyStudents() {
+  const box = $("#tstu");
+  box.hidden = !me || me.role !== "teacher" || me.admin;
+  if (box.hidden) return;
+  if (!myStudents) {
+    box.innerHTML = `<div class="head"><h2>👩‍🏫 My students</h2></div><p class="hint" style="margin: 0">Loading your students…</p>`;
+    loadMyStudents().then(renderMyStudents).catch(() => { box.innerHTML = `<div class="head"><h2>👩‍🏫 My students</h2></div><p class="hint" style="margin: 0">Could not load your students. Check your internet and open the library again.</p>`; });
+    return;
+  }
+  if (!myStudents.length) { box.innerHTML = `<div class="head"><h2>👩‍🏫 My students</h2></div><p class="hint" style="margin: 0">No students here yet. Send Adeel Sir your students' names (or their school and class) on WhatsApp, and he will add them to your list. Then you see how much each one reads and their quiz scores here.</p>`; return; }
+  const day = t => t && t.toDate ? t.toDate() : null;
+  const opened = s => { const t = [s.lastSeenAt, s.lastReadAt].map(day).filter(Boolean).map(d => d.getTime()), rd = (s.readDays || []).slice(-1)[0]; if (rd) t.push(new Date(rd + "T12:00").getTime()); return t.length ? Math.max(...t) : 0; };
+  const ago = ms => { const n = Math.floor((Date.now() - ms) / 864e5); return n <= 0 ? "today" : n === 1 ? "yesterday" : `${n} days ago`; };
+  const chName = k => { const c = findChapter(k.replace(/-qb$/, "")); return c ? `${chNo(c)}: ${c.short || c.title}` : k; };
+  const classes = [...new Set(myStudents.flatMap(s => (s.classes || []).map(Number)))].sort((a, b) => a - b);
+  if (tsCls !== "all" && !classes.includes(+tsCls)) tsCls = "all";
+  const list = myStudents.filter(s => tsCls === "all" || (s.classes || []).map(Number).includes(+tsCls));
+  const row = s => {
+    const mins = s.reading.reduce((a, r) => a + (r.minutes || 0), 0), qz = s.quiz.filter(x => x.total), avg = qz.length ? Math.round(qz.reduce((a, x) => a + x.best / x.total, 0) / qz.length * 100) : null;
+    const last = opened(s), sleepy = last && Date.now() - last > 7 * 864e5;
+    const chs = [...new Set([...s.reading.map(r => r.ch), ...s.quiz.map(x => x.ch.replace(/-qb$/, ""))])];
+    return `<details class="ts-row"><summary><span class="nm">${esc(s.name || "Student")}</span>
+      <span class="score">${avg == null ? "–" : avg + "%"}<small>quiz average</small></span>
+      <span class="sub">${esc([(s.classes || []).map(clsName).join(" + "), s.school].filter(Boolean).join(" · "))}<br>
+        ${last ? `<span class="${sleepy ? "sleep" : ""}">Last opened ${ago(last)}</span>` : "Not opened yet"} · ${s.reading.length} chapter${s.reading.length === 1 ? "" : "s"} read · ${fmtMins(mins)} · ${qz.length} quiz${qz.length === 1 ? "" : "zes"}</span></summary>
+      <div class="ts-ch">${chs.length ? chs.map(k => { const r = s.reading.find(x => x.ch === k) || {}, z = s.quiz.find(x => x.ch === k), b = s.quiz.find(x => x.ch === k + "-qb");
+        const total = r.total || (chapterInfo.get(k) || {}).pageCount, pct = total ? Math.min(100, Math.round(((r.seen || []).length || r.max || 0) / total * 100)) : 0;
+        return `<div><span>${esc(chName(k))}</span><span>${z ? `Quiz <b>${z.best}/${z.total}</b>` : ""}${b ? ` · QB <b>${b.best}/${b.total}</b>` : ""}</span>
+          ${r.minutes != null ? `<span class="hint" style="grid-column: 1 / -1">${pct ? `${pct}% read · ` : ""}${fmtMins(r.minutes || 0)}${z && z.tries ? ` · quiz tried ${z.tries} time${z.tries === 1 ? "" : "s"}` : ""}</span><div class="bar"><i style="width: ${pct}%"></i></div>` : ""}</div>`; }).join("")
+        : `<p class="hint" style="margin: 0">Nothing read yet.</p>`}</div></details>`;
+  };
+  box.innerHTML = `<div class="head"><h2>👩‍🏫 My students (${myStudents.length})</h2><button class="btn btn-line btn-sm" type="button" id="ts-reload">↻ Refresh</button></div>
+    ${classes.length > 1 ? `<div class="chips">${[["all", "All classes"], ...classes.map(c => [String(c), clsName(c)])].map(([v, l]) => `<button class="chip" type="button" data-tscls="${v}" aria-pressed="${tsCls === v}">${esc(l)}</button>`).join("")}</div>` : ""}
+    <p class="hint" style="margin: 0">Tap a student to see each chapter: how much they read, for how long, and their quiz score. Red means not opened for 7+ days.</p>
+    ${list.map(row).join("")}`;
+}
+$("#tstu").addEventListener("click", e => {
+  if (e.target.closest("#ts-reload")) { myStudents = null; renderMyStudents(); return; }
+  const c = e.target.closest("[data-tscls]"); if (c) { tsCls = c.dataset.tscls; renderMyStudents(); }
+});
 async function renderLibrary() {
   show("v-library");
   showNews();
+  renderMyStudents();
   renderBoardsCard();
   const now = new Date(), h = now.getHours();
   const expires = me.expiresAt && me.expiresAt.toDate ? me.expiresAt.toDate() : null;
