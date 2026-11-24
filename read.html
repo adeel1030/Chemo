@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemophile">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261124c">
+<link rel="stylesheet" href="css/app.css?v=20261124d">
 <style>
 /* Layout: login card (ID or promo code) → bookshelf of the student's chapters → full-screen flipbook. */
 /* Login: a dark welcome panel with the book covers, and the login card beside it (below it on phones). */
@@ -241,6 +241,15 @@
 .chip-s { font: 700 .72rem var(--font-body); border-radius: 999px; padding: 2px 9px; background: var(--warn-bg); color: var(--fg); }
 .chip-s.ok { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
 .doubt-dlg, .cert-dlg, .tour { z-index: 90; }
+/* Shown at every login: open the app at least once a week, or the account can be blocked. */
+.active-note { z-index: 92; }
+.active-note .card { text-align: center; justify-items: center; border-top: 5px solid var(--sun); }
+.an-art { font-size: 2.6rem; width: 76px; height: 76px; border-radius: 22px; display: grid; place-items: center; background: color-mix(in srgb, var(--sun) 30%, var(--surface)); }
+.an-tag { font: 700 .95rem var(--font-hand, inherit); color: var(--accent); margin: 0; }
+.active-note h2 { font-size: 1.3rem; }
+#an-body p { margin: 0; color: var(--muted); font-size: .95rem; }
+#an-body p + p { margin-top: 8px; }
+#an-body .warn { background: color-mix(in srgb, #ffb020 16%, var(--surface)); border-radius: 12px; padding: 10px 12px; color: var(--fg); text-align: left; }
 .doubt-dlg .idprev { max-width: 180px; border-radius: 10px; margin-top: 6px; }
 /* Certificate */
 .cert-dlg .card { width: min(720px, 100%); }
@@ -533,6 +542,13 @@
     <div class="cert-actions"><a class="btn btn-sun" id="cert-dl" download>Download</a><button class="btn btn-wa" type="button" id="cert-share">Share</button><button class="btn btn-line" type="button" id="cert-close">Close</button></div>
     <p class="hint" style="margin: 0">Put it on your WhatsApp status and tag your friends. Well done! 🎉</p>
   </div></div>
+  <div class="about active-note" id="active-note" role="alertdialog" aria-modal="true" aria-labelledby="an-h" hidden><div class="card">
+    <div class="an-art" aria-hidden="true">⏰</div>
+    <p class="an-tag">Roz thoda padho, account active rakho!</p>
+    <h2 id="an-h">Open the app at least once every 7 days</h2>
+    <div id="an-body"></div>
+    <button class="btn btn-sun" type="button" id="an-ok">OK, I will open it regularly</button>
+  </div></div>
   <div class="about tour" id="tour" role="dialog" aria-modal="true" aria-label="How to use Chemophile" hidden><div class="card">
     <div class="tour-art" id="tour-art" aria-hidden="true"></div>
     <h2 id="tour-h"></h2><p id="tour-p"></p>
@@ -542,13 +558,13 @@
   <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
-<script src="js/chapters.js?v=20261124c"></script>
+<script src="js/chapters.js?v=20261124d"></script>
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-<script src="js/flipbook.js?v=20261124c"></script>
+<script src="js/flipbook.js?v=20261124d"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124c";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124d";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -661,7 +677,7 @@ if (!configured) {
     if (!user) {
       stopWatching();
       // Logged out: the next reader on this tab starts fresh.
-      try { sessionStorage.removeItem(READ_UI); } catch (e) {} libCls = "all"; libKind = "all"; uiRestored = false;
+      try { sessionStorage.removeItem(READ_UI); Object.keys(sessionStorage).filter(k => k.startsWith("chemophile-active-note-")).forEach(k => sessionStorage.removeItem(k)); } catch (e) {} libCls = "all"; libKind = "all"; uiRestored = false;
       me = null; myStudents = null; readerTheme(); newsCache = null; reading.clear(); quizRes.clear(); grants.clear(); teachReq = undefined; readingLoaded = false;
       if (unwatchDoubts) { unwatchDoubts(); unwatchDoubts = null; } myDoubts = []; pageCache.clear(); $("#who").textContent = ""; $("#logout").hidden = true;
       if ($("#v-blocked").hidden) show("v-login");
@@ -971,6 +987,7 @@ async function start(user) {
   readerTheme();
   // The time they last opened the app (at most once an hour), for the admin's "not opened for 7+ days" list.
   const seen = me.lastSeenAt && me.lastSeenAt.toMillis ? me.lastSeenAt.toMillis() : 0;
+  prevSeen = seen || (me.lastReadAt && me.lastReadAt.toMillis ? me.lastReadAt.toMillis() : 0);
   if (!me.promo && Date.now() - seen > 60 * 60e3) updateDoc(ref, { lastSeenAt: serverTimestamp() }).catch(() => {});
   // Log in with the WhatsApp number too: link it to this ID if no other ID has it.
   phoneLink = undefined; $("#acct-phone").hidden = true;
@@ -1162,9 +1179,29 @@ $("#tstu").addEventListener("click", e => {
   if (e.target.closest("#ts-reload")) { myStudents = null; renderMyStudents(); return; }
   const c = e.target.closest("[data-tscls]"); if (c) { tsCls = c.dataset.tscls; renderMyStudents(); }
 });
+// ---------- "open the app every week" notice ----------
+// At every login (once per opening of the app), every student is told that an account not opened for more
+// than 7 days can be blocked; students reading with a promo code or free access are told it more firmly,
+// since those chapters are kept for students who study regularly. It waits while the first-time tour or the
+// "about you" form is open.
+let prevSeen = 0;
+const ACTIVE_KEY = () => "chemophile-active-note-" + (auth.currentUser ? auth.currentUser.uid : "");
+function maybeActiveNote() {
+  if (!me || me.admin || !$("#v-library") || $("#v-library").hidden) return;
+  if (!$("#tour").hidden || !$("#about").hidden) return;
+  try { if (sessionStorage.getItem(ACTIVE_KEY())) return; } catch (e) {}
+  const free = liveGrant(), days = prevSeen ? Math.floor((Date.now() - prevSeen) / 864e5) : 0;
+  $("#an-body").innerHTML = `<p>If you do not open the Chemophile app for more than 7 days, your account can be blocked.</p>
+    ${free ? `<p class="warn">⚠️ <b>You are reading with a promo code or free access.</b> These chapters are kept for students who study regularly. Open the app at least once a week, or your free access can be taken back and the account blocked.</p>` : ""}
+    ${days >= 3 ? `<p>You last opened the app <b>${days} days ago</b>. Read a little today!</p>` : ""}`;
+  $("#active-note").hidden = false;
+  setTimeout(() => $("#an-ok").focus(), 50);
+}
+$("#an-ok").addEventListener("click", () => { $("#active-note").hidden = true; try { sessionStorage.setItem(ACTIVE_KEY(), "1"); } catch (e) {} });
 async function renderLibrary() {
   show("v-library");
   showNews();
+  setTimeout(maybeActiveNote, 900);
   renderMyStudents();
   renderBoardsCard();
   const now = new Date(), h = now.getHours();
@@ -1459,7 +1496,7 @@ function openAbout(canCancel) {
 }
 function askAbout() { if (!me.admin && !me.role && $("#about").hidden) openAbout(false); }
 $("#edit-about").addEventListener("click", () => openAbout(true));
-$("#ab-later").addEventListener("click", () => { $("#about").hidden = true; });
+$("#ab-later").addEventListener("click", () => { $("#about").hidden = true; setTimeout(maybeActiveNote, 300); });
 $("#about-form").addEventListener("submit", async e => {
   e.preventDefault();
   const err = $("#ab-err"), fail = t => { err.textContent = t; err.hidden = false; };
@@ -1894,7 +1931,7 @@ function showTour(force) {
   if (!force && (me.admin || !me.role || store.get("chemophile-tour-done") || !$("#about").hidden)) return;
   tourAt = 0; drawTour(); $("#tour").hidden = false;
 }
-const endTour = () => { $("#tour").hidden = true; store.set("chemophile-tour-done", "1"); };
+const endTour = () => { $("#tour").hidden = true; store.set("chemophile-tour-done", "1"); setTimeout(maybeActiveNote, 300); };
 $("#tour-next").addEventListener("click", () => { if (tourAt < TOUR.length - 1) { tourAt++; drawTour(); } else endTour(); });
 $("#tour-skip").addEventListener("click", endTour);
 $("#tour-again").addEventListener("click", () => showTour(true));

@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemo Admin">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261124c">
+<link rel="stylesheet" href="css/app.css?v=20261124d">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
 body { background: var(--paper); }
@@ -1012,14 +1012,14 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
   </div>
 </main>
 
-<script src="js/chapters.js?v=20261124c"></script>
+<script src="js/chapters.js?v=20261124d"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124c";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124d";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
@@ -1246,6 +1246,7 @@ function renderDash() {
     ...unpaid.map(s => N(`subover:${s.uid}`, "bad", `<b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Their chapters are locked till they pay.`, "Send the reminder. After they pay, tap Renew on their card; the chapters open again at once.", wa("Remind", s.phone, remindMessage(s)))),
     ...[...lately, ...ending].map(s => N(`end:${s.uid}`, isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : "", `<b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}. <span class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</span>`, "Send the renewal reminder. After payment, open their card → Renew: it adds another year and keeps their reading.", wa("Remind", s.phone, renewMessage(s), ` data-remind="${s.uid}"`))),
     ...(over.length ? [N("over", "", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago.`, "Nothing to do now. If one of them pays again, open their card → Renew.", go("See", "t-students", ` data-filter="expired"`))] : []),
+    ...sameNameGroups().map(g => N(`samename:${g.k}`, "warn", `<b>${g.list.length} students named ${esc(g.name)}</b> in ${esc(clsName(g.cls))}: ${g.list.map(s => `${esc(s.loginId || s.promo || "?")}${s.phone ? ` (${esc(s.phone)})` : ""}${s.school ? `, ${esc(s.school)}` : ""}`).join(" · ")}.`, "It may be one student with two IDs, or two different students. Compare their WhatsApp numbers and schools. If it is the same student, keep the ID they read on and Delete the other (or Block it). If they are different students, tap Read.", go("Review", "t-students", ` data-filter="samename" data-q="${esc(g.name)}"`))),
     ...(students.filter(sameNumber).length ? [N("samephone", "warn", `${students.filter(sameNumber).length} students share a WhatsApp number with another student.`, "Open each one → Edit details and keep the number only on the right student (one number, one student). Phone login works only then.", go("See", "t-students", ` data-filter="samephone"`))] : []),
     ...(missing.length ? [N("missing", "warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} Live on the website but not uploaded yet. A student who buys the online book cannot read ${missing.length === 1 ? "it" : "them"}.`, "Open Chapters → ⬆ Upload many PDFs (or open a chapter and upload its PDF). If a chapter is not ready, switch it to Coming soon in its Edit.", go("Upload", "t-chapters", ` data-filter="noup" data-cls="${missing[0].cls}"`))] : []),
     ...live.filter(p => p.expiresAt.toDate() < soon).map(p => N(`promoend:${p.code}`, "warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "If it should run longer, open the code and change its last date. Students who used it keep access till that date.", go("Open", "t-promos"))),
@@ -1827,6 +1828,17 @@ function numberTaken(phone, uid) {
   return v && v.uid !== uid ? { name: "another student", loginId: v.id } : null;
 }
 const sameNumber = s => !!numberTaken(s.phone, s.uid);
+// Students with the same name in the same class: maybe one student with two IDs. (Teachers left out.)
+const nameKey = n => String(n || "").toLowerCase().replace(/[^a-z0-9\u0900-\u097f]+/g, " ").trim();
+function sameNameGroups() {
+  const m = new Map();
+  students.filter(s => s.role !== "teacher" && nameKey(s.name)).forEach(s => (Array.isArray(s.classes) ? s.classes : []).map(Number).forEach(c => {
+    const k = nameKey(s.name) + "|" + c; if (!m.has(k)) m.set(k, { name: s.name, cls: c, list: [] }); m.get(k).list.push(s); }));
+  // The name as most nicely written (with capitals, single spaces).
+  const nice = list => list.map(s => String(s.name).replace(/\s+/g, " ").trim()).sort((a, b) => /[A-Z]/.test(b) - /[A-Z]/.test(a))[0];
+  return [...m.entries()].filter(([, g]) => g.list.length > 1).map(([k, g]) => Object.assign(g, { k, name: nice(g.list) }));
+}
+const sameName = s => sameNameGroups().some(g => g.list.includes(s));
 const phoneLine = s => { if (s.promo || !PHONE_RE.test(s.phone || "")) return ""; const v = phones.get(s.phone);
   return !v ? (sameNumber(s) ? ` · <b style="color: var(--bad)">⚠ same number as another student</b>` : "") : v.uid === s.uid ? " · 📱 logs in with this number too" : ` · <b style="color: var(--bad)">⚠ same number as ID ${esc(v.id)}</b>`; };
 let teacherReqs = [], readingAll = [];
@@ -1850,6 +1862,7 @@ const FILTERS = [
   ["free", "Free access", s => liveGrants(s).length > 0],
   ["teacher", "Teachers", s => s.role === "teacher"],
   ["samephone", "Same number", sameNumber],
+  ["samename", "Same name & class", sameName],
 ];
 let stuFilter = "all";
 const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -2075,7 +2088,8 @@ function groupPromoDialog(g) {
 function renderStudents() {
   const q = $("#stu-search").value.trim().toLowerCase();
   const test = FILTERS.find(f => f[0] === stuFilter)[2];
-  const list = students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone, s.school, s.city].some(v => (v || "").toLowerCase().includes(q))));
+  const sq = v => String(v || "").toLowerCase().replace(/\s+/g, " ").trim(), qq = sq(q);
+  const list = students.filter(s => test(s) && (!qq || [s.name, s.loginId, s.phone, s.school, s.city].some(v => sq(v).includes(qq))));
   $("#stu-count").textContent = `(${students.length})`;
   $("#stu-filters").innerHTML = FILTERS.map(([k, label, f]) => `<button class="chip" type="button" data-filter="${k}" aria-pressed="${k === stuFilter}">${label} <b>${students.filter(f).length}</b></button>`).join("");
   const card = s => `
@@ -2213,7 +2227,8 @@ document.addEventListener("click", e => {
 // Passwords are never put in it.
 const shownStudents = () => {
   const q = $("#stu-search").value.trim().toLowerCase(), test = FILTERS.find(f => f[0] === stuFilter)[2];
-  return students.filter(s => test(s) && (!q || [s.name, s.loginId, s.phone, s.school, s.city].some(v => (v || "").toLowerCase().includes(q))));
+  const sq = v => String(v || "").toLowerCase().replace(/\s+/g, " ").trim(), qq = sq(q);
+  return students.filter(s => test(s) && (!qq || [s.name, s.loginId, s.phone, s.school, s.city].some(v => sq(v).includes(qq))));
 };
 const dmy = ts => { const d = ts && ts.toDate ? ts.toDate() : ts instanceof Date ? ts : null; return d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : ""; };
 function studentsCsv(list) {
