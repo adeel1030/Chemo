@@ -521,3 +521,22 @@ function daysToBoards(cls) {
   const n = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - today) / 864e5);
   return n >= 0 ? n : null;
 }
+
+// ---------- schools ----------
+// The admin merges spellings of one school ("KV Delhi", "K.V. Dehli" …) into one name. The merged spellings are
+// kept in the catalog (site.schoolAliases: spelling key → name) so a later student who types one of them is put
+// in the same school, and the names (site.schools) are offered while typing on the sign-up form.
+const schoolKey = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+function cleanSchool(t) {
+  const v = String(t || "").trim().replace(/\s+/g, " "), a = (SITE.schoolAliases || {})[schoolKey(v)];
+  if (a) return a;
+  const same = (SITE.schools || []).find(n => schoolKey(n) === schoolKey(v));
+  return same || v;
+}
+function schoolOptions(id) {
+  // A <datalist> of known school names for the input with this id (built once, filled from the catalog).
+  const el = document.getElementById(id); if (!el) return;
+  let dl = document.getElementById(id + "-list");
+  if (!dl) { dl = document.createElement("datalist"); dl.id = id + "-list"; el.after(dl); el.setAttribute("list", dl.id); }
+  dl.innerHTML = (SITE.schools || []).map(n => `<option value="${String(n).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))}"></option>`).join("");
+}

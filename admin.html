@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemo Admin">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261118c">
+<link rel="stylesheet" href="css/app.css?v=20261124a">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
 body { background: var(--paper); }
@@ -526,7 +526,7 @@ textarea:focus { border-color: var(--accent); outline: none; }
       </details>
 
       <div class="card">
-        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button><button class="btn btn-line btn-sm" type="button" id="stu-teach" title="Choose a teacher and tick the students who study with them">👩‍🏫 Put students under a teacher</button><button class="btn btn-line btn-sm" type="button" id="leak-check" title="Find whose copy a leaked screenshot or photo came from">🔍 Check a leaked page</button></div>
+        <div class="section-title"><h2>All students <span class="hint" id="stu-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="stu-csv" title="Downloads the students shown below, as a file Excel and Google Sheets open">⬇ Download list (Excel)</button><button class="btn btn-line btn-sm" type="button" id="stu-merge" title="One school written in different ways: join them under one name">🏫 Merge schools</button><button class="btn btn-line btn-sm" type="button" id="stu-teach" title="Choose a teacher and tick the students who study with them">👩‍🏫 Put students under a teacher</button><button class="btn btn-line btn-sm" type="button" id="leak-check" title="Find whose copy a leaked screenshot or photo came from">🔍 Check a leaked page</button></div>
         <div class="list-tools">
           <div class="field search"><input id="stu-search" type="search" placeholder="Search by name, ID, phone or school" aria-label="Search students"></div>
           <div class="field"><select id="stu-group" aria-label="Group students"><option value="">No groups</option><option value="school">🏫 Group by school</option><option value="class">📚 Group by class</option><option value="teacher">👩‍🏫 Group by teacher</option></select></div>
@@ -791,14 +791,14 @@ textarea:focus { border-color: var(--accent); outline: none; }
   </div>
 </main>
 
-<script src="js/chapters.js?v=20261118c"></script>
+<script src="js/chapters.js?v=20261124a"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118c";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124a";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
@@ -1508,9 +1508,11 @@ const initials = n => (n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).
 // group takes the spelling most students used. A student can be put under one teacher (users/{uid}.teacherUid),
 // a teacher being any ID that signed up as a teacher.
 let stuGroup = "", lastGroups = [];
-const schoolKey = t => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+// A school's group: its spelling key, or the key of the name it was merged into (catalog site.schoolAliases).
+const sKey = raw => { const k = schoolKey(raw), a = ((cat && cat.site) || {}).schoolAliases || {}; return a[k] ? schoolKey(a[k]) : k; };
 // The spelling most students used for a school (with capitals preferred when it is a tie).
-const schoolName = k => { const m = new Map(); students.forEach(s => { if (schoolKey(s.school) === k) { const t = s.school.trim(); m.set(t, (m.get(t) || 0) + 1); } });
+const schoolName = k => { const named = (((cat && cat.site) || {}).schools || []).find(n => schoolKey(n) === k); if (named) return named;
+  const m = new Map(); students.forEach(s => { if (sKey(s.school) === k) { const t = s.school.trim(); m.set(t, (m.get(t) || 0) + 1); } });
   return [...m].sort((a, b) => b[1] - a[1] || (/[A-Z]/.test(b[0]) - /[A-Z]/.test(a[0])))[0][0]; };
 const clsList = s => (Array.isArray(s.classes) ? s.classes : []).map(Number);
 const teachers = () => students.filter(s => s.role === "teacher").sort((a, b) => (a.name || "").localeCompare(b.name || ""));
@@ -1519,7 +1521,7 @@ const studentsOf = t => students.filter(s => s.teacherUid === t.uid);
 function groupsOf(list) {
   const map = new Map(), add = (k, label, s, extra = {}) => { if (!map.has(k)) map.set(k, Object.assign({ k, label, list: [] }, extra)); map.get(k).list.push(s); };
   if (stuGroup === "school") {
-    list.forEach(s => { const k = schoolKey(s.school); k ? add(k, "🏫 " + schoolName(k), s, { city: s.city || "" }) : add("~", "🏫 School not given", s); });
+    list.forEach(s => { const k = sKey(s.school); k ? add(k, "🏫 " + schoolName(k), s, { city: s.city || "" }) : add("~", "🏫 School not given", s); });
     return [...map.values()].sort((a, b) => (a.k === "~") - (b.k === "~") || b.list.length - a.list.length || a.label.localeCompare(b.label));
   }
   if (stuGroup === "class") {
@@ -1541,14 +1543,14 @@ function groupHead(g) {
   const bought = g.list.filter(s => s.role !== "teacher" && !isSignup(s) && !s.promo).length;
   return `<summary>${esc(g.label)}<span class="pill">${n} student${n === 1 ? "" : "s"}</span>${bought ? `<span class="pill good">${bought} bought</span>` : ""}
     <span class="hint">${esc([stuGroup === "school" ? g.city : "", stuGroup !== "class" && cls.length ? cls.map(clsName).join(", ") : "", t && t.school ? t.school : ""].filter(Boolean).join(" · "))}</span>
-    <span class="spacer"></span>${(stuGroup === "school" || t) && g.k !== "~" && n ? `<button class="btn btn-line btn-sm" type="button" data-gpromo="${esc(g.k)}">🎟 Promo code to all</button>` : ""}${t ? `<button class="btn btn-line btn-sm" type="button" data-teach="${t.uid}">+ Add students</button>` : ""}</summary>`;
+    <span class="spacer"></span>${stuGroup === "school" && g.k !== "~" ? `<button class="btn btn-line btn-sm" type="button" data-smerge="${esc(g.k)}">Merge / rename</button>` : ""}${(stuGroup === "school" || t) && g.k !== "~" && n ? `<button class="btn btn-line btn-sm" type="button" data-gpromo="${esc(g.k)}">🎟 Promo code to all</button>` : ""}${t ? `<button class="btn btn-line btn-sm" type="button" data-teach="${t.uid}">+ Add students</button>` : ""}</summary>`;
 }
 // Put students under a teacher: choose the teacher, narrow by school or class, tick the students.
 function teachDialog(uid) {
   const ts = teachers();
   if (!ts.length) { openDialog("Put students under a teacher", `<p class="cat-sub">No teacher has signed up yet. A teacher signs up in the reader and chooses "Teacher"; then they show here.</p>`, null); return; }
   const t0 = ts.find(t => t.uid === uid) || ts[0];
-  const schools = [...new Set(students.filter(s => s.role !== "teacher" && schoolKey(s.school)).map(s => schoolKey(s.school)))].map(k => [k, schoolName(k)]).sort((a, b) => a[1].localeCompare(b[1]));
+  const schools = [...new Set(students.filter(s => s.role !== "teacher" && sKey(s.school)).map(s => sKey(s.school)))].map(k => [k, schoolName(k)]).sort((a, b) => a[1].localeCompare(b[1]));
   const classes = [...new Set(students.flatMap(clsList))].sort((a, b) => a - b);
   openDialog("Put students under a teacher", `
     <div class="field"><label for="tp-t">Teacher</label><select id="tp-t">${ts.map(t => `<option value="${t.uid}"${t === t0 ? " selected" : ""}>${esc(t.name)}${t.school ? " · " + esc(t.school) : ""}${t.teacher === "verified" ? " ✓" : ""}</option>`).join("")}</select></div>
@@ -1579,7 +1581,7 @@ function teachDialog(uid) {
   const picked = new Map(ts.map(t => [t.uid, new Set(studentsOf(t).map(s => s.uid))]));
   const shown = () => {
     const sk = $("#tp-school").value, c = +$("#tp-cls").value, q = $("#tp-q").value.trim().toLowerCase();
-    return students.filter(s => s.role !== "teacher" && (!sk || schoolKey(s.school) === sk) && (!c || clsList(s).includes(c))
+    return students.filter(s => s.role !== "teacher" && (!sk || sKey(s.school) === sk) && (!c || clsList(s).includes(c))
       && (!q || [s.name, s.loginId, s.phone].some(v => (v || "").toLowerCase().includes(q))));
   };
   const draw = () => {
@@ -1597,9 +1599,77 @@ function teachDialog(uid) {
   draw();
 }
 $("#stu-teach").addEventListener("click", () => teachDialog());
+$("#stu-merge").addEventListener("click", () => mergeSchoolsDialog());
+// ---------- merge schools ----------
+// Tick the schools that are one school (written in different ways), choose the name to keep, and every student
+// and teacher of those schools gets that name. The other spellings are remembered (catalog site.schoolAliases),
+// so a new student who writes one of them joins the same school, and the name is offered on the sign-up form.
+// Ticking one school and changing its name renames it.
+// Letters added, missing, changed or swapped ("dehli" / "delhi" is one swap).
+const lev = (a, b) => { if (Math.abs(a.length - b.length) > 3) return 9; const d = [...Array(a.length + 1)].map((_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length]; };
+// Two schools that are probably one: a letter or two apart, or one name inside the other ("dpsnoida" / "dpsnoidasector30").
+const alike = (a, b) => { const short = Math.min(a.length, b.length); return lev(a, b) <= (short >= 8 ? 2 : 1) || (short >= 5 && (a.includes(b) || b.includes(a))); };
+function mergeSchoolsDialog(pre) {
+  const all = new Map();
+  students.forEach(s => { const k = sKey(s.school); if (!k) return; const g = all.get(k) || { k, n: 0, spell: new Set() }; g.n++; g.spell.add(String(s.school).trim()); all.set(k, g); });
+  const groups = [...all.values()].map(g => Object.assign(g, { name: schoolName(g.k) })).sort((a, b) => a.name.localeCompare(b.name));
+  if (!groups.length) { openDialog("Merge schools", `<p class="cat-sub">No student has written a school yet.</p>`, null); return; }
+  const pairs = [];
+  groups.forEach((a, i) => groups.slice(i + 1).forEach(b => { if (alike(a.k, b.k)) pairs.push([a, b]); }));
+  const ticked = new Set(pre ? [pre] : []);
+  if (pre) pairs.filter(([a, b]) => a.k === pre || b.k === pre).forEach(([a, b]) => { ticked.add(a.k); ticked.add(b.k); });
+  openDialog("Merge schools", `
+    <p class="cat-sub">Tick the schools that are really one school, check the name to keep, and Save. All their students and teachers get that name. Tick one school to just rename it.</p>
+    ${pairs.length ? `<div><b>These look like the same school</b><div class="stack" style="gap: 6px; margin-top: 6px">${pairs.slice(0, 12).map(([a, b]) => `<div class="subline"><span>${esc(a.name)} <span class="hint">(${a.n})</span> ↔ ${esc(b.name)} <span class="hint">(${b.n})</span></span><button class="btn btn-line btn-sm" type="button" data-pair="${esc(a.k)}|${esc(b.k)}">Tick both</button></div>`).join("")}</div></div>` : ""}
+    <div class="field search"><input id="sm-q" type="search" placeholder="Find a school" aria-label="Find a school"></div>
+    <div class="teach-pick" id="sm-list"></div>
+    <div class="field"><label for="sm-name">Name to keep</label><input id="sm-name" maxlength="100" placeholder="e.g. Kendriya Vidyalaya, Delhi"><span class="hint" id="sm-n"></span></div>`,
+    async () => {
+      const keys = [...ticked], name = $("#sm-name").value.trim().replace(/\s+/g, " ");
+      if (!keys.length) throw new Error("Tick at least one school.");
+      if (name.length < 2) throw new Error("Write the name to keep.");
+      const nk = schoolKey(name), raws = new Set(keys);
+      const who = students.filter(s => keys.includes(sKey(s.school)));
+      who.forEach(s => raws.add(schoolKey(s.school)));
+      await writeAll(who.filter(s => String(s.school).trim() !== name).map(s => w => w.update(doc(db, "users", s.uid), { school: name })));
+      who.forEach(s => { s.school = name; });
+      await commit(next => {
+        next.site = next.site || {};
+        const al = Object.assign({}, next.site.schoolAliases || {});
+        // Spellings merged now, and older ones that pointed to a merged school, all point to the kept name.
+        Object.keys(al).forEach(k => { if (raws.has(schoolKey(al[k]))) al[k] = name; });
+        raws.forEach(k => { if (k && k !== nk) al[k] = name; });
+        delete al[nk];
+        next.site.schoolAliases = al;
+        next.site.schools = [...new Set([...(next.site.schools || []).filter(n => !raws.has(schoolKey(n)) && schoolKey(n) !== nk), name])].sort((a, b) => a.localeCompare(b));
+      }, `${keys.length > 1 ? `${keys.length} schools merged` : "School renamed"}: ${who.length} student${who.length === 1 ? "" : "s"} now in ${name}.`);
+      if (!stuGroup) { stuGroup = "school"; $("#stu-group").value = "school"; }
+      renderStudents();
+      $("#stu-count").textContent += ` · ${who.length} in ${name}`;
+    }, null, { saveLabel: "Save" });
+  const draw = () => {
+    const q = schoolKey($("#sm-q").value);
+    $("#sm-list").innerHTML = groups.filter(g => !q || g.k.includes(q) || ticked.has(g.k)).map(g => `<label><input type="checkbox" value="${esc(g.k)}"${ticked.has(g.k) ? " checked" : ""}><span>${esc(g.name)} <small>${g.n} ${g.n === 1 ? "person" : "people"}${g.spell.size > 1 || [...g.spell][0] !== g.name ? " · written as: " + [...g.spell].map(esc).join(", ") : ""}</small></span></label>`).join("") || `<p class="hint" style="padding: 8px">No school matches.</p>`;
+    const sel = groups.filter(g => ticked.has(g.k)), best = sel.sort((a, b) => b.n - a.n)[0];
+    if (best && !$("#sm-name").dataset.typed) $("#sm-name").value = best.name;
+    $("#sm-n").textContent = sel.length ? `${sel.reduce((a, g) => a + g.n, 0)} people in ${sel.length} school${sel.length === 1 ? "" : "s"} will be under this name.` : "Tick the schools to merge.";
+  };
+  dlg.querySelector("#sm-list").addEventListener("change", e => { if (e.target.checked) ticked.add(e.target.value); else ticked.delete(e.target.value); draw(); });
+  dlg.querySelector("#sm-q").addEventListener("input", draw);
+  dlg.querySelector("#sm-name").addEventListener("input", e => { e.target.dataset.typed = "1"; });
+  dlg.querySelectorAll("[data-pair]").forEach(b => b.addEventListener("click", () => { b.dataset.pair.split("|").forEach(k => ticked.add(k)); draw(); }));
+  draw();
+}
 $("#stu-group").addEventListener("change", () => { stuGroup = $("#stu-group").value; saveAdminUI({ stuGroup }); renderStudents(); });
 $("#students").addEventListener("click", e => {
   const b = e.target.closest("[data-teach]"); if (b) { e.preventDefault(); teachDialog(b.dataset.teach); return; }
+  const m = e.target.closest("[data-smerge]"); if (m) { e.preventDefault(); mergeSchoolsDialog(m.dataset.smerge); return; }
   const p = e.target.closest("[data-gpromo]"); if (p) { e.preventDefault(); const g = lastGroups.find(x => x.k === p.dataset.gpromo); if (g) groupPromoDialog(g); }
 });
 // One promo code for a whole school (or all of a teacher's students) in one go: each of them gets the code's

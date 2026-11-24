@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemophile">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261118c">
+<link rel="stylesheet" href="css/app.css?v=20261124a">
 <style>
 /* Layout: login card (ID or promo code) → bookshelf of the student's chapters → full-screen flipbook. */
 /* Login: a dark welcome panel with the book covers, and the login card beside it (below it on phones). */
@@ -542,13 +542,13 @@
   <div class="quiz" id="quiz" role="dialog" aria-modal="true" aria-label="Chapter quiz" hidden><div class="quiz-in" id="quiz-in"></div></div>
 </main>
 
-<script src="js/chapters.js?v=20261118c"></script>
+<script src="js/chapters.js?v=20261124a"></script>
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-<script src="js/flipbook.js?v=20261118c"></script>
+<script src="js/flipbook.js?v=20261124a"></script>
 <script type="module">
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, createUserWithEmailAndPassword, linkWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, getDocs, query, where, setDoc, Timestamp, updateDoc, addDoc, collection, onSnapshot, serverTimestamp, writeBatch, increment, deleteField, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261118c";
+import { configured, auth, db, ID_PATTERN, idToEmail, emailToId, pageId, deviceId, deviceInfo, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124a";
 import { ADMIN_EMAIL } from "./js/firebase-config.js";
 const isAdminEmail = email => !!(email && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
@@ -747,6 +747,8 @@ function renderClassPicks() {
   if (!teacher) picked = picked.slice(0, 1);
   $("#su-cls").innerHTML = classList().map(c => `<label><input type="${teacher ? "checkbox" : "radio"}" name="su-cls-pick" value="${c}"${picked.includes(String(c)) ? " checked" : ""}>${esc(clsName(c))}</label>`).join("");
 }
+// Known school names while typing (after the catalog loads; again a moment later in case it was slow).
+setTimeout(() => schoolOptions("su-school"), 1500); setTimeout(() => schoolOptions("su-school"), 6000);
 $("#su-cls").addEventListener("change", e => { suTouched = true; if (suRole() !== "teacher" && e.target.value) applyClassTheme(e.target.value); });
 renderClassPicks();
 if (configured) loadCatalog().then(() => { catalogTried = true; renderClassPicks(); });
@@ -757,7 +759,7 @@ $("#signup-form").addEventListener("submit", async e => {
   const name = $("#su-name").value.trim(), phone = $("#su-phone").value.replace(/\D/g, "").slice(-10);
   const classes = [...document.querySelectorAll("#su-cls input:checked")].map(i => +i.value);
   const id = $("#su-id").value.trim().toLowerCase(), pw = $("#su-pw").value;
-  const role = suRole(), school = $("#su-school").value.trim(), city = $("#su-city").value.trim();
+  const role = suRole(), school = cleanSchool($("#su-school").value), city = $("#su-city").value.trim();
   const code = $("#su-code").value.trim().toUpperCase();
   if (name.length < 2) return fail("Enter your name.");
   if (phone.length !== 10) return fail("Enter a 10-digit WhatsApp number.");
@@ -1449,7 +1451,7 @@ function abRoleUI() { const r = document.querySelector('input[name="ab-role"]:ch
 document.querySelectorAll('input[name="ab-role"]').forEach(r => r.addEventListener("change", abRoleUI));
 function openAbout(canCancel) {
   document.querySelectorAll('input[name="ab-role"]').forEach(r => { r.checked = r.value === me.role; });
-  $("#ab-school").value = me.school || ""; $("#ab-city").value = me.city || "";
+  $("#ab-school").value = me.school || ""; $("#ab-city").value = me.city || ""; schoolOptions("ab-school");
   aboutPicks((me.classes || []).map(Number).length ? (me.classes || []).map(Number) : [...new Set([...(me.chapters || []), ...Object.keys(me.subs || {})].map(k => +k.split("-")[0]))]);
   abRoleUI();
   $("#ab-later").hidden = !canCancel; $("#ab-err").hidden = true;
@@ -1461,7 +1463,7 @@ $("#ab-later").addEventListener("click", () => { $("#about").hidden = true; });
 $("#about-form").addEventListener("submit", async e => {
   e.preventDefault();
   const err = $("#ab-err"), fail = t => { err.textContent = t; err.hidden = false; };
-  const r = document.querySelector('input[name="ab-role"]:checked'), school = $("#ab-school").value.trim(), city = $("#ab-city").value.trim();
+  const r = document.querySelector('input[name="ab-role"]:checked'), school = cleanSchool($("#ab-school").value), city = $("#ab-city").value.trim();
   const classes = [...document.querySelectorAll("#ab-cls input:checked")].map(i => +i.value);
   if (!r) return fail("Choose Student or Teacher.");
   if (school.length < 2) return fail("Enter your school or college name.");
@@ -1543,7 +1545,7 @@ $("#teach").addEventListener("submit", async e => {
   if (e.target.id !== "teach-form") return;
   e.preventDefault();
   const err = $("#t-err"), fail = t => { err.textContent = t; err.hidden = false; };
-  const school = $("#t-school").value.trim(), subject = $("#t-subject").value.trim(), note = $("#t-note").value.trim();
+  const school = cleanSchool($("#t-school").value), subject = $("#t-subject").value.trim(), note = $("#t-note").value.trim();
   const classes = [...document.querySelectorAll("#t-cls input:checked")].map(i => +i.value), photo = $("#t-photo").dataset.photo;
   if (school.length < 2) return fail("Enter your school or college name.");
   if (!classes.length) return fail("Tick the classes you teach.");
