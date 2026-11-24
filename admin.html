@@ -934,6 +934,13 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
         </div>
         <div><button class="btn btn-sun btn-sm" type="button" id="bd-save">Save dates</button></div>
       </div>
+      <div class="card stack" id="study-card">
+        <div class="section-title" style="margin: 0"><h2>🔎 Study pages for Google</h2><a class="btn btn-line btn-sm" href="class-10/" target="_blank" rel="noopener">See a page ↗</a></div>
+        <p class="hint" style="margin: 0">One page for each class and each chapter (with its topics, cover and links), and the sitemap, so the chapters show up in Google search. After you add or change chapters, covers or topics, tap the button: the pages are made again from the catalog and saved to the website (they show in 1 to 2 minutes).</p>
+        <div id="study-status" class="subline"></div>
+        <div class="actions" style="margin: 0"><button class="btn btn-sun" type="button" id="study-go">🔄 Update study pages now</button><button class="btn btn-line btn-sm" type="button" id="study-key">🔑 GitHub key</button></div>
+        <div class="msg" id="study-msg" role="status" hidden></div>
+      </div>
     </section>
 
     <section id="t-activity" class="stack" hidden>
@@ -1301,6 +1308,7 @@ async function renderSite() {
   renderMiniTests();
   const b = (cat.site && cat.site.boards) || {};
   $("#bd-10").value = b[10] || BOARD_DEFAULT; $("#bd-12").value = b[12] || BOARD_DEFAULT;
+  studyStatus();
 }
 function testMessage(x) {
   const link = location.origin + location.pathname.replace(/admin\.html$/, "");
@@ -1348,6 +1356,99 @@ $("#bd-save").addEventListener("click", async () => {
   try { await commit(next => { next.site = next.site || {}; next.site.boards = { 10: v10 || BOARD_DEFAULT, 12: v12 || BOARD_DEFAULT }; }, "Board exam dates saved. The website and the app count down to them."); }
   catch (ex) { toast("Could not save: " + (ex.message || ex.code)); }
 });
+// ---------- study pages: build in the browser, save to the website's GitHub repository ----------
+// js/study-build.js makes the pages (the same code as tools/build-pages.mjs). They are saved as one commit
+// through the GitHub API with a key (a fine-grained token for this repository only, "Contents: read and write")
+// that stays in this browser only. Only files that really changed are sent; pages of removed chapters go.
+const GH_KEY = "chemophile-gh", ghConf = () => { try { return Object.assign({ owner: "adeel1030", repo: "Chemo", branch: "ccr-6ada8f89-5gh1t1", token: "" }, JSON.parse(localStorage.getItem(GH_KEY)) || {}); } catch (e) { return { owner: "adeel1030", repo: "Chemo", branch: "ccr-6ada8f89-5gh1t1", token: "" }; } };
+function studyStatus() {
+  const g = ghConf(), at = cat && cat.site && cat.site.studyAt;
+  $("#study-status").innerHTML = `<span class="pill ${g.token ? "good" : "warn"}">${g.token ? "✓ GitHub key saved on this device" : "GitHub key not set on this device"}</span>${at ? `<span class="hint">Last updated ${esc(new Date(at).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }))}${cat.site.studyCount ? ` · ${cat.site.studyCount} pages` : ""}</span>` : ""}`;
+}
+function ghKeyDialog() {
+  const g = ghConf();
+  openDialog("GitHub key for study pages", `
+    <p class="cat-sub">The button saves the pages into your website's GitHub repository. For that it needs a key from your GitHub account, made once. It stays only in this browser, and is sent only to GitHub.</p>
+    <ol class="cat-sub" style="padding-left: 18px; margin: 0">
+      <li>On GitHub (logged in as <b>${esc(g.owner)}</b>) open <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+      <li>Name: <b>Chemophile study pages</b>. Expiration: <b>1 year</b> (custom).</li>
+      <li>Repository access: <b>Only select repositories → ${esc(g.owner)}/${esc(g.repo)}</b>.</li>
+      <li>Permissions → Repository permissions → <b>Contents: Read and write</b>. Nothing else.</li>
+      <li>Generate, copy the token (it starts with <b>github_pat_</b>) and paste it below.</li>
+    </ol>
+    <div class="field"><label for="gh-token">GitHub key (token)</label><input id="gh-token" type="password" autocomplete="off" spellcheck="false" placeholder="${g.token ? "Saved. Paste a new one to change it" : "github_pat_…"}"></div>
+    <details><summary class="hint">Repository and branch (already filled in)</summary>
+      <div class="grid2" style="margin-top: 8px"><div class="field"><label for="gh-repo">Repository</label><input id="gh-repo" value="${esc(g.owner)}/${esc(g.repo)}"></div>
+      <div class="field"><label for="gh-branch">Branch the website is served from</label><input id="gh-branch" value="${esc(g.branch)}"></div></div></details>`,
+    async () => {
+      const t = $("#gh-token").value.trim(), [owner, repo] = $("#gh-repo").value.trim().split("/"), branch = $("#gh-branch").value.trim();
+      if (!owner || !repo || !branch) throw new Error("Write the repository as owner/name, and the branch.");
+      const next = { owner, repo, branch, token: t || g.token };
+      if (!next.token) throw new Error("Paste the GitHub key.");
+      if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(next.token)) throw new Error("This does not look like a GitHub key. It starts with github_pat_.");
+      // Check it opens the repository before saving.
+      const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches/${encodeURIComponent(branch)}`, { headers: { Authorization: `Bearer ${next.token}`, Accept: "application/vnd.github+json" } });
+      if (r.status === 401) throw new Error("GitHub did not accept this key. Make a new one and paste it again.");
+      if (r.status === 404) throw new Error("This key cannot see the repository or branch. Check 'Only select repositories' and the names.");
+      if (!r.ok) throw new Error("GitHub answered " + r.status + ". Try again.");
+      localStorage.setItem(GH_KEY, JSON.stringify(next));
+      studyStatus();
+    }, g.token ? async () => { localStorage.removeItem(GH_KEY); studyStatus(); } : null, { saveLabel: "Check and save" });
+}
+async function updateStudyPages() {
+  const g = ghConf(), btn = $("#study-go"), msg = $("#study-msg");
+  const say = (t, cls = "") => { msg.className = "msg " + cls; msg.textContent = t; msg.hidden = false; };
+  if (!g.token) { ghKeyDialog(); return; }
+  btn.disabled = true;
+  const api = async (path, opts = {}) => {
+    const r = await fetch(`https://api.github.com/repos/${g.owner}/${g.repo}/${path}`, Object.assign({}, opts, { headers: { Authorization: `Bearer ${g.token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" } }));
+    if (r.status === 401) throw new Error("GitHub did not accept the key (it may have expired). Tap 🔑 GitHub key and paste a new one.");
+    if (r.status === 403 || r.status === 404) throw new Error("The GitHub key cannot write to the repository. Its permission must be 'Contents: Read and write' for " + g.owner + "/" + g.repo + ".");
+    if (!r.ok) throw new Error("GitHub answered " + r.status + " (" + path.split("/")[1] + ").");
+    return r.json();
+  };
+  const bytesOf = f => f.text != null ? new TextEncoder().encode(f.text) : Uint8Array.from(atob(f.b64), c => c.charCodeAt(0));
+  const gitSha = async bytes => { const head = new TextEncoder().encode(`blob ${bytes.length}\0`), all = new Uint8Array(head.length + bytes.length); all.set(head); all.set(bytes, head.length);
+    return [...new Uint8Array(await crypto.subtle.digest("SHA-1", all))].map(b => b.toString(16).padStart(2, "0")).join(""); };
+  try {
+    say("Reading the website from GitHub…");
+    const ref = await api(`git/ref/heads/${encodeURIComponent(g.branch)}`), head = ref.object.sha;
+    const commit = await api(`git/commits/${head}`), tree = await api(`git/trees/${commit.tree.sha}?recursive=1`);
+    const have = new Map(tree.tree.filter(x => x.type === "blob").map(x => [x.path, x.sha]));
+    say("Making the pages from the catalog…");
+    const { buildStudy } = await import("./js/study-build.js?v=" + (document.querySelector('script[src*="chapters.js?v="]') || { src: "?v=1" }).src.split("?v=")[1]);
+    const A = { CHAPTERS: () => CHAPTERS, studyPaths, classSlug, clsName, kindOf, isPart, isUni, isJeeCls, KINDS, numIn, chNo, orderN, classList, SAMPLE_BOOKS: () => SAMPLE_BOOKS, BUSINESS };
+    const res = buildStudy(A, cat, COVERS, p => have.has(p));
+    let oldPages = [];
+    if (have.has("tools/study-pages.json")) { try { const b = await api(`git/blobs/${have.get("tools/study-pages.json")}`); oldPages = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b.content.replace(/\n/g, "")), c => c.charCodeAt(0)))); } catch (e) {} }
+    res.files.push({ path: "tools/study-pages.json", text: JSON.stringify(res.pages, null, 1) + "\n" });
+    const entries = [];
+    let i = 0;
+    for (const f of res.files) {
+      const b = bytesOf(f), sha = await gitSha(b);
+      if (have.get(f.path) === sha) continue;
+      if (f.text != null) entries.push({ path: f.path, mode: "100644", type: "blob", content: f.text });
+      else { const blob = await api("git/blobs", { method: "POST", body: JSON.stringify({ content: f.b64, encoding: "base64" }) }); entries.push({ path: f.path, mode: "100644", type: "blob", sha: blob.sha }); }
+      if (++i % 20 === 0) say(`Saving: ${i} changed files so far…`);
+    }
+    oldPages.filter(p => !res.pages.includes(p) && have.has(p + "index.html")).forEach(p => entries.push({ path: p + "index.html", mode: "100644", type: "blob", sha: null }));
+    if (!entries.length) { say(`Already up to date: ${res.pages.length} pages match the catalog.`, "good"); }
+    else {
+      say(`Saving ${entries.length} changed file${entries.length === 1 ? "" : "s"} to the website…`);
+      const t = await api("git/trees", { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
+      const c = await api("git/commits", { method: "POST", body: JSON.stringify({ message: `Study pages: update from the catalog (${res.pages.length} pages)`, tree: t.sha, parents: [head] }) });
+      await api(`git/refs/heads/${encodeURIComponent(g.branch)}`, { method: "PATCH", body: JSON.stringify({ sha: c.sha }) });
+      say(`Done: ${entries.length} file${entries.length === 1 ? "" : "s"} updated (${res.counts.chapters} chapter pages, ${res.counts.classes} class pages, sitemap). They show on the website in 1 to 2 minutes.`, "good");
+    }
+    try { await commit_(res.pages.length); } catch (e) {}
+  } catch (ex) { say(ex.message || String(ex), "bad"); }
+  btn.disabled = false; studyStatus();
+}
+// The time of the last update, kept in the catalog so every device shows it.
+const commit_ = n => commit(next => { next.site = next.site || {}; next.site.studyAt = new Date().toISOString(); next.site.studyCount = n; }, "Study pages are up to date.");
+$("#study-go").addEventListener("click", updateStudyPages);
+$("#study-key").addEventListener("click", ghKeyDialog);
+
 // Only one year of day-by-day details is kept: older reading days, visits and free test tries are deleted
 // (once a day, when the admin panel opens). Student IDs, chapters bought and scores are not touched.
 const toast = (t, cls = "good") => { const m = $("#site-msg"); m.className = "msg " + cls; m.textContent = t; m.hidden = false; };
