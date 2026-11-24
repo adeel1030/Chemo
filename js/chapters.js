@@ -8,7 +8,7 @@ const BUSINESS = {
   supportedBy: "M A Products India and Olife Gold Olive Oil",
   email: "chemhabibs@gmail.com",
   address: "M A Products India, 1310B, Near Bada Chaman Wada, Tilak Bazar, Delhi 110006",
-  freeResetsPerYear: 2,
+  freeResetsPerYear: 5,   // device resets a year for every student; the admin panel can change it (catalog site.freeResets)
   teacherFreeDays: 30   // free access a verified teacher gets (admin can change it per request)
 };
 // Default price of each chapter in rupees. Key = "class-chapter", e.g. "11-1" is Class 11 Chapter 1.
@@ -427,6 +427,7 @@ function applyCatalog(cat) {
   OFFER = cat.offer || null;
   REFERRAL = Object.assign({ on: false, days: 30 }, cat.referral || {});
   SITE = Object.assign({ videos: [], reviews: [] }, cat.site || {});
+  if (cat.site && cat.site.freeResets != null && Number.isInteger(+cat.site.freeResets) && +cat.site.freeResets >= 0) BUSINESS.freeResetsPerYear = +cat.site.freeResets;
   COVERS_AT = +cat.coversAt || 0;
   COVER_DOCS = Math.max(1, +cat.coverDocs || 1);
   if (!COVERS_AT) Object.keys(COVERS).forEach(k => delete COVERS[k]);

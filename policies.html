@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#15134a">
 <script>try { var t = localStorage.getItem("chemophile-theme"); if (t) document.documentElement.dataset.theme = t; var c = +JSON.parse(localStorage.getItem("chemophile-me")); if (c >= 9 && c <= 12) document.documentElement.dataset.cls = c; } catch (e) {}</script>
 <script src="js/theme.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261124b">
+<link rel="stylesheet" href="css/app.css?v=20261124c">
 <style>
 /* One page with every policy: a contents strip, then one card per policy. */
 .pol-hero { background: radial-gradient(circle at 90% 0%, rgba(255, 210, 74, .2), transparent 45%), var(--night); color: var(--night-fg); padding-block: 30px 56px; }
@@ -87,7 +87,7 @@
         <h2><span class="n">2</span>Online book and account rules</h2>
         <ul>
           <li><b>One ID, one device.</b> Your login ID works on one phone or tablet only. It locks to the first device you log in on.</li>
-          <li><b>Device reset.</b> If you change your phone, we can move your ID to the new one. <span data-resets>2</span> device resets a year are free; more are given only in exceptional cases, at our discretion.</li>
+          <li><b>Device reset.</b> If you change your phone, we can move your ID to the new one. <span data-resets>5</span> device resets a year are free; more are given only in exceptional cases, at our discretion.</li>
           <li><b>Validity.</b> A bought online book is valid for <b>1 year (365 days)</b> from the day you get your login. After that, the chapters lock until you renew.</li>
           <li><b>Monthly plan.</b> If you choose the monthly plan, each payment opens the chapters for the period shown (30 days unless stated). The chapters lock when the paid period ends and open again as soon as you renew. You can stop any time by not renewing.</li>
           <li><b>Don't share your ID or the pages.</b> Every page shows your name and number. If an ID is shared, or pages are copied, screenshotted or forwarded, we may block the ID without a refund.</li>
@@ -172,11 +172,16 @@
   </div>
 </main>
 
-<script src="js/chapters.js?v=20261124b"></script>
+<script src="js/chapters.js?v=20261124c"></script>
 <script>
 // Contact details and limits come from BUSINESS in js/chapters.js, so they are written in one place.
 document.querySelectorAll("[data-owner]").forEach(e => { e.textContent = BUSINESS.owner; });
-document.querySelectorAll("[data-resets]").forEach(e => { e.textContent = BUSINESS.freeResetsPerYear; });
+const showResets = () => document.querySelectorAll("[data-resets]").forEach(e => { e.textContent = BUSINESS.freeResetsPerYear; });
+try { const c = JSON.parse(localStorage.getItem("chemophile-catalog")); if (c) applyCatalog(c); } catch (e) {}
+showResets();
+// The number set in the admin panel, from the live catalog.
+import("./js/firebase-config.js").then(({ firebaseConfig }) => fetch(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/catalog/main?key=${firebaseConfig.apiKey}`))
+  .then(r => r.json()).then(j => { const n = JSON.parse(j.fields.data.stringValue).site?.freeResets; if (Number.isInteger(n) && n >= 0) { BUSINESS.freeResetsPerYear = n; showResets(); } }).catch(() => {});
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const rows = [
   ["Author and seller", BUSINESS.owner],

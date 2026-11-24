@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemo Admin">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261124b">
+<link rel="stylesheet" href="css/app.css?v=20261124c">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
 body { background: var(--paper); }
@@ -515,6 +515,14 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
 .todo { gap: 8px; }
 .todo-item { background: var(--d-bg); border: 1px solid var(--d-line-2); border-left: 4px solid var(--d-mute); border-radius: 12px; padding: 11px 12px 11px 14px; }
 .todo-item .ic { display: none; }
+.todo-item { align-items: flex-start; }
+.todo-item .fix { display: block; margin-top: 5px; font-size: .84rem; color: var(--d-mute); line-height: 1.45; }
+.todo-act { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; flex: none; }
+@media (max-width: 560px) { .todo-item { flex-wrap: wrap; } .todo-act { width: 100%; justify-content: flex-start; } }
+.todo-read { margin-top: 6px; }
+.todo-read > summary { cursor: pointer; font-size: .86rem; color: var(--d-mute); padding: 4px 2px; }
+.todo-read .todo-item { opacity: .7; margin-top: 8px; }
+.stat.warnc .si { background: var(--d-warn-soft); } .stat.warnc .n { color: #c98a00; }
 .todo-item.bad { border-left-color: var(--bad); background: color-mix(in srgb, var(--d-bad-soft) 60%, var(--d-bg)); }
 .todo-item.warn { border-left-color: #f0b400; background: color-mix(in srgb, var(--d-warn-soft) 55%, var(--d-bg)); }
 .quick h2 { margin-bottom: 12px; }
@@ -675,7 +683,7 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
       <div class="stats" id="stats"></div>
       <div class="card insights"><div class="section-title" style="margin-bottom: 6px"><h2>Insights</h2><span class="hint">from your students' accounts and reading</span></div><div class="charts" id="charts"></div></div>
       <div class="dash-grid">
-        <div class="card"><div class="section-title"><h2>Needs your attention</h2></div><div class="todo" id="todo"></div></div>
+        <div class="card"><div class="section-title"><h2>Needs your attention <span class="pill warn" id="todo-count"></span></h2><button class="btn btn-line btn-sm" type="button" id="todo-all" hidden>✓ Mark all read</button></div><div class="todo" id="todo"></div></div>
         <div class="stack">
           <div class="card quick"><h2>Quick actions</h2><div class="qa-grid">
             <button class="btn btn-sun" type="button" data-go="new-student"><span class="qi" aria-hidden="true">👤</span>New student ID</button>
@@ -842,6 +850,7 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
       <div class="card stack" id="cat-fmt" hidden>
         <p class="cat-sub">Tick what the website should sell. The name and note show on the order form.</p>
         <div id="cat-formats"></div>
+        <div class="field" style="max-width: 360px"><label for="cat-resets">Free device resets a year (every student)</label><input id="cat-resets" type="number" min="0" max="50" inputmode="numeric"><span class="hint">When a student changes phone you reset their device; this many a year are free. A student can have their own number in Edit details. Shown in the Terms too.</span></div>
         <div><button class="btn btn-sun" type="button" data-cat="save-fmt">Save</button></div>
         <div class="cat-fill"><b>Same price or MRP for many chapters</b>
           <div class="cat-row">
@@ -1003,14 +1012,14 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
   </div>
 </main>
 
-<script src="js/chapters.js?v=20261124b"></script>
+<script src="js/chapters.js?v=20261124c"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124b";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124c";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });
@@ -1050,6 +1059,8 @@ Stuck on something? Send your doubt from the book and I will answer.
 }
 const fmtMins = m => m < 1 ? "under 1 min" : m < 60 ? `${Math.round(m)} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`;
 const resetsThisYear = s => (s.resets || []).filter(t => t.toDate && t.toDate() > new Date(Date.now() - 365 * 864e5)).length;
+// How many device resets a year this student gets: their own number (Edit details) or everyone's (Ways to buy).
+const resetLimit = s => Number.isInteger(s.resetLimit) && s.resetLimit >= 0 ? s.resetLimit : BUSINESS.freeResetsPerYear;
 const subKeys = s => Object.keys(s.subs || {});
 const subLive = s => subKeys(s).filter(k => s.subs[k].toDate() > new Date());
 const subEnd = s => subKeys(s).map(k => s.subs[k]).sort((a, b) => a.toMillis() - b.toMillis())[0] || null;
@@ -1129,6 +1140,7 @@ else onAuthStateChanged(auth, async user => {
   run("Chapters", loadChapters, ex => { $("#chap-rows").innerHTML = `<p class="msg bad">Couldn't check which chapters are uploaded. ${esc(why(ex))}</p>`; });
   run("Announcements", loadNews, ex => { $("#news").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
   run("Reviews", loadReviewsIn);
+  run("Notices", loadNotices);
   run("Doubts", loadDoubts, ex => { $("#doubts").innerHTML = `<p class="msg bad">${esc(why(ex))}</p>`; });
   // Once the lists are drawn, back to where the page was scrolled.
   Promise.allSettled(loading).then(() => { const y = (ui.scroll || {})[ui.tab]; if (y > 0 && TABS.includes(ui.tab)) { let n = 0; const put = () => { scrollTo(0, y); if (Math.abs(scrollY - y) > 40 && ++n < 8) setTimeout(put, 250); }; requestAnimationFrame(put); } });
@@ -1177,6 +1189,23 @@ $("#logout").addEventListener("click", () => { uiReady = false; try { sessionSto
 
 // ---------- overview ----------
 let studentsLoaded = false, promosLoaded = false, chaptersLoaded = false;
+// Notices the admin has read: { id: the text when read }, in secrets/admin-notices (only the admin can open it).
+let noticeRead = {}, lastNotices = null, showRead = false;
+const plainText = h => String(h).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+const NOTICE_DOC = () => doc(db, "secrets", "admin-notices");
+async function loadNotices() { try { const d = await getDoc(NOTICE_DOC()); noticeRead = (d.exists() && d.data().read) || {}; } catch (e) { noticeRead = {}; } renderDash(); }
+async function saveNotices() {
+  // Keep only notices that still exist, so the list never grows.
+  const ids = new Set(((lastNotices && lastNotices.todo) || []).map(x => x.id));
+  Object.keys(noticeRead).forEach(k => { if (!ids.has(k)) delete noticeRead[k]; });
+  try { await setDoc(NOTICE_DOC(), { read: noticeRead, at: serverTimestamp() }); } catch (e) { console.warn("notices", e); }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-nread]");
+  if (b && lastNotices) { const x = lastNotices.todo.find(t => t.id === b.dataset.nread); if (x) { noticeRead[x.id] = lastNotices.sig(x.text); renderDash(); saveNotices(); } return; }
+  if (e.target.closest("#todo-all") && lastNotices) { lastNotices.todo.forEach(x => { noticeRead[x.id] = lastNotices.sig(x.text); }); renderDash(); saveNotices(); }
+});
+document.addEventListener("toggle", e => { if (e.target.classList && e.target.classList.contains("todo-read")) showRead = e.target.open; }, true);
 function renderDash() {
   if (!studentsLoaded || !promosLoaded || !chaptersLoaded) return;
   const now = new Date(), soon = new Date(Date.now() + 3 * 864e5);
@@ -1196,34 +1225,48 @@ function renderDash() {
   $("#stats").innerHTML = [
     stat(ids.length, "Student IDs", "t-students", "", "all"),
     stat(ids.filter(s => s.active !== false && s.deviceId).length, "Logged in and reading", "t-students", "good", "active"),
-    stat(alerts.length, "Other-device tries", "t-students", alerts.length ? "alert" : "", "alerts"),
+    stat(alerts.length, "Other-device tries", "t-students", alerts.length ? "warnc" : "", "alerts"),
     stat(ids.filter(s => subLive(s).length).length, "On a monthly plan", "t-students", "", "monthly"),
     stat(live.length, `Live promo codes · ${promoUsers.length} ${promoUsers.length === 1 ? "user" : "users"}`, "t-promos"),
     stat(`${CHAPTERS.length - missing.length}/${CHAPTERS.length}`, "Chapters uploaded", "t-chapters", missing.length ? "" : "good"),
   ].join("");
-  const item = (cls, text, btn, go, extra = "") => `<div class="todo-item ${cls}"><i class="ic"></i><span>${text}</span><button class="btn btn-line btn-sm" type="button" data-go="${go}"${extra}>${btn}</button></div>`;
+  // Each notice: an id, what happened, what to do about it (💡), and a button. "✓ Read" hides it till its text
+  // changes (a new try, one more doubt …); the read ones are kept in secrets/admin-notices (only the admin's).
+  const N = (id, cls, text, fix, action) => ({ id, cls, text, fix, action });
+  const go = (btn, to, extra = "") => `<button class="btn btn-line btn-sm" type="button" data-go="${to}"${extra}>${btn}</button>`;
+  const wa = (btn, phone, msg, extra = "") => `<a class="btn btn-wa btn-sm" href="${waLink(phone, msg)}" target="_blank" rel="noopener"${extra}>${btn}</a>`;
+  const newRev = reviewsIn.filter(x => x.status === "new").length, open = doubts.filter(d => d.status === "open").length, treq = teacherReqs.filter(r => r.status === "pending").length;
   const todo = [
-    ...(reviewsIn.filter(x => x.status === "new").length ? [item("", `${reviewsIn.filter(x => x.status === "new").length} new student review${reviewsIn.filter(x => x.status === "new").length > 1 ? "s" : ""}. Choose which ones show on the website.`, "See", "t-catalog")] : []),
-    ...copyAlerts().map(({ r, s }) => item("bad", `⚠️ <b>${esc(s.name)}</b> opened ${(r.seen || []).length} pages of ${esc(chName(r.ch))} in ${fmtMins(r.minutes || 0)}. That is too fast to read: they may be copying it. Check with them, or block the ID.`, "Check", "t-students", ` data-filter="all" data-q="${esc(s.loginId || s.name)}"`)),
-    ...(doubts.filter(d => d.status === "open").length ? [item("warn", `${doubts.filter(d => d.status === "open").length} doubt${doubts.filter(d => d.status === "open").length === 1 ? " is" : "s are"} waiting for your answer.`, "Answer", "t-doubts")] : []),
-    ...(teacherReqs.filter(r => r.status === "pending").length ? [item("warn", `${teacherReqs.filter(r => r.status === "pending").length} teacher${teacherReqs.filter(r => r.status === "pending").length === 1 ? " is" : "s are"} waiting for free access. Check their ID card.`, "Check", "t-promos")] : []),
-    ...alerts.map(s => item("bad", `<b>${esc(s.name)}</b>: ${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device. The ID may be shared, or they changed phone.`, "Check", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`)),
-    ...soonDue.map(s => `<div class="todo-item warn"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ends on ${fmtDate(subEnd(s))}.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
-    ...unpaid.map(s => `<div class="todo-item bad"><i class="ic"></i><span><b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Chapters are locked till they pay.</span><a class="btn btn-wa btn-sm" href="${waLink(s.phone, remindMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
-    ...[...lately, ...ending].map(s => `<div class="todo-item ${isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : ""}"><i class="ic"></i><span><b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}.<small class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</small></span><a class="btn btn-wa btn-sm" data-remind="${s.uid}" href="${waLink(s.phone, renewMessage(s))}" target="_blank" rel="noopener">Remind</a></div>`),
-    ...(over.length ? [item("", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago. Renew if they pay again.`, "See", "t-students", ` data-filter="expired"`)] : []),
-    ...(students.filter(sameNumber).length ? [item("warn", `${students.filter(sameNumber).length} students share a WhatsApp number with another student. One number should have one student: change the number of one of them (Edit details).`, "See", "t-students", ` data-filter="samephone"`)] : []),
-    ...(missing.length ? [item("warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} Live on the website but not uploaded yet. A student who buys the online book cannot read ${missing.length === 1 ? "it" : "them"}.`, "Upload", "t-chapters", ` data-filter="noup" data-cls="${missing[0].cls}"`)] : []),
-    ...live.filter(p => p.expiresAt.toDate() < soon).map(p => item("warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "Open", "t-promos")),
-    ...promos.filter(p => promoState(p, now) === "full").map(p => item("", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open", "t-promos")),
-    ...(ids.filter(isInactive).length ? [item("", `${ids.filter(isInactive).length} student${ids.filter(isInactive).length > 1 ? "s haven't" : " hasn't"} opened the book for 7 days or more.`, "See", "t-students", ` data-filter="inactive"`)] : []),
-    ...(waiting.length ? [item("", `${waiting.length} ${waiting.length === 1 ? "student has" : "students have"} not logged in yet.`, "See", "t-students", ` data-filter="waiting"`)] : []),
-    ...(students.filter(isSignup).length ? [item("warn", `${students.filter(isSignup).length} ${students.filter(isSignup).length === 1 ? "student signed up and hasn't" : "students signed up and haven't"} bought yet. Send a friendly follow-up.`, "See", "t-students", ` data-filter="signup"`)] : []),
+    ...(newRev ? [N("reviews", "", `${newRev} new student review${newRev > 1 ? "s" : ""}.`, "Open Books & prices → Reviews and tap Show on the ones you want on the website. The others stay hidden.", go("See", "t-catalog"))] : []),
+    ...copyAlerts().map(({ r, s }) => N(`copy:${s.uid}:${r.ch}`, "bad", `⚠️ <b>${esc(s.name)}</b> opened ${(r.seen || []).length} pages of ${esc(chName(r.ch))} in ${fmtMins(r.minutes || 0)}. That is too fast to read.`, "Ask them on WhatsApp what happened. If someone else is using the ID or copying pages, tap Block on their card; you can unblock later.", go("Check", "t-students", ` data-filter="all" data-q="${esc(s.loginId || s.name)}"`))),
+    ...(open ? [N("doubts", "warn", `${open} doubt${open === 1 ? " is" : "s are"} waiting for your answer.`, "Open Doubts: the student's page opens next to the question. Type the answer and send; the student sees it in the app.", go("Answer", "t-doubts"))] : []),
+    ...(treq ? [N("teachers", "warn", `${treq} teacher${treq === 1 ? " is" : "s are"} waiting for free access.`, "Open Promo codes → Teacher requests, check the ID card photo, then Approve (their classes open free) or Reject.", go("Check", "t-promos"))] : []),
+    ...students.filter(s => s.attempts > 0).map(s => N(`tries:${s.uid}`, "warn", `<b>${esc(s.name)}</b> tried to log in on another device (${s.attempts} ${s.attempts === 1 ? "time" : "times"}).`, `Usually a new phone or a cleared browser, nothing serious. If they ask, tap Device reset on their card (${resetsThisYear(s)} of ${resetLimit(s)} resets used this year). If you think the ID is shared, ask them to change the password.`, go("See", "t-students", ` data-filter="alerts" data-q="${esc(s.loginId || s.name)}"`))),
+    ...soonDue.map(s => N(`subsoon:${s.uid}`, "warn", `<b>${esc(s.name)}</b>'s monthly plan ends on ${fmtDate(subEnd(s))}.`, "Send the reminder. After they pay, open their card and tap Renew +" + monthDays() + " days.", wa("Remind", s.phone, remindMessage(s)))),
+    ...unpaid.map(s => N(`subover:${s.uid}`, "bad", `<b>${esc(s.name)}</b>'s monthly plan ended on ${fmtDate(subEnd(s))}. Their chapters are locked till they pay.`, "Send the reminder. After they pay, tap Renew on their card; the chapters open again at once.", wa("Remind", s.phone, remindMessage(s)))),
+    ...[...lately, ...ending].map(s => N(`end:${s.uid}`, isOver(s) ? "bad" : daysLeft(s) <= 7 ? "warn" : "", `<b>${esc(s.name)}</b>'s online book ${isOver(s) ? `ended on ${fmtDate(s.expiresAt)}` : `ends on ${fmtDate(s.expiresAt)} (${daysLeft(s)} day${daysLeft(s) === 1 ? "" : "s"} left)`}. <span class="hint">${remindedText(s).replace(" · ", "") || "Not reminded yet"}</span>`, "Send the renewal reminder. After payment, open their card → Renew: it adds another year and keeps their reading.", wa("Remind", s.phone, renewMessage(s), ` data-remind="${s.uid}"`))),
+    ...(over.length ? [N("over", "", `${over.length} ${over.length === 1 ? "student's access ended" : "students' access ended"} more than 30 days ago.`, "Nothing to do now. If one of them pays again, open their card → Renew.", go("See", "t-students", ` data-filter="expired"`))] : []),
+    ...(students.filter(sameNumber).length ? [N("samephone", "warn", `${students.filter(sameNumber).length} students share a WhatsApp number with another student.`, "Open each one → Edit details and keep the number only on the right student (one number, one student). Phone login works only then.", go("See", "t-students", ` data-filter="samephone"`))] : []),
+    ...(missing.length ? [N("missing", "warn", `${missing.length} ${missing.length === 1 ? "chapter is" : "chapters are"} Live on the website but not uploaded yet. A student who buys the online book cannot read ${missing.length === 1 ? "it" : "them"}.`, "Open Chapters → ⬆ Upload many PDFs (or open a chapter and upload its PDF). If a chapter is not ready, switch it to Coming soon in its Edit.", go("Upload", "t-chapters", ` data-filter="noup" data-cls="${missing[0].cls}"`))] : []),
+    ...live.filter(p => p.expiresAt.toDate() < soon).map(p => N(`promoend:${p.code}`, "warn", `Promo <b>${esc(p.code)}</b> ends on ${fmtDate(p.expiresAt)}.`, "If it should run longer, open the code and change its last date. Students who used it keep access till that date.", go("Open", "t-promos"))),
+    ...promos.filter(p => promoState(p, now) === "full").map(p => N(`promofull:${p.code}`, "", `Promo <b>${esc(p.code)}</b> is full (${p.maxUses} of ${p.maxUses} used).`, "Open the code and raise its places if more students should use it, or make a new code.", go("Open", "t-promos"))),
+    ...(ids.filter(isInactive).length ? [N("inactive", "", `${ids.filter(isInactive).length} student${ids.filter(isInactive).length > 1 ? "s haven't" : " hasn't"} opened the book for 7 days or more.`, "Tap See, then 😴 Remind to study on each card: WhatsApp opens with the message ready.", go("See", "t-students", ` data-filter="inactive"`))] : []),
+    ...(waiting.length ? [N("waiting", "", `${waiting.length} ${waiting.length === 1 ? "student has" : "students have"} not logged in yet.`, "Send their login ID and password again: tap Send on WhatsApp on their card. They log in on the phone they will read on.", go("See", "t-students", ` data-filter="waiting"`))] : []),
+    ...(students.filter(isSignup).length ? [N("signups", "warn", `${students.filter(isSignup).length} ${students.filter(isSignup).length === 1 ? "student signed up and hasn't" : "students signed up and haven't"} bought yet.`, "Tap See, then Follow up on WhatsApp on each card. After they pay, tap Give chapters.", go("See", "t-students", ` data-filter="signup"`))] : []),
   ];
-  $("#todo").innerHTML = todo.length ? todo.join("") : `<p class="empty">All good. Nothing needs you right now.</p>`;
+  // What was read: hidden while the text is the same.
+  const sig = t => plainText(t).replace(/\s+/g, " ").trim();
+  const unread = todo.filter(x => noticeRead[x.id] !== sig(x.text)), read = todo.filter(x => noticeRead[x.id] === sig(x.text));
+  lastNotices = { todo, sig };
+  const row = (x, isRead) => `<div class="todo-item ${x.cls}${isRead ? " read" : ""}"><i class="ic"></i><span>${x.text}<small class="fix">💡 ${esc(x.fix)}</small></span><div class="todo-act">${x.action}${isRead ? "" : `<button class="btn btn-line btn-sm" type="button" data-nread="${esc(x.id)}" title="Hide this till something new happens">✓ Read</button>`}</div></div>`;
+  $("#todo-count").textContent = unread.length ? `${unread.length} new` : "";
+  $("#todo-all").hidden = !unread.length;
+  $("#todo").innerHTML = (unread.length ? unread.map(x => row(x, false)).join("") : `<p class="empty">All caught up. Nothing new needs you right now.</p>`)
+    + (read.length ? `<details class="todo-read"${showRead ? " open" : ""}><summary>Read (${read.length})</summary>${read.map(x => row(x, true)).join("")}</details>` : "");
   $("#recent").innerHTML = students.slice(0, 5).map(s => `<div><span>${esc(s.name)}${s.promo ? ` <span class="hint">(promo)</span>` : isSignup(s) ? ` <span class="hint">(signed up)</span>` : ""}</span><span>${fmtDate(s.createdAt)}</span></div>`).join("") || `<p class="hint">No students yet.</p>`;
   renderCharts();
-  const alertDot = $("#dot-home"); alertDot.hidden = !alerts.length; alertDot.textContent = alerts.length;
+  const imp = unread.filter(x => x.cls === "bad" || x.cls === "warn").length;
+  const alertDot = $("#dot-home"); alertDot.hidden = !imp; alertDot.textContent = imp;
   const chDot = $("#dot-ch"); chDot.hidden = !missing.length; chDot.textContent = missing.length;
   $("#chap-progress").textContent = `${CHAPTERS.length - missing.length} of ${CHAPTERS.length} chapters uploaded.${missing.length ? " Students can read a chapter only after it is uploaded." : " Everything is uploaded."}`;
 }
@@ -2046,8 +2089,8 @@ function renderStudents() {
           ${isOver(s) ? `<span class="pill bad">Expired ${fmtDate(s.expiresAt)}</span>` : s.expiresAt ? `<span class="pill warn">Until ${fmtDate(s.expiresAt)}</span>` : ""}
           ${s.deviceId ? `<span class="pill">${esc(s.deviceInfo || "Device locked")}</span>` : `<span class="pill warn">Not logged in yet</span>`}
           ${lastOpen(s) ? `<span class="pill${isInactive(s) ? " bad" : ""}">Last opened ${agoText(lastOpen(s))}</span>` : ""}
-          ${resetsThisYear(s) ? `<span class="pill${resetsThisYear(s) >= BUSINESS.freeResetsPerYear ? " bad" : ""}">Resets this year: ${resetsThisYear(s)}/${BUSINESS.freeResetsPerYear}</span>` : ""}
-          ${s.attempts ? `<span class="pill bad">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
+          ${resetsThisYear(s) ? `<span class="pill${resetsThisYear(s) >= resetLimit(s) ? " bad" : ""}">Resets this year: ${resetsThisYear(s)}/${resetLimit(s)}</span>` : ""}
+          ${s.attempts ? `<span class="pill warn">${s.attempts} ${s.attempts === 1 ? "try" : "tries"} from another device</span>` : ""}
           ${s.referrals ? `<span class="pill good">Referred ${s.referrals} friend${s.referrals === 1 ? "" : "s"}</span>` : ""}
           ${s.referredBy ? `<span class="pill">Referred by ${esc((students.find(x => x.uid === s.referredBy) || { name: "a deleted student" }).name)}</span>` : ""}
           ${streakOf(s) >= 2 ? `<span class="pill good">🔥 ${streakOf(s)}-day streak</span>` : ""}
@@ -2088,7 +2131,7 @@ function renderStudents() {
       </div>
       <div class="reading-box" hidden></div>
       <div class="confirm reset-confirm" role="alertdialog" aria-label="Device reset" hidden>
-        <p><b>${esc(s.name)} has already had ${resetsThisYear(s)} device reset${resetsThisYear(s) === 1 ? "" : "s"} this year.</b> The policy gives ${BUSINESS.freeResetsPerYear} free resets a year; more only in exceptional cases.</p>
+        <p><b>${esc(s.name)} has already had ${resetsThisYear(s)} device reset${resetsThisYear(s) === 1 ? "" : "s"} this year.</b> ${Number.isInteger(s.resetLimit) ? "Their limit is" : "The policy gives"} ${resetLimit(s)} free resets a year; more only in exceptional cases.</p>
         <div class="actions"><button class="btn btn-danger btn-sm" type="button" data-act="reset-yes">Reset anyway</button><button class="btn btn-line btn-sm" type="button" data-act="reset-no">Cancel</button></div>
       </div>
       <div class="edit" hidden>
@@ -2286,7 +2329,7 @@ $("#students").addEventListener("click", async e => {
           const r = Object.assign({}, q, { ch: id.replace(/-qb$/, ""), qb: /-qb$/.test(id), pct: Math.round((q.best || 0) / q.total * 100) });
           return `<div class="sc-row"><span class="snm">${esc(chName(r.ch))}<small>${scKind(r)}</small></span>${scScore(r)}<span class="m">${scMeta(r)}</span></div>`; }).join("")}</div>` : "");
     }
-    if (b.dataset.act === "reset" && resetsThisYear(s) >= BUSINESS.freeResetsPerYear) { row.querySelector(".reset-confirm").hidden = false; return; }
+    if (b.dataset.act === "reset" && resetsThisYear(s) >= resetLimit(s)) { row.querySelector(".reset-confirm").hidden = false; return; }
     if (b.dataset.act === "reset-no") row.querySelector(".reset-confirm").hidden = true;
     if (b.dataset.act === "reset" || b.dataset.act === "reset-yes") {
       const at = Timestamp.now();
@@ -2294,7 +2337,7 @@ $("#students").addEventListener("click", async e => {
       s.deviceId = null; s.deviceInfo = null; s.resets = [...(s.resets || []), at]; renderStudents();
       const r = $(`.stu[data-uid="${s.uid}"]`), m = r.querySelector(".msg");
       m.className = "msg good"; m.hidden = false;
-      const n = resetsThisYear(s), free = BUSINESS.freeResetsPerYear;
+      const n = resetsThisYear(s), free = resetLimit(s);
       m.textContent = `Device reset. ${n <= free ? `${n} of ${free} free resets used this year.` : `That was reset number ${n} this year (${free} are free).`} ${s.name.split(" ")[0]} can now log in on the new phone.`;
     }
     if (b.dataset.act === "toggle") {
@@ -2549,6 +2592,7 @@ function detailsDialog(s) {
       <div class="field"><label for="d-sschool">School or college</label><input id="d-sschool" value="${esc(s.school || "")}" maxlength="100"></div>
       <div class="field"><label for="d-scity">City</label><input id="d-scity" value="${esc(s.city || "")}" maxlength="60"></div>
     </div>
+    <div class="field" style="max-width: 360px"><label for="d-sreset">Device resets a year for this student</label><input id="d-sreset" type="number" min="0" max="50" inputmode="numeric" value="${Number.isInteger(s.resetLimit) ? s.resetLimit : ""}" placeholder="${BUSINESS.freeResetsPerYear} (same as everyone)"><span class="hint">Empty = the number for everyone (${BUSINESS.freeResetsPerYear}, set in Books &amp; prices → Ways to buy). Used this year: ${resetsThisYear(s)}.</span></div>
     <div><b>Class</b><div class="chap-picks" id="d-scls">${classList().map(c => `<label><input type="checkbox" value="${c}"${cls.includes(c) ? " checked" : ""}> ${esc(clsName(c))}</label>`).join("")}</div></div>
     ${s.promo ? "" : `<p class="cat-sub">The login ID (${esc(s.loginId)}) can't be changed. To change the password, the student uses "Change password" in their library.</p>`}`,
     async () => {
@@ -2557,7 +2601,9 @@ function detailsDialog(s) {
       if (phone && phone.length !== 10) throw new Error("WhatsApp number: 10 digits.");
       const taken = phone !== s.phone && numberTaken(phone, s.uid);
       if (taken) throw new Error(`This number already belongs to ${taken.name}${taken.loginId ? ` (ID ${taken.loginId})` : ""}. One number, one student.`);
-      const update = { name, phone, role: dlg.querySelector("#d-srole").value || null, school: val("d-sschool"), city: val("d-scity"), classes: pickedIn("#d-scls").map(Number) };
+      const rl = val("d-sreset");
+      if (rl !== "" && !(Number.isInteger(+rl) && +rl >= 0 && +rl <= 50)) throw new Error("Device resets: a number from 0 to 50, or leave it empty.");
+      const update = { name, phone, role: dlg.querySelector("#d-srole").value || null, school: val("d-sschool"), city: val("d-scity"), classes: pickedIn("#d-scls").map(Number), resetLimit: rl === "" ? null : +rl };
       await updateDoc(doc(db, "users", s.uid), update);
       const oldPhone = s.phone;
       Object.assign(s, update);
@@ -3163,6 +3209,7 @@ function renderCatalog() {
       <span class="go">Edit ›</span>
       <span class="pr">${priceLine(x.price, x.mrp)}</span>
     </button>`).join("") : `<div class="ch-empty">No combos yet.</div>`;
+  $("#cat-resets").value = BUSINESS.freeResetsPerYear;
   $("#cat-formats").innerHTML = FORMAT_IDS.map(f => `<div class="cat-format" data-fmt="${f}">
     <label class="cat-check"><input type="checkbox" data-k="on"${cat.formats[f].on ? " checked" : ""}> Sell</label>
     <div class="field"><label>Name on the website</label><input data-k="label" value="${esc(cat.formats[f].label)}"></div>
@@ -3519,6 +3566,8 @@ $("#t-catalog").addEventListener("click", async e => {
           if (g("days")) F.days = Math.max(1, Math.round(+g("days").value) || (f === "online" ? 365 : 30));
         });
         if (!FORMAT_IDS.some(f => next.formats[f].on)) return "Keep at least one way to buy switched on.";
+        const rv = $("#cat-resets").value.trim();
+        if (rv !== "") { if (!(Number.isInteger(+rv) && +rv >= 0 && +rv <= 50)) return "Device resets: a number from 0 to 50."; next.site = next.site || {}; next.site.freeResets = +rv; }
       }, "Ways to buy saved.");
     }
     if (act === "fill") {
