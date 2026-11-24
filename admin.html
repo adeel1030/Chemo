@@ -415,6 +415,202 @@ textarea:focus { border-color: var(--accent); outline: none; }
 .teach-pick label { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: .92rem; }
 .teach-pick label:hover { background: var(--paper); }
 .teach-pick small { color: var(--muted); }
+
+/* ===================================================================================================
+   Chemophile desk, 2026 design. One system for every page of the admin panel:
+   - a calm paper background, white cards with a soft shadow, one indigo accent and the Chemophile yellow
+   - a night-blue side menu in groups (Students · Content · Sales), the open page marked in yellow
+   - the same height, corners and focus ring for every button, box and chip
+   - light and dark looks from the same tokens
+   =================================================================================================== */
+:root {
+  --d-bg: #f3f4fa; --d-card: #ffffff; --d-line: #e5e6f1; --d-line-2: #eef0f7; --d-ink: #17153d; --d-mute: #636285;
+  --d-accent: #4234c4; --d-accent-soft: #eeedfd; --d-ring: rgba(66, 52, 196, .22);
+  --d-shadow: 0 1px 2px rgba(23, 21, 61, .05), 0 8px 24px -12px rgba(23, 21, 61, .14);
+  --d-shadow-hi: 0 2px 4px rgba(23, 21, 61, .06), 0 14px 32px -14px rgba(23, 21, 61, .25);
+  --d-side: #141243; --d-side-2: #1c1960;
+  --d-good-soft: #e7f7ee; --d-bad-soft: #fdecef; --d-warn-soft: #fff6db;
+  --d-r: 16px; --d-r-sm: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --d-bg: #0e0d24; --d-card: #17163a; --d-line: #2a2858; --d-line-2: #211f4a; --d-ink: #eceaff; --d-mute: #a6a4d2;
+    --d-accent: #a99fff; --d-accent-soft: #24215a; --d-ring: rgba(169, 159, 255, .3); --d-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px -14px rgba(0,0,0,.6); --d-shadow-hi: 0 14px 32px -12px rgba(0,0,0,.7);
+    --d-side: #0b0a20; --d-side-2: #131136; --d-good-soft: #123826; --d-bad-soft: #3d1522; --d-warn-soft: #3a3000; }
+}
+:root[data-theme="dark"] { --d-bg: #0e0d24; --d-card: #17163a; --d-line: #2a2858; --d-line-2: #211f4a; --d-ink: #eceaff; --d-mute: #a6a4d2;
+  --d-accent: #a99fff; --d-accent-soft: #24215a; --d-ring: rgba(169, 159, 255, .3); --d-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px -14px rgba(0,0,0,.6); --d-shadow-hi: 0 14px 32px -12px rgba(0,0,0,.7);
+  --d-side: #0b0a20; --d-side-2: #131136; --d-good-soft: #123826; --d-bad-soft: #3d1522; --d-warn-soft: #3a3000; }
+:root:not(.x-a):not(.x-b) { --paper: var(--d-bg); --surface: var(--d-card); --line: var(--d-line); --fg: var(--d-ink); --muted: var(--d-mute); --accent: var(--d-accent); --radius: var(--d-r); }
+body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: antialiased; }
+
+/* header */
+.admin-head { background: linear-gradient(90deg, var(--d-side), var(--d-side-2)); border-bottom: 0; box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 2px 0 var(--sun); }
+.admin-head .bar { min-height: 60px; }
+.admin-head .brand img { border-radius: 50%; box-shadow: 0 0 0 2px rgba(255, 210, 74, .45); }
+.admin-head .brand span { font: 800 1.3rem var(--font-display); color: var(--sun); letter-spacing: -.01em; }
+.badge-admin { background: rgba(255, 210, 74, .14); color: var(--sun); border: 1px solid rgba(255, 210, 74, .4); border-radius: 999px; padding: 3px 10px; font-size: .66rem; }
+.admin-head .who { font-size: .84rem; color: var(--night-muted); }
+.admin-head .theme-btn { width: 34px; height: 34px; }
+.admin-head .btn-ghost { border-radius: 999px; }
+
+/* side menu */
+.nav-label { display: none; }
+@media (min-width: 900px) {
+  .desk { grid-template-columns: 248px minmax(0, 1fr); background: linear-gradient(90deg, var(--d-side) 248px, transparent 248px); }
+  .side { top: 62px; height: calc(100vh - 62px); padding: 14px 12px 16px; gap: 2px; background: transparent; }
+  .nav-label { display: block; margin: 14px 14px 4px; font: 700 .66rem var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: rgba(198, 195, 238, .55); }
+  .nav-btn { padding: 9px 12px; font-size: .93rem; border-radius: 10px; color: #c9c6f0; transition: background .15s, color .15s; }
+  .nav-btn svg { width: 20px; height: 20px; opacity: .85; }
+  .nav-btn:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-btn[aria-current="page"] { background: rgba(255, 210, 74, .13); color: var(--sun); box-shadow: inset 3px 0 0 var(--sun); }
+  .nav-btn[aria-current="page"] svg { opacity: 1; }
+  .nav-btn .dot { min-width: 20px; height: 20px; line-height: 20px; border-radius: 10px; font-size: .68rem; }
+  .side-foot { border-top: 1px solid rgba(255,255,255,.08); padding-top: 14px; line-height: 1.9; }
+  .side-foot a { text-decoration: none; } .side-foot a:hover { color: #fff; }
+  .content { padding: 30px 36px 56px; }
+}
+/* phone bar */
+@media (max-width: 899px) {
+  .side { background: rgba(20, 18, 67, .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 -6px 24px rgba(10, 8, 40, .25); padding-top: 6px; }
+  .nav-btn { border-radius: 12px; color: #b9b6e6; }
+  .nav-btn[aria-current="page"] { background: rgba(255, 210, 74, .14); color: var(--sun); }
+  .side.more-open .more-item { border-radius: 12px; background: rgba(255,255,255,.07); }
+  /* Five more sections: two rows of two, then the last one across the whole row. */
+  .side.more-open .more-item[data-tab="t-site"] { grid-column: 1 / -1; }
+}
+.content > section, .content > .msg { max-width: 1180px; }
+
+/* page head */
+.page-head { margin-bottom: 20px; align-items: center; }
+.page-head h1 { font: 800 clamp(1.55rem, 1.2rem + 1vw, 2rem)/1.15 var(--font-display); letter-spacing: -.015em; color: var(--d-ink); }
+.page-head p { font-size: .93rem; color: var(--d-mute); margin-top: 4px; max-width: 70ch; }
+.stack { gap: 18px; }
+
+/* cards and panels */
+.card, .panel, .stu, .chap-row, .stu-group { background: var(--d-card); border: 1px solid var(--d-line); border-radius: var(--d-r); box-shadow: var(--d-shadow); }
+.card { padding: 20px 22px; }
+@media (max-width: 560px) { .card { padding: 16px; } }
+.card h2, .section-title h2 { font: 700 1.08rem var(--font-body); letter-spacing: -.005em; color: var(--d-ink); }
+.section-title { margin-bottom: 14px; }
+.panel > summary { padding: 16px 20px; }
+.panel > summary .plus { background: var(--sun); box-shadow: 0 3px 0 #d9a90f; }
+.panel > form { border-top-color: var(--d-line-2); }
+
+/* overview: stat cards */
+.stats { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 14px; }
+@media (min-width: 1180px) { .stats { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.stat { position: relative; background: var(--d-card); border: 1px solid var(--d-line); border-radius: var(--d-r); box-shadow: var(--d-shadow); padding: 16px 16px 14px; gap: 2px; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.stat:hover { transform: translateY(-2px); box-shadow: var(--d-shadow-hi); border-color: color-mix(in srgb, var(--d-accent) 40%, var(--d-line)); }
+.stat .si { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1.1rem; background: var(--d-accent-soft); margin-bottom: 8px; }
+.stat .n { font: 800 1.9rem/1.05 var(--font-display); color: var(--d-ink); letter-spacing: -.02em; }
+.stat .l { font-size: .82rem; color: var(--d-mute); line-height: 1.35; }
+.stat.good .si { background: var(--d-good-soft); } .stat.good .n { color: var(--good); }
+.stat.alert .si { background: var(--d-bad-soft); } .stat.alert .n { color: var(--bad); }
+.stat.alert { border-color: color-mix(in srgb, var(--bad) 35%, var(--d-line)); }
+.insights .charts { gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.chart { background: var(--d-bg); border-radius: 12px; padding: 14px 14px 10px; }
+.chart svg { max-height: 170px; }
+.chart .bar { fill: color-mix(in srgb, var(--d-accent) 70%, transparent); } .chart .bar.today { fill: #f5a300; }
+.dash-grid { gap: 18px; }
+.todo { gap: 8px; }
+.todo-item { background: var(--d-bg); border: 1px solid var(--d-line-2); border-left: 4px solid var(--d-mute); border-radius: 12px; padding: 11px 12px 11px 14px; }
+.todo-item .ic { display: none; }
+.todo-item.bad { border-left-color: var(--bad); background: color-mix(in srgb, var(--d-bad-soft) 60%, var(--d-bg)); }
+.todo-item.warn { border-left-color: #f0b400; background: color-mix(in srgb, var(--d-warn-soft) 55%, var(--d-bg)); }
+.quick h2 { margin-bottom: 12px; }
+.qa-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.quick .qa-grid .btn { display: grid; justify-items: start; align-content: start; gap: 8px; text-align: left; white-space: normal; height: auto; min-height: 86px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--d-line); background: var(--d-bg); color: var(--d-ink); font-weight: 600; font-size: .9rem; line-height: 1.25; box-shadow: none; transition: transform .15s, border-color .15s, background .15s; }
+.quick .qa-grid .btn:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--d-accent) 45%, var(--d-line)); background: var(--d-card); }
+.quick .qa-grid .btn-sun { background: linear-gradient(135deg, #ffe17a, var(--sun)); border-color: transparent; color: var(--sun-ink); }
+.quick .qa-grid .qi { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--d-card); box-shadow: 0 1px 3px rgba(23,21,61,.1); font-size: 1.05rem; }
+@media (max-width: 380px) { .qa-grid { grid-template-columns: minmax(0, 1fr); } .quick .qa-grid .btn { min-height: 0; grid-template-columns: auto 1fr; align-items: center; } }
+.recent div { border-bottom: 1px solid var(--d-line-2); padding: 6px 0 8px; }
+.recent div:last-child { border-bottom: 0; }
+
+/* buttons */
+.btn { border-radius: var(--d-r-sm); min-height: 40px; font-weight: 700; letter-spacing: .005em; transition: transform .12s, box-shadow .15s, background .15s, border-color .15s; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn-sm { min-height: 32px; border-radius: 9px; padding: 5px 12px; font-size: .84rem; }
+.btn-line { border-width: 1.5px; border-color: var(--d-line); background: var(--d-card); color: var(--d-ink); }
+.btn-line:hover:not(:disabled) { border-color: color-mix(in srgb, var(--d-accent) 50%, var(--d-line)); background: var(--d-accent-soft); color: var(--d-ink); }
+.btn-sun { box-shadow: 0 2px 0 #d9a90f; }
+.btn-sun:hover:not(:disabled) { filter: brightness(1.04); }
+.btn-danger { border-width: 1.5px; }
+.btn-wa { box-shadow: 0 2px 0 #157a43; }
+:focus-visible { outline: 3px solid var(--d-ring); outline-offset: 2px; }
+
+/* form boxes */
+.field label { font-weight: 600; font-size: .85rem; color: var(--d-ink); }
+.field input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]), .field select, .cat input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=color]), .cat select, .cat textarea, textarea, .pk-bar select, .pk-bar input:not([type=checkbox]), .act-tools select, .act-tools input:not([type=checkbox]), #site-range, #ft-cls, #stu-group, #stu-sub, .list-tools select {
+  border: 1.5px solid var(--d-line); border-radius: var(--d-r-sm); background: var(--d-card); color: var(--d-ink); min-height: 42px; transition: border-color .15s, box-shadow .15s; }
+.field input:focus, .field select:focus, .cat input:focus, .cat select:focus, .cat textarea:focus, textarea:focus, .pk-bar select:focus, .pk-bar input:focus, .act-tools select:focus, .act-tools input:focus, #site-range:focus, #ft-cls:focus, .list-tools select:focus {
+  border-color: var(--d-accent); box-shadow: 0 0 0 4px var(--d-ring); outline: none; }
+#site-range, #ft-cls { padding: 6px 10px; font: inherit; font-size: .9rem; }
+.hint { color: var(--d-mute); }
+.msg { border-radius: 12px; }
+
+/* chips, pills, segmented control */
+.chip { border-radius: 999px; border: 1px solid var(--d-line); background: var(--d-card); color: var(--d-ink); font-weight: 600; transition: background .15s, border-color .15s; }
+.chip:hover { border-color: color-mix(in srgb, var(--d-accent) 45%, var(--d-line)); }
+.chip[aria-pressed="true"] { background: var(--d-ink); border-color: var(--d-ink); color: var(--d-card); }
+.chip[aria-pressed="true"] b { color: var(--sun); }
+.pill { border-radius: 999px; font-weight: 600; font-size: .74rem; padding: 3px 9px; border: 1px solid var(--d-line); background: var(--d-bg); color: var(--d-mute); }
+.pill.good { background: var(--d-good-soft); color: var(--good); border-color: transparent; }
+.pill.bad { background: var(--d-bad-soft); color: var(--bad); border-color: transparent; }
+.pill.warn { background: var(--d-warn-soft); color: #946200; border-color: transparent; }
+:root[data-theme="dark"] .pill.warn { color: #ffd76a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.warn { color: #ffd76a; } }
+.seg { background: var(--d-bg); border: 1px solid var(--d-line); border-radius: 12px; padding: 4px; }
+.seg button { border-radius: 9px; font-weight: 600; }
+.seg button[aria-selected="true"] { background: var(--d-card); color: var(--d-ink); box-shadow: 0 1px 3px rgba(23,21,61,.12); }
+
+/* students */
+.list-tools { gap: 10px; align-items: center; padding: 12px; margin: 4px 0 12px; background: var(--d-bg); border: 1px solid var(--d-line-2); border-radius: 14px; }
+.list-tools .chips { gap: 6px; }
+.stu { padding: 16px 18px; transition: box-shadow .15s, border-color .15s; }
+.stu:hover { box-shadow: var(--d-shadow-hi); }
+.stu .avatar { background: linear-gradient(135deg, var(--d-accent-soft), color-mix(in srgb, var(--d-accent) 22%, var(--d-card))); color: var(--d-accent); font-weight: 800; }
+.stu h3 { font: 700 1.05rem var(--font-body); color: var(--d-ink); }
+.stu .actions { border-top: 1px solid var(--d-line-2); margin-top: 12px; padding-top: 12px; gap: 6px; }
+.students { gap: 12px; }
+.stu-group { box-shadow: none; }
+.stu-group > summary { padding: 13px 16px; font: 700 1rem var(--font-body); color: var(--d-ink); }
+.stu-group[open] > summary { border-bottom: 1px solid var(--d-line-2); margin-bottom: 10px; }
+.stu-group .stu-group { background: var(--d-bg); border: 1px dashed var(--d-line); }
+.stu-group .stu { box-shadow: none; }
+.grp-sum { padding: 10px 14px; background: var(--d-accent-soft); border-radius: 12px; color: var(--d-ink); }
+
+/* chapters */
+.chap-row { box-shadow: none; overflow: hidden; transition: box-shadow .15s, border-color .15s; }
+.chap-row:hover { box-shadow: var(--d-shadow); }
+.chap-row.open { box-shadow: var(--d-shadow-hi); border-color: color-mix(in srgb, var(--d-accent) 35%, var(--d-line)); }
+.chap-head .go { color: var(--d-accent); font-weight: 700; }
+.ch-item:hover { background: var(--d-accent-soft); }
+.cls-head { font: 800 1.1rem var(--font-display); }
+
+/* tables, activity, scores */
+#site-cls { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.site-tbl { min-width: 560px; }
+.site-tbl th { background: var(--d-bg); border-bottom: 1px solid var(--d-line); }
+.site-tbl th:first-child { border-radius: 10px 0 0 10px; } .site-tbl th:last-child { border-radius: 0 10px 10px 0; }
+.site-tbl tbody tr:hover td { background: var(--d-bg); }
+.site-tbl td { border-bottom: 1px solid var(--d-line-2); }
+.act-row, .sc-row { border-color: var(--d-line-2); }
+.act-sum div, .reading-box .sums div { background: var(--d-bg); border: 1px solid var(--d-line-2); border-radius: 12px; }
+.rd-book .cv { border-radius: 10px; box-shadow: var(--d-shadow); }
+
+/* dialogs */
+.dlg { border: 0; border-radius: 22px; box-shadow: 0 30px 80px -20px rgba(10, 8, 40, .5); background: var(--d-card); color: var(--d-ink); }
+.dlg::backdrop { background: rgba(14, 12, 42, .55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.dlg-head { border-bottom: 1px solid var(--d-line-2); }
+.dlg-head h2 { font: 800 1.25rem var(--font-display); }
+.dlg-x { border-radius: 50%; }
+.dlg-foot { border-top: 1px solid var(--d-line-2); background: color-mix(in srgb, var(--d-bg) 60%, var(--d-card)); }
+.teach-pick, .chap-picks.pk { background: var(--d-bg); border-color: var(--d-line); }
+
+/* login */
+#v-login .login-card { border-radius: 22px; box-shadow: var(--d-shadow-hi); border: 1px solid var(--d-line); padding: 30px 28px; }
+#v-login { background: radial-gradient(60% 50% at 50% 0%, var(--d-accent-soft), transparent 70%); }
 </style>
 </head>
 <body>
@@ -455,15 +651,18 @@ textarea:focus { border-color: var(--accent); outline: none; }
   <div class="desk" id="v-admin" hidden>
     <nav class="side" id="side" aria-label="Admin sections">
       <button class="nav-btn" type="button" data-tab="t-home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="long">Overview</span><span class="short">Home</span><span class="dot" id="dot-home" hidden></span></button>
+      <div class="nav-label" aria-hidden="true">Students</div>
       <button class="nav-btn" type="button" data-tab="t-students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Students</button>
       <button class="nav-btn" type="button" data-tab="t-activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7.5 14h2M11 14h2M14.5 14h2M7.5 17.5h2M11 17.5h2"/></svg>Activity</button>
-      <button class="nav-btn more-item" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
+      <button class="nav-btn" type="button" data-tab="t-doubts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5"/><path d="M12 16.5h.01"/></svg>Doubts<span class="dot" id="dot-doubts" hidden></span></button>
+      <div class="nav-label" aria-hidden="true">Content</div>
       <button class="nav-btn" type="button" data-tab="t-chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M12 13V7"/><path d="m9 10 3-3 3 3"/></svg>Chapters<span class="dot" id="dot-ch" hidden></span></button>
       <button class="nav-btn more-item" type="button" data-tab="t-read"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5A1.5 1.5 0 0 1 3.5 4H9a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H3.5A1.5 1.5 0 0 1 2 16z"/><path d="M22 5.5A1.5 1.5 0 0 0 20.5 4H15a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5h6a1.5 1.5 0 0 0 1.5-1.5z"/></svg><span class="long">Read books</span><span class="short">Read</span></button>
-      <button class="nav-btn" type="button" data-tab="t-doubts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5"/><path d="M12 16.5h.01"/></svg>Doubts<span class="dot" id="dot-doubts" hidden></span></button>
       <button class="nav-btn more-item" type="button" data-tab="t-news"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="long">Announcements</span><span class="short">News</span></button>
-      <button class="nav-btn more-item" type="button" data-tab="t-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="long">Website &amp; free tests</span><span class="short">Website</span></button>
+      <div class="nav-label" aria-hidden="true">Sales</div>
+      <button class="nav-btn more-item" type="button" data-tab="t-promos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg><span class="long">Promo codes</span><span class="short">Promos</span><span class="dot" id="dot-promo" hidden></span></button>
       <button class="nav-btn more-item" type="button" data-tab="t-catalog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span class="long">Books &amp; prices</span><span class="short">Prices</span></button>
+      <button class="nav-btn more-item" type="button" data-tab="t-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span class="long">Website &amp; free tests</span><span class="short">Website</span></button>
       <button class="nav-btn more-btn" type="button" id="more-btn" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>More<span class="dot" id="dot-more" hidden></span></button>
       <div class="side-foot"><a href="read.html" target="_blank" rel="noopener">Open the reader ↗</a><br><a href="index.html" target="_blank" rel="noopener">Open the website ↗</a></div>
     </nav>
@@ -478,16 +677,16 @@ textarea:focus { border-color: var(--accent); outline: none; }
       <div class="dash-grid">
         <div class="card"><div class="section-title"><h2>Needs your attention</h2></div><div class="todo" id="todo"></div></div>
         <div class="stack">
-          <div class="card quick"><h2>Quick actions</h2>
-            <button class="btn btn-sun" type="button" data-go="new-student">+ New student ID</button>
-            <button class="btn btn-line" type="button" data-go="new-promo">+ New promo code</button>
-            <button class="btn btn-line" type="button" data-go="new-news">+ New announcement</button>
-            <button class="btn btn-line" type="button" data-go="t-chapters">Add or upload a chapter</button>
-            <button class="btn btn-line" type="button" data-go="scores">📊 Quiz scores</button>
-            <button class="btn btn-line" type="button" data-go="t-activity">📅 Today's activity</button>
-            <button class="btn btn-line" type="button" data-go="t-read">📖 Read books</button>
-            <button class="btn btn-line" type="button" data-go="t-catalog">Change prices or offers</button>
-          </div>
+          <div class="card quick"><h2>Quick actions</h2><div class="qa-grid">
+            <button class="btn btn-sun" type="button" data-go="new-student"><span class="qi" aria-hidden="true">👤</span>New student ID</button>
+            <button class="btn btn-line" type="button" data-go="new-promo"><span class="qi" aria-hidden="true">🎟️</span>New promo code</button>
+            <button class="btn btn-line" type="button" data-go="new-news"><span class="qi" aria-hidden="true">📣</span>New announcement</button>
+            <button class="btn btn-line" type="button" data-go="t-chapters"><span class="qi" aria-hidden="true">⬆️</span>Add or upload a chapter</button>
+            <button class="btn btn-line" type="button" data-go="scores"><span class="qi" aria-hidden="true">📊</span>Quiz scores</button>
+            <button class="btn btn-line" type="button" data-go="t-activity"><span class="qi" aria-hidden="true">📅</span>Today's activity</button>
+            <button class="btn btn-line" type="button" data-go="t-read"><span class="qi" aria-hidden="true">📖</span>Read books</button>
+            <button class="btn btn-line" type="button" data-go="t-catalog"><span class="qi" aria-hidden="true">🏷️</span>Change prices or offers</button>
+          </div></div>
           <div class="card"><div class="section-title" style="margin-bottom: 10px"><h2>Newest students</h2></div><div class="recent" id="recent"></div></div>
         </div>
       </div>
@@ -985,7 +1184,8 @@ function renderDash() {
   const h = now.getHours();
   $("#hello").textContent = `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}, Adeel Sir`;
   $("#today").textContent = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const stat = (n, l, go, cls = "", filter = "") => `<button class="stat ${cls}" type="button" data-go="${go}"${filter ? ` data-filter="${filter}"` : ""}><span class="n">${n}</span><span class="l">${l}</span></button>`;
+  const STAT_IC = [["Student IDs", "👥"], ["Logged in", "📖"], ["Other-device", "🛡️"], ["On a monthly", "🗓️"], ["Live promo", "🎟️"], ["Chapters", "📚"]];
+  const stat = (n, l, go, cls = "", filter = "") => `<button class="stat ${cls}" type="button" data-go="${go}"${filter ? ` data-filter="${filter}"` : ""}><span class="si" aria-hidden="true">${(STAT_IC.find(([k]) => l.startsWith(k)) || [0, "•"])[1]}</span><span class="n">${n}</span><span class="l">${l}</span></button>`;
   $("#stats").innerHTML = [
     stat(ids.length, "Student IDs", "t-students", "", "all"),
     stat(ids.filter(s => s.active !== false && s.deviceId).length, "Logged in and reading", "t-students", "good", "active"),
