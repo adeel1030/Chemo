@@ -540,3 +540,19 @@ function schoolOptions(id) {
   if (!dl) { dl = document.createElement("datalist"); dl.id = id + "-list"; el.after(dl); el.setAttribute("list", dl.id); }
   dl.innerHTML = (SITE.schools || []).map(n => `<option value="${String(n).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))}"></option>`).join("");
 }
+
+// ---------- study pages (one for each class and each chapter, for Google) ----------
+// tools/build-pages.mjs writes /class-10/ and /class-10/chemical-reactions-and-equations/ etc. from the catalog.
+// The website links to them with these same paths, so both always agree.
+const slugify = t => String(t || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70).replace(/-+$/, "");
+const classSlug = cls => isUni(cls) ? slugify(clsName(cls)) || "book-" + cls : "class-" + cls;
+function studyPaths() {
+  const map = new Map(), used = new Set();
+  CHAPTERS.filter(c => !isPart(c)).sort((a, b) => a.cls - b.cls || orderN(a) - orderN(b)).forEach(c => {
+    const k = kindOf(c), pre = k === "chem" ? "" : k === "special" ? (isJeeCls(c.cls) ? "jee-neet-" : "bonus-") : slugify(KINDS[k].subject) + "-";
+    let s = pre + (slugify(c.title) || "chapter-" + c.n), path = `${classSlug(c.cls)}/${s}/`;
+    if (used.has(path)) path = `${classSlug(c.cls)}/${s}-${c.n}/`;
+    used.add(path); map.set(`${c.cls}-${c.n}`, path);
+  });
+  return map;
+}

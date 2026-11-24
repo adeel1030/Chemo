@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chemo Admin">
 <script src="js/install.js" defer></script>
-<link rel="stylesheet" href="css/app.css?v=20261124a">
+<link rel="stylesheet" href="css/app.css?v=20261124b">
 <style>
 /* Admin desk: a dark side menu (bottom bar on phones), an overview page, and one page each for students, promo codes and chapters. */
 body { background: var(--paper); }
@@ -996,14 +996,14 @@ body { background: var(--d-bg); color: var(--d-ink); -webkit-font-smoothing: ant
   </div>
 </main>
 
-<script src="js/chapters.js?v=20261124a"></script>
+<script src="js/chapters.js?v=20261124b"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, initializeAuth, inMemoryPersistence, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc, updateDoc, collection, getDocs, getDoc, getCountFromServer, serverTimestamp, Timestamp, writeBatch, query, where, arrayUnion, increment, collectionGroup, runTransaction, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_EMAIL, READER_URL } from "./js/firebase-config.js";
-import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124a";
+import { configured, auth, db, ID_PATTERN, idToEmail, pageId, chapterKey, findChapter, esc, loadCatalog } from "./js/fb.js?v=20261124b";
 
 const $ = s => document.querySelector(s);
 const show = id => ["v-loading", "v-setup", "v-login", "v-admin"].forEach(v => { $("#" + v).hidden = v !== id; });

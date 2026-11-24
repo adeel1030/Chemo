@@ -630,6 +630,9 @@ section.block { padding-block: 64px; }
 .ft-review div { background: rgba(255,255,255,.06); border-radius: 12px; padding: 8px 10px; }
 .ft-review .r { color: #7ff0b0; } .ft-review .w { color: #ffb3c9; }
 #samples-more .samples-grid { margin-top: 14px; text-align: left; }
+.foot-study { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.foot-study a { color: var(--sun); }
+.sheet-page { margin: 10px 0 0; font-size: .92rem; } .sheet-page a { color: var(--sun); font-weight: 700; }
 .subj-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 12px auto 0; }
 .subj-tabs:empty { display: none; }
 .subj-tabs button { border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: inherit; border-radius: 999px; padding: 6px 14px; font: 600 .9rem var(--font-body, inherit); cursor: pointer; }
@@ -1369,6 +1372,7 @@ body {
 <footer class="site-foot">
   <div class="rainbow"></div>
   <div class="wrap">
+    <nav class="foot-study" aria-label="Study by class"><b>Study by class:</b> <a href="class-9/">Class 9 Science</a> <a href="class-10/">Class 10 Science</a> <a href="class-11/">Class 11</a> <a href="class-12/">Class 12</a> <a href="msc/">MSc Organic</a></nav>
     <div><b>Chemophile</b> · Class 9 to 12 Chemistry · Mohd Adeel Khan, MSc BEd (JMI)</div>
     <div>© 2026 Mohd Adeel Khan. All rights reserved. The text, figures, questions and examples in the booklets are the author's original work. Copying, scanning, printing, uploading or sharing them without permission is prohibited.</div>
     <div>Based on the NCERT and CBSE syllabus. Not an NCERT publication. QR codes open free simulations from PhET Interactive Simulations (University of Colorado Boulder).</div>
@@ -1402,9 +1406,9 @@ body {
   </div>
 </div>
 
-<script src="js/chapters.js?v=20261124a"></script>
+<script src="js/chapters.js?v=20261124b"></script>
 <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-<script src="js/flipbook.js?v=20261124a"></script>
+<script src="js/flipbook.js?v=20261124b"></script>
 <script>
 // The admin panel's catalog (chapters, prices, combos, offer) decides what this page sells.
 // It is read from Firestore before the page is drawn; without it (offline, or not set up yet)
@@ -2312,6 +2316,8 @@ document.addEventListener("click", e => {
 // ---------- chapter sheet ----------
 const sheet = $("#sheet"), sheetBody = $("#sheet-body");
 let sheetReturn = null;
+// The chapter's own page (built for Google by tools/build-pages.mjs), at the same path the builder uses.
+const STUDY = studyPaths();
 function openSheet(k, topicId) {
   const c = CHAPTERS.find(x => key(x) === k);
   if (!c) return;
@@ -2345,6 +2351,7 @@ function openSheet(k, topicId) {
     <div class="sheet-buy">${c.free ? freeChip : priceChips(c)}
       ${c.free ? readFree : `<button class="add-btn" type="button" data-add="${k}" aria-pressed="${on}">${on ? "✓ In your pack" : "+ Add to pack"}</button>`}
     </div>
+    ${STUDY.get(k) ? `<p class="sheet-page"><a href="${STUDY.get(k)}">📄 Open the chapter page: every topic and subtopic →</a></p>` : ""}
     ${(() => { const x = !isPart(c) && extraOf(c), parentC = isPart(c) && CHAPTERS.find(y => y.cls === c.cls && +y.n === baseN(c.n));
       const rows = [x ? `<li>🎯 <b>JEE/NEET extra topics</b>: ${esc(x.title)}${x.pages ? ` · ${x.pages} pages` : ""}${x.included !== false ? " · <b>included</b> with this chapter" : " · sold on its own"}</li>` : "",
         c.qbank ? `<li>📝 <b>Question bank</b>: ${c.qbank} questions, chapter-wise practice in the app, with the full solution of every question</li>` : "",
